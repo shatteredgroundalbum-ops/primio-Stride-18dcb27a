@@ -28,4 +28,8 @@
         </intent>
     </queries>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- PRIMIO_ADDED: geolocator — GPS location tracking for walking/running sessions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 </manifest>

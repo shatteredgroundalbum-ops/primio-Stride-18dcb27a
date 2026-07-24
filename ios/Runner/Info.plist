@@ -47,5 +47,9 @@
     <true/>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>S.T.R.I.D.E. needs your location to track your walking and running routes.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>S.T.R.I.D.E. needs background location access to track your workouts accurately.</string>
   </dict>
 </plist>

@@ -1,38 +1,41 @@
 # S.T.R.I.D.E.
 
 ## Overview
-A comprehensive personal health intelligence platform that integrates step tracking, exercise programs, intermittent fasting, nutrition/macro tracking, recovery monitoring, and AI-powered recommendations into a unified dashboard. Designed for health-conscious individuals who want one app instead of six.
+A walking/running intelligence platform combining GPS tracking, personalized training plans, step tracking, intermittent fasting, nutrition, and recovery into one adaptive experience. Features auth flow, repository layer, GPS service, AI training engine, and analytics — all client-side with Firestore-ready models.
 
 ## Tech Stack & Key Decisions
-- Dark theme with gradient accents chosen to match fitness/health app conventions and reduce eye strain during workouts
-- fl_chart for weekly steps visualization — lightweight and sufficient for bar charts
-- flutter_animate for staggered entrance animations on dashboard cards
-- ChangeNotifier + Provider for state — route-scoped; app complexity doesn't warrant BLoC yet
-- go_router StatefulShellRoute for bottom navigation with 5 tabs preserving state between switches
-- Mock HealthService returns realistic data — designed to be swapped with real APIs (Firebase, HealthKit, etc.)
+- Dark theme with gradient accents; reduces eye strain during workouts
+- fl_chart for charts, flutter_animate for entrance animations
+- geolocator for GPS position tracking with haversine distance calculations
+- awesome_notifications for workout reminders and achievement alerts
+- ChangeNotifier + Provider for state — route-scoped per tab, global for auth
+- go_router with refreshListenable auth gate — unauthenticated users redirect to login
+- All models have toMap/fromMap for Firestore readiness; currently backed by in-memory repositories
 
 ## Architecture
-- Single service layer (HealthService) handles both data retrieval and AI insight generation
-- Dashboard is the only fully implemented screen; other tabs are placeholder screens
-- Repositories layer omitted intentionally — no persistence yet; HealthService returns mock data directly
-- Provider wired at route level inside StatefulShellBranch GoRoute builder
-- HealthService provided at app-global level since it's stateless and shared
+- Layered: models → repositories → services → providers → screens + widgets
+- AuthProvider is app-global (created in main.dart, passed to GoRouter as refreshListenable)
+- Tab providers remain route-scoped in GoRoute builders
+- Repositories use in-memory storage — designed as 1:1 swap points for Cloud Firestore
+- GpsService uses geolocator streams; static methods for distance/pace/calorie math
+- TrainingEngine generates progressive walking plans using MET-based calorie estimation and Mifflin-St Jeor BMR
 
 ## Conventions
-- All accent colors are semantic: stepsAccent (cyan), exerciseAccent (pink), nutritionAccent (green), fastingActive (orange), recoveryAccent (purple)
-- Glass card pattern (GlassCard widget) used as the base container for all dashboard sections
-- Section headers use SectionHeader widget with optional icon and action
-- Placeholder screens use PlaceholderScreen widget with accent color, icon, and description
-- New screens: add GoRoute in StatefulShellBranch, create screen file, wire providers in route builder
+- Auth screens live in `screens/auth/`; auth widgets in `widgets/auth/`
+- Repository classes: one per Firestore collection, CRUD methods returning Futures
+- Models: constructors, toMap, fromMap factory, copyWith where mutation is needed
+- Services never import Flutter (except GpsService which needs `kIsWeb`); providers never import repositories directly
+- GlassCard, SectionHeader, ProgressRing remain shared primitives
 
 ## Key Patterns & Gotchas
-- FastingState.progress calculates from elapsed/target duration — ensure elapsed never exceeds target for UI sanity
-- AI insights are generated synchronously from health data in HealthService.getInsights() — will need async when real Gemini integration added
-- Weekly steps array is fixed at 7 elements (Mon-Sun); index 3 is "today" in the mock data
-- NavigationBar uses WidgetStateProperty (not MaterialStateProperty) for M3 icon theming
+- MockAuthRepository accepts any email with password ≥ 6 chars — swap to FirebaseAuthRepository for production
+- GoRouter redirect checks auth on every navigation; refreshListenable triggers on logout/login
+- GpsService is disabled on web (kIsWeb guard) — GPS tracking is mobile-only
+- TrainingEngine uses progressive overload (~10% weekly increase) with hardcoded rest days (Sun) and recovery days (Wed)
+- StrideNotificationService.initialize() must be called before runApp in main()
 
 ## Design System
-- Bold dark fitness aesthetic: near-black surface (#0D0D14) with vibrant category-specific accent colors
-- Inter font family throughout for maximum readability on dark backgrounds
-- 16px base spacing grid with glass-morphic cards (subtle gradient + border) as primary containers
-- Each health domain has a dedicated accent color for instant visual recognition across all UI elements
+- Bold dark fitness aesthetic: near-black surface with vibrant category accents
+- Inter font via google_fonts; 16px spacing grid
+- Auth screens use GlassCard containers with gradient logo circle
+- All colors from colorScheme/AppColorsExtension, all text from textTheme, all dims from AppTheme tokens
