@@ -65,6 +65,8 @@ dependencies:
   # --- PRIMIO_ADDITIONS BEGIN (do not edit/remove) ---
   # PRIMIO_ADDED: geolocator — GPS position tracking for walking/running sessions
   geolocator: ^13.0.0
+  # PRIMIO_ADDED: sqflite — local SQLite database for offline workout recording
+  sqflite: ^2.4.1
   # --- PRIMIO_ADDITIONS END ---
 
 dev_dependencies:

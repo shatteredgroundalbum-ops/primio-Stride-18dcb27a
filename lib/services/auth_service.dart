@@ -1,12 +1,15 @@
 import '../models/user_model.dart';
 import '../repositories/auth_repository.dart';
-import '../repositories/user_repository.dart';
+import '../repositories/cloud/cloud_user_repository.dart';
 
 class AuthService {
   final AuthRepository authRepository;
-  final UserRepository userRepository;
+  final CloudUserRepository cloudUserRepository;
 
-  AuthService({required this.authRepository, required this.userRepository});
+  AuthService({
+    required this.authRepository,
+    required this.cloudUserRepository,
+  });
 
   bool get isAuthenticated => authRepository.isAuthenticated;
   String? get currentUserId => authRepository.currentUserId;
@@ -20,13 +23,18 @@ class AuthService {
       return (success: false, error: result.error, user: null);
     }
 
-    var user = await userRepository.getUser(result.userId!);
-    user ??= userRepository.createDefaultUser(
-      id: result.userId!,
-      email: result.email!,
-      displayName: result.email!.split('@').first,
-    );
-    await userRepository.createUser(user);
+    var user = await cloudUserRepository.getUser(result.userId!);
+    if (user == null && cloudUserRepository is MockCloudUserRepository) {
+      user = (cloudUserRepository as MockCloudUserRepository)
+          .createDefaultUser(
+        id: result.userId!,
+        email: result.email!,
+        displayName: result.email!.split('@').first,
+      );
+    }
+    if (user != null) {
+      await cloudUserRepository.createUser(user);
+    }
     return (success: true, error: null, user: user);
   }
 
@@ -41,12 +49,34 @@ class AuthService {
       return (success: false, error: result.error, user: null);
     }
 
-    final user = userRepository.createDefaultUser(
-      id: result.userId!,
-      email: result.email!,
-      displayName: displayName,
-    );
-    await userRepository.createUser(user);
+    UserModel? user;
+    if (cloudUserRepository is MockCloudUserRepository) {
+      user = (cloudUserRepository as MockCloudUserRepository)
+          .createDefaultUser(
+        id: result.userId!,
+        email: result.email!,
+        displayName: displayName,
+      );
+    } else {
+      user = UserModel(
+        id: result.userId!,
+        email: result.email!,
+        displayName: displayName,
+        age: 30,
+        weightKg: 70,
+        heightCm: 170,
+        activityLevel: 'moderate',
+        createdAt: DateTime.now(),
+        goals: const UserGoals(
+          dailySteps: 10000,
+          dailyCalorieBurn: 500,
+          weeklyWorkouts: 4,
+          targetWeightKg: 68,
+          primaryGoal: 'fitness',
+        ),
+      );
+      await cloudUserRepository.createUser(user);
+    }
     return (success: true, error: null, user: user);
   }
 
