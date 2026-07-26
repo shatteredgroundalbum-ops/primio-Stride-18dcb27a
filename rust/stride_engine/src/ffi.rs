@@ -135,6 +135,17 @@ use crate::engine::privacy::{
     DataSafetyCategory, DataSafetyPurpose, DataSharingStatus,
     DataSafetyEntry, DataSafetyForm, PrivacyComplianceStatus,
 };
+use crate::engine::release::{
+    self, AppIdentity, AppNameStatus, SigningKeyConfig, SigningKeyStatus,
+    BuildType, ReleaseBundle, ReleaseBundleStatus,
+    VersioningPolicy, VersioningStrategy,
+    StoreAsset, StoreAssetType, AssetStatus, StoreAssets,
+    StoreListing, ContentRating, AppCategory,
+    PermissionType, PermissionDeclaration, PermissionDeclarations,
+    ReviewerAccess, TestingTrack, TrackStatus, ReleaseTrack,
+    StagedRolloutPlan, StackComponent, StackComponentCategory,
+    ProductionStack, ReleaseReadinessStatus,
+};
 use crate::models::{
     ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
     WorkoutSummary,
@@ -5930,5 +5941,132 @@ pub extern "C" fn stride_privacy_data_safety(
 
         let form = privacy::build_default_data_safety_form(req.last_updated_ms);
         ok_json(&form)
+    })
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// §19 — Store / Release readiness
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Returns the app identity — the immutable store-level identity
+/// (app name, package ID, version, SDK levels).
+///
+/// `request_json` shape:
+/// ```json
+/// {}
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_release_identity(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let identity = release::AppIdentity::new();
+        ok_json(&identity)
+    })
+}
+
+/// Computes and returns the release readiness status from all
+/// components (identity, signing, bundle, versioning, assets,
+/// listing, permissions, reviewer, stack, data safety).
+///
+/// `request_json` shape:
+/// ```json
+/// { "data_safety_submitted": true }
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_release_readiness(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            data_safety_submitted: bool,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self { data_safety_submitted: false }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let identity = release::AppIdentity::new();
+        let signing = release::SigningKeyConfig::new();
+        let bundle = release::ReleaseBundle::new();
+        let versioning = release::VersioningPolicy::new();
+        let assets = release::StoreAssets::new();
+        let listing = release::StoreListing::new();
+        let permissions = release::PermissionDeclarations::new();
+        let reviewer = release::ReviewerAccess::new();
+        let stack = release::build_default_production_stack();
+
+        let status = release::build_release_readiness_status(
+            &identity, &signing, &bundle, &versioning,
+            &assets, &listing, &permissions, &reviewer,
+            &stack, req.data_safety_submitted,
+        );
+        ok_json(&status)
+    })
+}
+
+/// Returns the permission declarations for the app, including the
+/// background-location justification text required by Google Play.
+///
+/// `request_json` shape:
+/// ```json
+/// {}
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_release_permissions(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let permissions = release::PermissionDeclarations::new();
+        ok_json(&permissions)
+    })
+}
+
+/// Returns the staged rollout plan — the internal, closed, and
+/// production testing track configuration with rollout percentages.
+///
+/// `request_json` shape:
+/// ```json
+/// {}
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_release_rollout(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let plan = release::StagedRolloutPlan::new();
+        ok_json(&plan)
+    })
+}
+
+/// Returns the production stack inventory — the list of backend
+/// services, SDKs, and infrastructure components used by the app.
+///
+/// `request_json` shape:
+/// ```json
+/// {}
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_release_stack(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let stack = release::build_default_production_stack();
+        ok_json(&stack)
     })
 }

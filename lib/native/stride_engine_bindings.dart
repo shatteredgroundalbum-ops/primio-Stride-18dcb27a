@@ -623,6 +623,22 @@ typedef _StridePrivacyComplianceDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StridePrivacyDataSafetyNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StridePrivacyDataSafetyDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// §19 — Store / Release readiness
+typedef _StrideReleaseIdentityNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReleaseIdentityDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideReleaseReadinessNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReleaseReadinessDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideReleasePermissionsNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReleasePermissionsDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideReleaseRolloutNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReleaseRolloutDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideReleaseStackNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReleaseStackDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -1021,6 +1037,17 @@ class StrideEngineBindings {
         _StridePrivacyComplianceDart>('stride_privacy_compliance');
     _PrivacyDataSafety = _lib.lookupFunction<_StridePrivacyDataSafetyNative,
         _StridePrivacyDataSafetyDart>('stride_privacy_data_safety');
+    // §19 — Store / Release readiness
+    _ReleaseIdentity = _lib.lookupFunction<_StrideReleaseIdentityNative,
+        _StrideReleaseIdentityDart>('stride_release_identity');
+    _ReleaseReadiness = _lib.lookupFunction<_StrideReleaseReadinessNative,
+        _StrideReleaseReadinessDart>('stride_release_readiness');
+    _ReleasePermissions = _lib.lookupFunction<_StrideReleasePermissionsNative,
+        _StrideReleasePermissionsDart>('stride_release_permissions');
+    _ReleaseRollout = _lib.lookupFunction<_StrideReleaseRolloutNative,
+        _StrideReleaseRolloutDart>('stride_release_rollout');
+    _ReleaseStack = _lib.lookupFunction<_StrideReleaseStackNative,
+        _StrideReleaseStackDart>('stride_release_stack');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1230,6 +1257,11 @@ class StrideEngineBindings {
   late final _StridePrivacyDisclosuresDart _PrivacyDisclosures;
   late final _StridePrivacyComplianceDart _PrivacyCompliance;
   late final _StridePrivacyDataSafetyDart _PrivacyDataSafety;
+  late final _StrideReleaseIdentityDart _ReleaseIdentity;
+  late final _StrideReleaseReadinessDart _ReleaseReadiness;
+  late final _StrideReleasePermissionsDart _ReleasePermissions;
+  late final _StrideReleaseRolloutDart _ReleaseRollout;
+  late final _StrideReleaseStackDart _ReleaseStack;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -3167,6 +3199,61 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_PrivacyDataSafety(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// releaseIdentity — §19 — return the app identity (name, package ID,
+  /// version, SDK levels).
+  Map<String, dynamic> releaseIdentity(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ReleaseIdentity(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// releaseReadiness — §19 — compute and return the release readiness
+  /// status from all components.
+  Map<String, dynamic> releaseReadiness(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ReleaseReadiness(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// releasePermissions — §19 — return the permission declarations with
+  /// background-location justification.
+  Map<String, dynamic> releasePermissions(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ReleasePermissions(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// releaseRollout — §19 — return the staged rollout plan (internal,
+  /// closed, production testing tracks).
+  Map<String, dynamic> releaseRollout(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ReleaseRollout(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// releaseStack — §19 — return the production stack inventory (backend
+  /// services, SDKs, infrastructure components).
+  Map<String, dynamic> releaseStack(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ReleaseStack(ptr));
     } finally {
       malloc.free(ptr);
     }

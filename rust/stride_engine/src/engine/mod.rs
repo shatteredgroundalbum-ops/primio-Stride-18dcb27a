@@ -32,6 +32,7 @@ pub mod permissions;
 pub mod personal_records;
 pub mod privacy;
 pub mod recovery;
+pub mod release;
 pub mod route;
 pub mod route_format;
 pub mod security;

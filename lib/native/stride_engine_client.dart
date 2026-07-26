@@ -2642,4 +2642,49 @@ class StrideEngineClient {
     return StrideDataSafetyForm.fromJson(
         unwrapEnvelope(env) as Map<String, dynamic>);
   }
+
+  /// Returns the app identity — the immutable store-level identity
+  /// (app name, package ID, version, SDK levels).
+  static StrideAppIdentity releaseIdentity() {
+    final env = _bindings.releaseIdentity({});
+    return StrideAppIdentity.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Computes and returns the release readiness status from all
+  /// components (identity, signing, bundle, versioning, assets,
+  /// listing, permissions, reviewer, stack, data safety).
+  static StrideReleaseReadinessStatus releaseReadiness({
+    bool dataSafetySubmitted = false,
+  }) {
+    final env = _bindings.releaseReadiness({
+      'data_safety_submitted': dataSafetySubmitted,
+    });
+    return StrideReleaseReadinessStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the permission declarations for the app, including the
+  /// background-location justification text required by Google Play.
+  static StridePermissionDeclarations releasePermissions() {
+    final env = _bindings.releasePermissions({});
+    return StridePermissionDeclarations.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the staged rollout plan — the internal, closed, and
+  /// production testing track configuration with rollout percentages.
+  static StrideStagedRolloutPlan releaseRollout() {
+    final env = _bindings.releaseRollout({});
+    return StrideStagedRolloutPlan.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the production stack inventory — the list of backend
+  /// services, SDKs, and infrastructure components used by the app.
+  static StrideProductionStack releaseStack() {
+    final env = _bindings.releaseStack({});
+    return StrideProductionStack.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }

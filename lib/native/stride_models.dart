@@ -10019,3 +10019,1117 @@ class StridePrivacyComplianceStatus {
         'data_safety_form_complete': dataSafetyFormComplete,
       };
 }
+enum StrideAppNameStatus {
+  draft,
+  proposed,
+  final,
+
+  static StrideAppNameStatus fromJson(String s) {
+    switch (s) {
+      case 'draft':
+        return StrideAppNameStatus.draft;
+      case 'proposed':
+        return StrideAppNameStatus.proposed;
+      case 'final':
+        return StrideAppNameStatus.final;
+      default:
+        return StrideAppNameStatus.draft;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAppNameStatus.draft:
+        return 'draft';
+      case StrideAppNameStatus.proposed:
+        return 'proposed';
+      case StrideAppNameStatus.final:
+        return 'final';
+    }
+  }
+}
+
+enum StrideSigningKeyStatus {
+  notGenerated,
+  generated,
+  backedUp,
+  enrolled,
+
+  static StrideSigningKeyStatus fromJson(String s) {
+    switch (s) {
+      case 'not_generated':
+        return StrideSigningKeyStatus.notGenerated;
+      case 'generated':
+        return StrideSigningKeyStatus.generated;
+      case 'backed_up':
+        return StrideSigningKeyStatus.backedUp;
+      case 'enrolled':
+        return StrideSigningKeyStatus.enrolled;
+      default:
+        return StrideSigningKeyStatus.notGenerated;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideSigningKeyStatus.notGenerated:
+        return 'not_generated';
+      case StrideSigningKeyStatus.generated:
+        return 'generated';
+      case StrideSigningKeyStatus.backedUp:
+        return 'backed_up';
+      case StrideSigningKeyStatus.enrolled:
+        return 'enrolled';
+    }
+  }
+}
+
+enum StrideBuildType {
+  debug,
+  profile,
+  release,
+
+  static StrideBuildType fromJson(String s) {
+    switch (s) {
+      case 'debug':
+        return StrideBuildType.debug;
+      case 'profile':
+        return StrideBuildType.profile;
+      case 'release':
+        return StrideBuildType.release;
+      default:
+        return StrideBuildType.debug;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideBuildType.debug:
+        return 'debug';
+      case StrideBuildType.profile:
+        return 'profile';
+      case StrideBuildType.release:
+        return 'release';
+    }
+  }
+}
+
+enum StrideReleaseBundleStatus {
+  notBuilt,
+  building,
+  built,
+  uploaded,
+  approved,
+
+  static StrideReleaseBundleStatus fromJson(String s) {
+    switch (s) {
+      case 'not_built':
+        return StrideReleaseBundleStatus.notBuilt;
+      case 'building':
+        return StrideReleaseBundleStatus.building;
+      case 'built':
+        return StrideReleaseBundleStatus.built;
+      case 'uploaded':
+        return StrideReleaseBundleStatus.uploaded;
+      case 'approved':
+        return StrideReleaseBundleStatus.approved;
+      default:
+        return StrideReleaseBundleStatus.notBuilt;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideReleaseBundleStatus.notBuilt:
+        return 'not_built';
+      case StrideReleaseBundleStatus.building:
+        return 'building';
+      case StrideReleaseBundleStatus.built:
+        return 'built';
+      case StrideReleaseBundleStatus.uploaded:
+        return 'uploaded';
+      case StrideReleaseBundleStatus.approved:
+        return 'approved';
+    }
+  }
+}
+
+enum StrideVersioningStrategy {
+  semantic,
+  calendar,
+  sequential,
+
+  static StrideVersioningStrategy fromJson(String s) {
+    switch (s) {
+      case 'semantic':
+        return StrideVersioningStrategy.semantic;
+      case 'calendar':
+        return StrideVersioningStrategy.calendar;
+      case 'sequential':
+        return StrideVersioningStrategy.sequential;
+      default:
+        return StrideVersioningStrategy.semantic;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideVersioningStrategy.semantic:
+        return 'semantic';
+      case StrideVersioningStrategy.calendar:
+        return 'calendar';
+      case StrideVersioningStrategy.sequential:
+        return 'sequential';
+    }
+  }
+}
+
+enum StrideStoreAssetType {
+  adaptiveLauncherIcon,
+  legacyLauncherIcon,
+  splashScreen,
+  phoneScreenshot,
+  tablet7InchScreenshot,
+  tablet10InchScreenshot,
+  featureGraphic,
+  playStoreIcon,
+
+  static StrideStoreAssetType fromJson(String s) {
+    switch (s) {
+      case 'adaptive_launcher_icon':
+        return StrideStoreAssetType.adaptiveLauncherIcon;
+      case 'legacy_launcher_icon':
+        return StrideStoreAssetType.legacyLauncherIcon;
+      case 'splash_screen':
+        return StrideStoreAssetType.splashScreen;
+      case 'phone_screenshot':
+        return StrideStoreAssetType.phoneScreenshot;
+      case 'tablet_7_inch_screenshot':
+        return StrideStoreAssetType.tablet7InchScreenshot;
+      case 'tablet_10_inch_screenshot':
+        return StrideStoreAssetType.tablet10InchScreenshot;
+      case 'feature_graphic':
+        return StrideStoreAssetType.featureGraphic;
+      case 'play_store_icon':
+        return StrideStoreAssetType.playStoreIcon;
+      default:
+        return StrideStoreAssetType.adaptiveLauncherIcon;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideStoreAssetType.adaptiveLauncherIcon:
+        return 'adaptive_launcher_icon';
+      case StrideStoreAssetType.legacyLauncherIcon:
+        return 'legacy_launcher_icon';
+      case StrideStoreAssetType.splashScreen:
+        return 'splash_screen';
+      case StrideStoreAssetType.phoneScreenshot:
+        return 'phone_screenshot';
+      case StrideStoreAssetType.tablet7InchScreenshot:
+        return 'tablet_7_inch_screenshot';
+      case StrideStoreAssetType.tablet10InchScreenshot:
+        return 'tablet_10_inch_screenshot';
+      case StrideStoreAssetType.featureGraphic:
+        return 'feature_graphic';
+      case StrideStoreAssetType.playStoreIcon:
+        return 'play_store_icon';
+    }
+  }
+}
+
+enum StrideAssetStatus {
+  notCreated,
+  draft,
+  final,
+  uploaded,
+
+  static StrideAssetStatus fromJson(String s) {
+    switch (s) {
+      case 'not_created':
+        return StrideAssetStatus.notCreated;
+      case 'draft':
+        return StrideAssetStatus.draft;
+      case 'final':
+        return StrideAssetStatus.final;
+      case 'uploaded':
+        return StrideAssetStatus.uploaded;
+      default:
+        return StrideAssetStatus.notCreated;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAssetStatus.notCreated:
+        return 'not_created';
+      case StrideAssetStatus.draft:
+        return 'draft';
+      case StrideAssetStatus.final:
+        return 'final';
+      case StrideAssetStatus.uploaded:
+        return 'uploaded';
+    }
+  }
+}
+
+enum StrideContentRating {
+  everyone,
+  everyone10Plus,
+  teen,
+  mature,
+  adult,
+
+  static StrideContentRating fromJson(String s) {
+    switch (s) {
+      case 'everyone':
+        return StrideContentRating.everyone;
+      case 'everyone_10_plus':
+        return StrideContentRating.everyone10Plus;
+      case 'teen':
+        return StrideContentRating.teen;
+      case 'mature':
+        return StrideContentRating.mature;
+      case 'adult':
+        return StrideContentRating.adult;
+      default:
+        return StrideContentRating.everyone;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideContentRating.everyone:
+        return 'everyone';
+      case StrideContentRating.everyone10Plus:
+        return 'everyone_10_plus';
+      case StrideContentRating.teen:
+        return 'teen';
+      case StrideContentRating.mature:
+        return 'mature';
+      case StrideContentRating.adult:
+        return 'adult';
+    }
+  }
+}
+
+enum StrideAppCategory {
+  healthFitness,
+  sports,
+  mapsNavigation,
+  lifestyle,
+
+  static StrideAppCategory fromJson(String s) {
+    switch (s) {
+      case 'health_fitness':
+        return StrideAppCategory.healthFitness;
+      case 'sports':
+        return StrideAppCategory.sports;
+      case 'maps_navigation':
+        return StrideAppCategory.mapsNavigation;
+      case 'lifestyle':
+        return StrideAppCategory.lifestyle;
+      default:
+        return StrideAppCategory.healthFitness;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAppCategory.healthFitness:
+        return 'health_fitness';
+      case StrideAppCategory.sports:
+        return 'sports';
+      case StrideAppCategory.mapsNavigation:
+        return 'maps_navigation';
+      case StrideAppCategory.lifestyle:
+        return 'lifestyle';
+    }
+  }
+}
+
+enum StridePermissionType {
+  accessFineLocation,
+  accessCoarseLocation,
+  accessBackgroundLocation,
+  bodySensors,
+  activityRecognition,
+  postNotifications,
+  camera,
+  recordAudio,
+  readExternalStorage,
+  writeExternalStorage,
+  bluetooth,
+  internet,
+  accessNetworkState,
+  foregroundService,
+  wakeLock,
+  receiveBootCompleted,
+
+  static StridePermissionType fromJson(String s) {
+    switch (s) {
+      case 'access_fine_location':
+        return StridePermissionType.accessFineLocation;
+      case 'access_coarse_location':
+        return StridePermissionType.accessCoarseLocation;
+      case 'access_background_location':
+        return StridePermissionType.accessBackgroundLocation;
+      case 'body_sensors':
+        return StridePermissionType.bodySensors;
+      case 'activity_recognition':
+        return StridePermissionType.activityRecognition;
+      case 'post_notifications':
+        return StridePermissionType.postNotifications;
+      case 'camera':
+        return StridePermissionType.camera;
+      case 'record_audio':
+        return StridePermissionType.recordAudio;
+      case 'read_external_storage':
+        return StridePermissionType.readExternalStorage;
+      case 'write_external_storage':
+        return StridePermissionType.writeExternalStorage;
+      case 'bluetooth':
+        return StridePermissionType.bluetooth;
+      case 'internet':
+        return StridePermissionType.internet;
+      case 'access_network_state':
+        return StridePermissionType.accessNetworkState;
+      case 'foreground_service':
+        return StridePermissionType.foregroundService;
+      case 'wake_lock':
+        return StridePermissionType.wakeLock;
+      case 'receive_boot_completed':
+        return StridePermissionType.receiveBootCompleted;
+      default:
+        return StridePermissionType.accessFineLocation;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePermissionType.accessFineLocation:
+        return 'access_fine_location';
+      case StridePermissionType.accessCoarseLocation:
+        return 'access_coarse_location';
+      case StridePermissionType.accessBackgroundLocation:
+        return 'access_background_location';
+      case StridePermissionType.bodySensors:
+        return 'body_sensors';
+      case StridePermissionType.activityRecognition:
+        return 'activity_recognition';
+      case StridePermissionType.postNotifications:
+        return 'post_notifications';
+      case StridePermissionType.camera:
+        return 'camera';
+      case StridePermissionType.recordAudio:
+        return 'record_audio';
+      case StridePermissionType.readExternalStorage:
+        return 'read_external_storage';
+      case StridePermissionType.writeExternalStorage:
+        return 'write_external_storage';
+      case StridePermissionType.bluetooth:
+        return 'bluetooth';
+      case StridePermissionType.internet:
+        return 'internet';
+      case StridePermissionType.accessNetworkState:
+        return 'access_network_state';
+      case StridePermissionType.foregroundService:
+        return 'foreground_service';
+      case StridePermissionType.wakeLock:
+        return 'wake_lock';
+      case StridePermissionType.receiveBootCompleted:
+        return 'receive_boot_completed';
+    }
+  }
+}
+
+enum StrideTestingTrack {
+  internal,
+  closed,
+  production,
+
+  static StrideTestingTrack fromJson(String s) {
+    switch (s) {
+      case 'internal':
+        return StrideTestingTrack.internal;
+      case 'closed':
+        return StrideTestingTrack.closed;
+      case 'production':
+        return StrideTestingTrack.production;
+      default:
+        return StrideTestingTrack.internal;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestingTrack.internal:
+        return 'internal';
+      case StrideTestingTrack.closed:
+        return 'closed';
+      case StrideTestingTrack.production:
+        return 'production';
+    }
+  }
+}
+
+enum StrideTrackStatus {
+  notSetup,
+  setup,
+  released,
+  approved,
+
+  static StrideTrackStatus fromJson(String s) {
+    switch (s) {
+      case 'not_setup':
+        return StrideTrackStatus.notSetup;
+      case 'setup':
+        return StrideTrackStatus.setup;
+      case 'released':
+        return StrideTrackStatus.released;
+      case 'approved':
+        return StrideTrackStatus.approved;
+      default:
+        return StrideTrackStatus.notSetup;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTrackStatus.notSetup:
+        return 'not_setup';
+      case StrideTrackStatus.setup:
+        return 'setup';
+      case StrideTrackStatus.released:
+        return 'released';
+      case StrideTrackStatus.approved:
+        return 'approved';
+    }
+  }
+}
+
+enum StrideStackComponentCategory {
+  uiFramework,
+  cloudDatabase,
+  authentication,
+  fileStorage,
+  localDatabase,
+  serverlessCompute,
+  appAttestation,
+  crashReporting,
+  performanceMonitoring,
+  pushMessaging,
+  mapsProvider,
+  healthIntegration,
+  aiService,
+  trackingEngine,
+
+  static StrideStackComponentCategory fromJson(String s) {
+    switch (s) {
+      case 'ui_framework':
+        return StrideStackComponentCategory.uiFramework;
+      case 'cloud_database':
+        return StrideStackComponentCategory.cloudDatabase;
+      case 'authentication':
+        return StrideStackComponentCategory.authentication;
+      case 'file_storage':
+        return StrideStackComponentCategory.fileStorage;
+      case 'local_database':
+        return StrideStackComponentCategory.localDatabase;
+      case 'serverless_compute':
+        return StrideStackComponentCategory.serverlessCompute;
+      case 'app_attestation':
+        return StrideStackComponentCategory.appAttestation;
+      case 'crash_reporting':
+        return StrideStackComponentCategory.crashReporting;
+      case 'performance_monitoring':
+        return StrideStackComponentCategory.performanceMonitoring;
+      case 'push_messaging':
+        return StrideStackComponentCategory.pushMessaging;
+      case 'maps_provider':
+        return StrideStackComponentCategory.mapsProvider;
+      case 'health_integration':
+        return StrideStackComponentCategory.healthIntegration;
+      case 'ai_service':
+        return StrideStackComponentCategory.aiService;
+      case 'tracking_engine':
+        return StrideStackComponentCategory.trackingEngine;
+      default:
+        return StrideStackComponentCategory.uiFramework;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideStackComponentCategory.uiFramework:
+        return 'ui_framework';
+      case StrideStackComponentCategory.cloudDatabase:
+        return 'cloud_database';
+      case StrideStackComponentCategory.authentication:
+        return 'authentication';
+      case StrideStackComponentCategory.fileStorage:
+        return 'file_storage';
+      case StrideStackComponentCategory.localDatabase:
+        return 'local_database';
+      case StrideStackComponentCategory.serverlessCompute:
+        return 'serverless_compute';
+      case StrideStackComponentCategory.appAttestation:
+        return 'app_attestation';
+      case StrideStackComponentCategory.crashReporting:
+        return 'crash_reporting';
+      case StrideStackComponentCategory.performanceMonitoring:
+        return 'performance_monitoring';
+      case StrideStackComponentCategory.pushMessaging:
+        return 'push_messaging';
+      case StrideStackComponentCategory.mapsProvider:
+        return 'maps_provider';
+      case StrideStackComponentCategory.healthIntegration:
+        return 'health_integration';
+      case StrideStackComponentCategory.aiService:
+        return 'ai_service';
+      case StrideStackComponentCategory.trackingEngine:
+        return 'tracking_engine';
+    }
+  }
+}
+
+class StrideAppIdentity {
+  final String appName;
+  final StrideAppNameStatus nameStatus;
+  final String packageId;
+  final String versionName;
+  final int versionCode;
+  final int minSdk;
+  final int targetSdk;
+
+  StrideAppIdentity({
+    this.appName = '',
+    this.nameStatus = StrideAppNameStatus.draft,
+    this.packageId = '',
+    this.versionName = '',
+    this.versionCode = 0,
+    this.minSdk = 0,
+    this.targetSdk = 0,
+  });
+
+  StrideAppIdentity.fromJson(Map<String, dynamic> j)
+      : 
+        appName = j['app_name']?.toString() ?? '',
+        nameStatus = StrideAppNameStatus.fromJson(j['name_status']?.toString() ?? 'draft'),
+        packageId = j['package_id']?.toString() ?? '',
+        versionName = j['version_name']?.toString() ?? '',
+        versionCode = (j['version_code'] as num?)?.toInt() ?? 0,
+        minSdk = (j['min_sdk'] as num?)?.toInt() ?? 0,
+        targetSdk = (j['target_sdk'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'app_name': appName,
+        'name_status': nameStatus.toJson(),
+        'package_id': packageId,
+        'version_name': versionName,
+        'version_code': versionCode,
+        'min_sdk': minSdk,
+        'target_sdk': targetSdk,
+  };
+}
+
+class StrideSigningKeyConfig {
+  final StrideSigningKeyStatus status;
+  final String algorithm;
+  final bool hasBackup;
+  final bool isEnrolledInPlay;
+  final bool rotationEnabled;
+
+  StrideSigningKeyConfig({
+    this.status = StrideSigningKeyStatus.notGenerated,
+    this.algorithm = '',
+    this.hasBackup = false,
+    this.isEnrolledInPlay = false,
+    this.rotationEnabled = false,
+  });
+
+  StrideSigningKeyConfig.fromJson(Map<String, dynamic> j)
+      : 
+        status = StrideSigningKeyStatus.fromJson(j['status']?.toString() ?? 'notGenerated'),
+        algorithm = j['algorithm']?.toString() ?? '',
+        hasBackup = j['has_backup'] as bool? ?? false,
+        isEnrolledInPlay = j['is_enrolled_in_play'] as bool? ?? false,
+        rotationEnabled = j['rotation_enabled'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'status': status.toJson(),
+        'algorithm': algorithm,
+        'has_backup': hasBackup,
+        'is_enrolled_in_play': isEnrolledInPlay,
+        'rotation_enabled': rotationEnabled,
+  };
+}
+
+class StrideReleaseBundle {
+  final StrideBuildType buildType;
+  final StrideReleaseBundleStatus status;
+  final int sizeBytes;
+  final bool isMinified;
+  final bool isSigned;
+  final String sha256;
+  final String fileName;
+
+  StrideReleaseBundle({
+    this.buildType = StrideBuildType.debug,
+    this.status = StrideReleaseBundleStatus.notBuilt,
+    this.sizeBytes = 0,
+    this.isMinified = false,
+    this.isSigned = false,
+    this.sha256 = '',
+    this.fileName = '',
+  });
+
+  StrideReleaseBundle.fromJson(Map<String, dynamic> j)
+      : 
+        buildType = StrideBuildType.fromJson(j['build_type']?.toString() ?? 'debug'),
+        status = StrideReleaseBundleStatus.fromJson(j['status']?.toString() ?? 'notBuilt'),
+        sizeBytes = (j['size_bytes'] as num?)?.toInt() ?? 0,
+        isMinified = j['is_minified'] as bool? ?? false,
+        isSigned = j['is_signed'] as bool? ?? false,
+        sha256 = j['sha256']?.toString() ?? '',
+        fileName = j['file_name']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'build_type': buildType.toJson(),
+        'status': status.toJson(),
+        'size_bytes': sizeBytes,
+        'is_minified': isMinified,
+        'is_signed': isSigned,
+        'sha256': sha256,
+        'file_name': fileName,
+  };
+}
+
+class StrideVersioningPolicy {
+  final StrideVersioningStrategy strategy;
+  final int major;
+  final int minor;
+  final int patch;
+  final int versionCode;
+  final int minVersionCode;
+  final bool allowPreRelease;
+
+  StrideVersioningPolicy({
+    this.strategy = StrideVersioningStrategy.semantic,
+    this.major = 0,
+    this.minor = 0,
+    this.patch = 0,
+    this.versionCode = 0,
+    this.minVersionCode = 0,
+    this.allowPreRelease = false,
+  });
+
+  StrideVersioningPolicy.fromJson(Map<String, dynamic> j)
+      : 
+        strategy = StrideVersioningStrategy.fromJson(j['strategy']?.toString() ?? 'semantic'),
+        major = (j['major'] as num?)?.toInt() ?? 0,
+        minor = (j['minor'] as num?)?.toInt() ?? 0,
+        patch = (j['patch'] as num?)?.toInt() ?? 0,
+        versionCode = (j['version_code'] as num?)?.toInt() ?? 0,
+        minVersionCode = (j['min_version_code'] as num?)?.toInt() ?? 0,
+        allowPreRelease = j['allow_pre_release'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'strategy': strategy.toJson(),
+        'major': major,
+        'minor': minor,
+        'patch': patch,
+        'version_code': versionCode,
+        'min_version_code': minVersionCode,
+        'allow_pre_release': allowPreRelease,
+  };
+}
+
+class StrideStoreAsset {
+  final StrideStoreAssetType assetType;
+  final StrideAssetStatus status;
+  final int widthPx;
+  final int heightPx;
+  final String fileFormat;
+  final bool meetsRequirements;
+
+  StrideStoreAsset({
+    this.assetType = StrideStoreAssetType.adaptiveLauncherIcon,
+    this.status = StrideAssetStatus.notCreated,
+    this.widthPx = 0,
+    this.heightPx = 0,
+    this.fileFormat = '',
+    this.meetsRequirements = false,
+  });
+
+  StrideStoreAsset.fromJson(Map<String, dynamic> j)
+      : 
+        assetType = StrideStoreAssetType.fromJson(j['asset_type']?.toString() ?? 'adaptiveLauncherIcon'),
+        status = StrideAssetStatus.fromJson(j['status']?.toString() ?? 'notCreated'),
+        widthPx = (j['width_px'] as num?)?.toInt() ?? 0,
+        heightPx = (j['height_px'] as num?)?.toInt() ?? 0,
+        fileFormat = j['file_format']?.toString() ?? '',
+        meetsRequirements = j['meets_requirements'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'asset_type': assetType.toJson(),
+        'status': status.toJson(),
+        'width_px': widthPx,
+        'height_px': heightPx,
+        'file_format': fileFormat,
+        'meets_requirements': meetsRequirements,
+  };
+}
+
+class StrideStoreAssets {
+  final StrideStoreAsset launcherIcon;
+  final StrideStoreAsset splashScreen;
+  final StrideStoreAsset featureGraphic;
+  final StrideStoreAsset playStoreIcon;
+  final List<StrideStoreAsset> phoneScreenshots;
+  final List<StrideStoreAsset> tabletScreenshots;
+
+  StrideStoreAssets({
+    required this.launcherIcon,
+    required this.splashScreen,
+    required this.featureGraphic,
+    required this.playStoreIcon,
+    this.phoneScreenshots = const [],
+    this.tabletScreenshots = const [],
+  });
+
+  StrideStoreAssets.fromJson(Map<String, dynamic> j)
+      : 
+        launcherIcon = StrideStoreAsset.fromJson(j['launcher_icon'] as Map<String, dynamic>),
+        splashScreen = StrideStoreAsset.fromJson(j['splash_screen'] as Map<String, dynamic>),
+        featureGraphic = StrideStoreAsset.fromJson(j['feature_graphic'] as Map<String, dynamic>),
+        playStoreIcon = StrideStoreAsset.fromJson(j['play_store_icon'] as Map<String, dynamic>),
+        phoneScreenshots = (j['phone_screenshots'] as List?)?.map((e) => StrideStoreAsset.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+        tabletScreenshots = (j['tablet_screenshots'] as List?)?.map((e) => StrideStoreAsset.fromJson(e as Map<String, dynamic>)).toList() ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'launcher_icon': launcherIcon.toJson(),
+        'splash_screen': splashScreen.toJson(),
+        'feature_graphic': featureGraphic.toJson(),
+        'play_store_icon': playStoreIcon.toJson(),
+        'phone_screenshots': phoneScreenshots.map((e) => e.toJson()).toList(),
+        'tablet_screenshots': tabletScreenshots.map((e) => e.toJson()).toList(),
+  };
+}
+
+class StrideStoreListing {
+  final String shortDescription;
+  final String fullDescription;
+  final StrideAppCategory category;
+  final StrideContentRating contentRating;
+  final bool contentRatingCompleted;
+  final String privacyPolicyUrl;
+  final String supportEmail;
+  final String supportWebsite;
+  final bool isCompliant;
+
+  StrideStoreListing({
+    this.shortDescription = '',
+    this.fullDescription = '',
+    this.category = StrideAppCategory.healthFitness,
+    this.contentRating = StrideContentRating.everyone,
+    this.contentRatingCompleted = false,
+    this.privacyPolicyUrl = '',
+    this.supportEmail = '',
+    this.supportWebsite = '',
+    this.isCompliant = false,
+  });
+
+  StrideStoreListing.fromJson(Map<String, dynamic> j)
+      : 
+        shortDescription = j['short_description']?.toString() ?? '',
+        fullDescription = j['full_description']?.toString() ?? '',
+        category = StrideAppCategory.fromJson(j['category']?.toString() ?? 'healthFitness'),
+        contentRating = StrideContentRating.fromJson(j['content_rating']?.toString() ?? 'everyone'),
+        contentRatingCompleted = j['content_rating_completed'] as bool? ?? false,
+        privacyPolicyUrl = j['privacy_policy_url']?.toString() ?? '',
+        supportEmail = j['support_email']?.toString() ?? '',
+        supportWebsite = j['support_website']?.toString() ?? '',
+        isCompliant = j['is_compliant'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'short_description': shortDescription,
+        'full_description': fullDescription,
+        'category': category.toJson(),
+        'content_rating': contentRating.toJson(),
+        'content_rating_completed': contentRatingCompleted,
+        'privacy_policy_url': privacyPolicyUrl,
+        'support_email': supportEmail,
+        'support_website': supportWebsite,
+        'is_compliant': isCompliant,
+  };
+}
+
+class StridePermissionDeclaration {
+  final StridePermissionType permissionType;
+  final String justification;
+  final bool isDeclared;
+  final bool hasJustification;
+
+  StridePermissionDeclaration({
+    this.permissionType = StridePermissionType.accessFineLocation,
+    this.justification = '',
+    this.isDeclared = false,
+    this.hasJustification = false,
+  });
+
+  StridePermissionDeclaration.fromJson(Map<String, dynamic> j)
+      : 
+        permissionType = StridePermissionType.fromJson(j['permission_type']?.toString() ?? 'accessFineLocation'),
+        justification = j['justification']?.toString() ?? '',
+        isDeclared = j['is_declared'] as bool? ?? false,
+        hasJustification = j['has_justification'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'permission_type': permissionType.toJson(),
+        'justification': justification,
+        'is_declared': isDeclared,
+        'has_justification': hasJustification,
+  };
+}
+
+class StridePermissionDeclarations {
+  final List<StridePermissionDeclaration> declarations;
+  final String backgroundLocationJustification;
+  final bool backgroundLocationJustified;
+
+  StridePermissionDeclarations({
+    this.declarations = const [],
+    this.backgroundLocationJustification = '',
+    this.backgroundLocationJustified = false,
+  });
+
+  StridePermissionDeclarations.fromJson(Map<String, dynamic> j)
+      : 
+        declarations = (j['declarations'] as List?)?.map((e) => StridePermissionDeclaration.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+        backgroundLocationJustification = j['background_location_justification']?.toString() ?? '',
+        backgroundLocationJustified = j['background_location_justified'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'declarations': declarations.map((e) => e.toJson()).toList(),
+        'background_location_justification': backgroundLocationJustification,
+        'background_location_justified': backgroundLocationJustified,
+  };
+}
+
+class StrideReviewerAccess {
+  final String testAccountEmail;
+  final String testAccountPassword;
+  final String instructions;
+  final bool startsOnLoginScreen;
+  final List<String> setupSteps;
+
+  StrideReviewerAccess({
+    this.testAccountEmail = '',
+    this.testAccountPassword = '',
+    this.instructions = '',
+    this.startsOnLoginScreen = false,
+    this.setupSteps = const [],
+  });
+
+  StrideReviewerAccess.fromJson(Map<String, dynamic> j)
+      : 
+        testAccountEmail = j['test_account_email']?.toString() ?? '',
+        testAccountPassword = j['test_account_password']?.toString() ?? '',
+        instructions = j['instructions']?.toString() ?? '',
+        startsOnLoginScreen = j['starts_on_login_screen'] as bool? ?? false,
+        setupSteps = (j['setup_steps'] as List?)?.map((e) => e.toString()).toList() ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'test_account_email': testAccountEmail,
+        'test_account_password': testAccountPassword,
+        'instructions': instructions,
+        'starts_on_login_screen': startsOnLoginScreen,
+        'setup_steps': setupSteps,
+  };
+}
+
+class StrideReleaseTrack {
+  final StrideTestingTrack track;
+  final StrideTrackStatus status;
+  final int currentVersionCode;
+  final int testerCount;
+  final int rolloutPercentage;
+
+  StrideReleaseTrack({
+    this.track = StrideTestingTrack.internal,
+    this.status = StrideTrackStatus.notSetup,
+    this.currentVersionCode = 0,
+    this.testerCount = 0,
+    this.rolloutPercentage = 0,
+  });
+
+  StrideReleaseTrack.fromJson(Map<String, dynamic> j)
+      : 
+        track = StrideTestingTrack.fromJson(j['track']?.toString() ?? 'internal'),
+        status = StrideTrackStatus.fromJson(j['status']?.toString() ?? 'notSetup'),
+        currentVersionCode = (j['current_version_code'] as num?)?.toInt() ?? 0,
+        testerCount = (j['tester_count'] as num?)?.toInt() ?? 0,
+        rolloutPercentage = (j['rollout_percentage'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'track': track.toJson(),
+        'status': status.toJson(),
+        'current_version_code': currentVersionCode,
+        'tester_count': testerCount,
+        'rollout_percentage': rolloutPercentage,
+  };
+}
+
+class StrideStagedRolloutPlan {
+  final StrideReleaseTrack internal;
+  final StrideReleaseTrack closed;
+  final StrideReleaseTrack production;
+  final List<int> rolloutStages;
+  final int currentStage;
+
+  StrideStagedRolloutPlan({
+    required this.internal,
+    required this.closed,
+    required this.production,
+    this.rolloutStages = const [],
+    this.currentStage = 0,
+  });
+
+  StrideStagedRolloutPlan.fromJson(Map<String, dynamic> j)
+      : 
+        internal = StrideReleaseTrack.fromJson(j['internal'] as Map<String, dynamic>),
+        closed = StrideReleaseTrack.fromJson(j['closed'] as Map<String, dynamic>),
+        production = StrideReleaseTrack.fromJson(j['production'] as Map<String, dynamic>),
+        rolloutStages = (j['rollout_stages'] as List?)?.map((e) => (e as num).toInt()).toList() ?? [],
+        currentStage = (j['current_stage'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'internal': internal.toJson(),
+        'closed': closed.toJson(),
+        'production': production.toJson(),
+        'rollout_stages': rolloutStages,
+        'current_stage': currentStage,
+  };
+}
+
+class StrideStackComponent {
+  final String name;
+  final StrideStackComponentCategory category;
+  final String version;
+  final bool isConfigured;
+  final bool isDeployed;
+  final bool isTested;
+
+  StrideStackComponent({
+    this.name = '',
+    this.category = StrideStackComponentCategory.uiFramework,
+    this.version = '',
+    this.isConfigured = false,
+    this.isDeployed = false,
+    this.isTested = false,
+  });
+
+  StrideStackComponent.fromJson(Map<String, dynamic> j)
+      : 
+        name = j['name']?.toString() ?? '',
+        category = StrideStackComponentCategory.fromJson(j['category']?.toString() ?? 'uiFramework'),
+        version = j['version']?.toString() ?? '',
+        isConfigured = j['is_configured'] as bool? ?? false,
+        isDeployed = j['is_deployed'] as bool? ?? false,
+        isTested = j['is_tested'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'category': category.toJson(),
+        'version': version,
+        'is_configured': isConfigured,
+        'is_deployed': isDeployed,
+        'is_tested': isTested,
+  };
+}
+
+class StrideProductionStack {
+  final List<StrideStackComponent> components;
+  final bool hasDevStagingProd;
+  final bool hasAutomatedTesting;
+  final bool hasDeviceTesting;
+
+  StrideProductionStack({
+    this.components = const [],
+    this.hasDevStagingProd = false,
+    this.hasAutomatedTesting = false,
+    this.hasDeviceTesting = false,
+  });
+
+  StrideProductionStack.fromJson(Map<String, dynamic> j)
+      : 
+        components = (j['components'] as List?)?.map((e) => StrideStackComponent.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+        hasDevStagingProd = j['has_dev_staging_prod'] as bool? ?? false,
+        hasAutomatedTesting = j['has_automated_testing'] as bool? ?? false,
+        hasDeviceTesting = j['has_device_testing'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'components': components.map((e) => e.toJson()).toList(),
+        'has_dev_staging_prod': hasDevStagingProd,
+        'has_automated_testing': hasAutomatedTesting,
+        'has_device_testing': hasDeviceTesting,
+  };
+}
+
+class StrideReleaseReadinessStatus {
+  final bool appIdentityReady;
+  final bool signingKeyReady;
+  final bool releaseBundleReady;
+  final bool versioningReady;
+  final bool storeAssetsReady;
+  final bool storeListingReady;
+  final bool permissionsReady;
+  final bool reviewerAccessReady;
+  final bool rolloutPlanReady;
+  final bool productionStackReady;
+  final bool dataSafetySubmitted;
+
+  StrideReleaseReadinessStatus({
+    this.appIdentityReady = false,
+    this.signingKeyReady = false,
+    this.releaseBundleReady = false,
+    this.versioningReady = false,
+    this.storeAssetsReady = false,
+    this.storeListingReady = false,
+    this.permissionsReady = false,
+    this.reviewerAccessReady = false,
+    this.rolloutPlanReady = false,
+    this.productionStackReady = false,
+    this.dataSafetySubmitted = false,
+  });
+
+  StrideReleaseReadinessStatus.fromJson(Map<String, dynamic> j)
+      : 
+        appIdentityReady = j['app_identity_ready'] as bool? ?? false,
+        signingKeyReady = j['signing_key_ready'] as bool? ?? false,
+        releaseBundleReady = j['release_bundle_ready'] as bool? ?? false,
+        versioningReady = j['versioning_ready'] as bool? ?? false,
+        storeAssetsReady = j['store_assets_ready'] as bool? ?? false,
+        storeListingReady = j['store_listing_ready'] as bool? ?? false,
+        permissionsReady = j['permissions_ready'] as bool? ?? false,
+        reviewerAccessReady = j['reviewer_access_ready'] as bool? ?? false,
+        rolloutPlanReady = j['rollout_plan_ready'] as bool? ?? false,
+        productionStackReady = j['production_stack_ready'] as bool? ?? false,
+        dataSafetySubmitted = j['data_safety_submitted'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'app_identity_ready': appIdentityReady,
+        'signing_key_ready': signingKeyReady,
+        'release_bundle_ready': releaseBundleReady,
+        'versioning_ready': versioningReady,
+        'store_assets_ready': storeAssetsReady,
+        'store_listing_ready': storeListingReady,
+        'permissions_ready': permissionsReady,
+        'reviewer_access_ready': reviewerAccessReady,
+        'rollout_plan_ready': rolloutPlanReady,
+        'production_stack_ready': productionStackReady,
+        'data_safety_submitted': dataSafetySubmitted,
+  };
+}
