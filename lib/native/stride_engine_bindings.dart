@@ -498,6 +498,34 @@ typedef _StrideMusicBuildStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideMusicRemoteControlNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideMusicRemoteControlDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// ─── §12 — Background execution ────────────────────────────────────
+typedef _StrideBackgroundServiceTransitionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundServiceTransitionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundCheckpointIntervalNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundCheckpointIntervalDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundEvaluateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundEvaluateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundProcessKillNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundProcessKillDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundPowerModeNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundPowerModeDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundInterruptionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundInterruptionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundBatteryAssessmentNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundBatteryAssessmentDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundBuildStatusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundBuildStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackgroundExplanationNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackgroundExplanationDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -805,6 +833,25 @@ class StrideEngineBindings {
         _StrideMusicBuildStatusDart>('stride_music_build_status');
     _MusicRemoteControl = _lib.lookupFunction<_StrideMusicRemoteControlNative,
         _StrideMusicRemoteControlDart>('stride_music_remote_control');
+    // ─── §12 — Background execution lookups ──────────────────────
+    _BackgroundServiceTransition = _lib.lookupFunction<_StrideBackgroundServiceTransitionNative,
+        _StrideBackgroundServiceTransitionDart>('stride_background_service_transition');
+    _BackgroundCheckpointInterval = _lib.lookupFunction<_StrideBackgroundCheckpointIntervalNative,
+        _StrideBackgroundCheckpointIntervalDart>('stride_background_checkpoint_interval');
+    _BackgroundEvaluate = _lib.lookupFunction<_StrideBackgroundEvaluateNative,
+        _StrideBackgroundEvaluateDart>('stride_background_evaluate');
+    _BackgroundProcessKill = _lib.lookupFunction<_StrideBackgroundProcessKillNative,
+        _StrideBackgroundProcessKillDart>('stride_background_process_kill');
+    _BackgroundPowerMode = _lib.lookupFunction<_StrideBackgroundPowerModeNative,
+        _StrideBackgroundPowerModeDart>('stride_background_power_mode');
+    _BackgroundInterruption = _lib.lookupFunction<_StrideBackgroundInterruptionNative,
+        _StrideBackgroundInterruptionDart>('stride_background_interruption');
+    _BackgroundBatteryAssessment = _lib.lookupFunction<_StrideBackgroundBatteryAssessmentNative,
+        _StrideBackgroundBatteryAssessmentDart>('stride_background_battery_assessment');
+    _BackgroundBuildStatus = _lib.lookupFunction<_StrideBackgroundBuildStatusNative,
+        _StrideBackgroundBuildStatusDart>('stride_background_build_status');
+    _BackgroundExplanation = _lib.lookupFunction<_StrideBackgroundExplanationNative,
+        _StrideBackgroundExplanationDart>('stride_background_explanation');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -965,6 +1012,16 @@ class StrideEngineBindings {
   late final _StrideMusicShouldRecommendDart _MusicShouldRecommend;
   late final _StrideMusicBuildStatusDart _MusicBuildStatus;
   late final _StrideMusicRemoteControlDart _MusicRemoteControl;
+  // ─── §12 — Background execution fields ────────────────────────
+  late final _StrideBackgroundServiceTransitionDart _BackgroundServiceTransition;
+  late final _StrideBackgroundCheckpointIntervalDart _BackgroundCheckpointInterval;
+  late final _StrideBackgroundEvaluateDart _BackgroundEvaluate;
+  late final _StrideBackgroundProcessKillDart _BackgroundProcessKill;
+  late final _StrideBackgroundPowerModeDart _BackgroundPowerMode;
+  late final _StrideBackgroundInterruptionDart _BackgroundInterruption;
+  late final _StrideBackgroundBatteryAssessmentDart _BackgroundBatteryAssessment;
+  late final _StrideBackgroundBuildStatusDart _BackgroundBuildStatus;
+  late final _StrideBackgroundExplanationDart _BackgroundExplanation;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2454,6 +2511,98 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_MusicRemoteControl(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // ─── §12 — Background execution wrappers ─────────────────────
+
+  /// backgroundServiceTransition — §12 — transition the foreground service state machine.
+  Map<String, dynamic> backgroundServiceTransition(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundServiceTransition(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundCheckpointInterval — §12 — decide the checkpoint write interval.
+  Map<String, dynamic> backgroundCheckpointInterval(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundCheckpointInterval(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundEvaluate — §12 — evaluate whether background execution is permitted.
+  Map<String, dynamic> backgroundEvaluate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundEvaluate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundProcessKill — §12 — evaluate process-kill recovery.
+  Map<String, dynamic> backgroundProcessKill(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundProcessKill(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundPowerMode — §12 — decide power mode and notification interval.
+  Map<String, dynamic> backgroundPowerMode(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundPowerMode(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundInterruption — §12 — handle an interruption event.
+  Map<String, dynamic> backgroundInterruption(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundInterruption(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundBatteryAssessment — §12 — assess battery usage.
+  Map<String, dynamic> backgroundBatteryAssessment(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundBatteryAssessment(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundBuildStatus — §12 — build a full background status snapshot.
+  Map<String, dynamic> backgroundBuildStatus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundBuildStatus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backgroundExplanation — §12 — get the background location explanation text.
+  Map<String, dynamic> backgroundExplanation(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackgroundExplanation(ptr));
     } finally {
       malloc.free(ptr);
     }

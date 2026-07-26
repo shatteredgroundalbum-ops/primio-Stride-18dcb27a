@@ -43,6 +43,13 @@ use crate::engine::account::{
     UserDataCategory,
 };
 use crate::engine::battery::{self, BatteryContext, WorkoutActivityLevel};
+use crate::engine::background::{
+    self, BackgroundExecutionContext, BackgroundExecutionDecision, BackgroundStatus,
+    BackgroundTrackingPreference, CheckpointBatteryContext, CheckpointSchedule,
+    ForegroundServiceCommand, ForegroundServiceState, ForegroundServiceTransition,
+    InterruptionAction, InterruptionEvent, PowerMode, ProcessKillRecoveryDecision,
+    WorkoutPhase,
+};
 use crate::engine::calories::{self, CalorieEstimate, CalorieEstimateResult, CalorieInputs};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::coaching_plan::{
@@ -4223,5 +4230,303 @@ pub extern "C" fn stride_music_remote_control(
             req.source,
         );
         ok_json(&result)
+    })
+}
+
+// ─── §12 — Background execution ────────────────────────────────────
+
+/// Transitions the foreground service state machine. Given the current
+/// service state and a command, returns a `ForegroundServiceTransition`
+/// with the new state, notification text, and whether to keep the
+/// service alive.
+#[no_mangle]
+pub extern "C" fn stride_background_service_transition(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_state: ForegroundServiceState,
+            command: ForegroundServiceCommand,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result: ForegroundServiceTransition =
+            background::transition_service(req.current_state, req.command);
+        ok_json(&result)
+    })
+}
+
+/// Decides the checkpoint write interval given the workout phase and
+/// battery state. Returns a `CheckpointSchedule` with the interval,
+/// max acceptable data loss, and a reason string.
+#[no_mangle]
+pub extern "C" fn stride_background_checkpoint_interval(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            phase: WorkoutPhase,
+            battery: CheckpointBatteryContext,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let schedule: CheckpointSchedule =
+            background::decide_checkpoint_interval(req.phase, req.battery);
+        ok_json(&schedule)
+    })
+}
+
+/// Evaluates whether background execution is permitted right now, given
+/// the user's preference, service state, permissions, workout state, and
+/// battery. Returns a `BackgroundExecutionDecision`.
+#[no_mangle]
+pub extern "C" fn stride_background_evaluate(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let ctx: BackgroundExecutionContext = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: BackgroundExecutionDecision =
+            background::evaluate_background_execution(&ctx);
+        ok_json(&decision)
+    })
+}
+
+/// Evaluates whether a workout can be resumed after a process kill or
+/// device restart. Given the checkpoint age in milliseconds and whether
+/// the workout was active, returns a `ProcessKillRecoveryDecision`.
+#[no_mangle]
+pub extern "C" fn stride_background_process_kill(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            checkpoint_age_ms: i64,
+            was_active: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: ProcessKillRecoveryDecision =
+            background::evaluate_process_kill_recovery(
+                req.checkpoint_age_ms,
+                req.was_active,
+            );
+        ok_json(&decision)
+    })
+}
+
+/// Decides the power mode and notification update interval based on the
+/// battery state. Returns the power mode, notification interval, and
+/// checkpoint interval for the given battery context.
+#[no_mangle]
+pub extern "C" fn stride_background_power_mode(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let battery: CheckpointBatteryContext = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mode: PowerMode = background::decide_power_mode(&battery);
+        let notif_interval = background::notification_update_interval_ms(mode);
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            power_mode: PowerMode,
+            notification_interval_ms: u64,
+        }
+        let resp = Resp {
+            power_mode: mode,
+            notification_interval_ms: notif_interval,
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Handles an interruption event (screen off, incoming call, low memory,
+/// device shutdown, etc.) during a background workout. Returns the
+/// recommended `InterruptionAction`.
+#[no_mangle]
+pub extern "C" fn stride_background_interruption(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            event: InterruptionEvent,
+            service_state: ForegroundServiceState,
+            background_allowed: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let action: InterruptionAction = background::handle_interruption(
+            req.event,
+            req.service_state,
+            req.background_allowed,
+        );
+        ok_json(&action)
+    })
+}
+
+/// Assesses the current battery usage and whether it's acceptable. Given
+/// the GPS interval, sensor interval, battery percentage, and charging
+/// status, returns a `BatteryUseAssessment`.
+#[no_mangle]
+pub extern "C" fn stride_background_battery_assessment(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            gps_interval_ms: u32,
+            sensor_interval_ms: u32,
+            battery_percent: u8,
+            is_charging: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let assessment = background::assess_battery_use(
+            req.gps_interval_ms,
+            req.sensor_interval_ms,
+            req.battery_percent,
+            req.is_charging,
+        );
+        ok_json(&assessment)
+    })
+}
+
+/// Builds a full background status snapshot for the UI / diagnostics.
+/// Given the service state, battery, preference, permission, workout
+/// state, and sampling intervals, returns a `BackgroundStatus`.
+#[no_mangle]
+pub extern "C" fn stride_background_build_status(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            service_state: ForegroundServiceState,
+            battery: CheckpointBatteryContext,
+            preference: BackgroundTrackingPreference,
+            background_location_granted: bool,
+            workout_active: bool,
+            gps_interval_ms: u32,
+            sensor_interval_ms: u32,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let status: BackgroundStatus = background::build_background_status(
+            req.service_state,
+            &req.battery,
+            req.preference,
+            req.background_location_granted,
+            req.workout_active,
+            req.gps_interval_ms,
+            req.sensor_interval_ms,
+        );
+        ok_json(&status)
+    })
+}
+
+/// Returns the full background location explanation text for the
+/// Google Play Store data safety form and in-app rationale dialog.
+#[no_mangle]
+pub extern "C" fn stride_background_explanation(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            short: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(_) => Req { short: false },
+        };
+
+        let text = if req.short {
+            background::background_location_short_explanation()
+        } else {
+            background::background_location_explanation()
+        };
+
+        ok_json(&text)
     })
 }

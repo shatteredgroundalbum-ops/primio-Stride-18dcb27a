@@ -1958,4 +1958,138 @@ class StrideEngineClient {
     return StrideTransitionResult.fromJson(
         unwrapEnvelope(env) as Map<String, dynamic>);
   }
+
+  // ─── §12 — Background execution ───────────────────────────────
+
+  /// Transitions the foreground service state machine.
+  static StrideForegroundServiceTransition backgroundServiceTransition({
+    required StrideForegroundServiceState currentState,
+    required StrideForegroundServiceCommand command,
+  }) {
+    final env = _bindings.backgroundServiceTransition({
+      'current_state': currentState.toJson(),
+      'command': command.toJson(),
+    });
+    return StrideForegroundServiceTransition.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Decides the checkpoint write interval for the given workout phase
+  /// and battery state.
+  static StrideCheckpointSchedule backgroundCheckpointInterval({
+    required StrideWorkoutPhase phase,
+    required StrideCheckpointBatteryContext battery,
+  }) {
+    final env = _bindings.backgroundCheckpointInterval({
+      'phase': phase.toJson(),
+      'battery': battery.toJson(),
+    });
+    return StrideCheckpointSchedule.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Evaluates whether background execution is permitted right now.
+  static StrideBackgroundExecutionDecision backgroundEvaluate({
+    required StrideBackgroundTrackingPreference preference,
+    required bool serviceRunning,
+    required bool backgroundLocationGranted,
+    required bool workoutActive,
+    required StrideCheckpointBatteryContext battery,
+  }) {
+    final env = _bindings.backgroundEvaluate({
+      'preference': preference.toJson(),
+      'service_running': serviceRunning,
+      'background_location_granted': backgroundLocationGranted,
+      'workout_active': workoutActive,
+      'battery': battery.toJson(),
+    });
+    return StrideBackgroundExecutionDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Evaluates whether a workout can be resumed after a process kill.
+  static StrideProcessKillRecoveryDecision backgroundProcessKill({
+    required int checkpointAgeMs,
+    required bool wasActive,
+  }) {
+    final env = _bindings.backgroundProcessKill({
+      'checkpoint_age_ms': checkpointAgeMs,
+      'was_active': wasActive,
+    });
+    return StrideProcessKillRecoveryDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Decides the power mode and notification update interval based on
+  /// the battery state.
+  static StrideBackgroundPowerModeResult backgroundPowerMode({
+    required StrideCheckpointBatteryContext battery,
+  }) {
+    final env = _bindings.backgroundPowerMode(battery.toJson());
+    return StrideBackgroundPowerModeResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Handles an interruption event during a background workout.
+  static StrideInterruptionAction backgroundInterruption({
+    required StrideInterruptionEvent event,
+    required StrideForegroundServiceState serviceState,
+    required bool backgroundAllowed,
+  }) {
+    final env = _bindings.backgroundInterruption({
+      'event': event.toJson(),
+      'service_state': serviceState.toJson(),
+      'background_allowed': backgroundAllowed,
+    });
+    return StrideInterruptionAction.fromJson(
+        unwrapEnvelope(env) as String);
+  }
+
+  /// Assesses the current battery usage.
+  static StrideBatteryUseAssessment backgroundBatteryAssessment({
+    required int gpsIntervalMs,
+    required int sensorIntervalMs,
+    required int batteryPercent,
+    required bool isCharging,
+  }) {
+    final env = _bindings.backgroundBatteryAssessment({
+      'gps_interval_ms': gpsIntervalMs,
+      'sensor_interval_ms': sensorIntervalMs,
+      'battery_percent': batteryPercent,
+      'is_charging': isCharging,
+    });
+    return StrideBatteryUseAssessment.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds a full background status snapshot for the UI.
+  static StrideBackgroundStatus backgroundBuildStatus({
+    required StrideForegroundServiceState serviceState,
+    required StrideCheckpointBatteryContext battery,
+    required StrideBackgroundTrackingPreference preference,
+    required bool backgroundLocationGranted,
+    required bool workoutActive,
+    required int gpsIntervalMs,
+    required int sensorIntervalMs,
+  }) {
+    final env = _bindings.backgroundBuildStatus({
+      'service_state': serviceState.toJson(),
+      'battery': battery.toJson(),
+      'preference': preference.toJson(),
+      'background_location_granted': backgroundLocationGranted,
+      'workout_active': workoutActive,
+      'gps_interval_ms': gpsIntervalMs,
+      'sensor_interval_ms': sensorIntervalMs,
+    });
+    return StrideBackgroundStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the background location explanation text for the Play
+  /// Store and in-app rationale dialog. Pass `short: true` for a
+  /// shorter version suitable for notifications.
+  static String backgroundExplanation({bool short = false}) {
+    final env = _bindings.backgroundExplanation({'short': short});
+    return unwrapEnvelope(env) as String;
+  }
 }

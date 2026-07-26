@@ -4148,3 +4148,389 @@ class StrideMusicStatus {
         playlistTrackCount = j['playlist_track_count'] as int,
         playlistTotalDurationMs = j['playlist_total_duration_ms'] as int;
 }
+
+// ─── §12 — Background execution models ──────────────────────────────
+
+/// The state of the Android foreground workout service.
+enum StrideForegroundServiceState {
+  stopped,
+  starting,
+  running,
+  paused,
+  stopping;
+
+  bool get isAlive => switch (this) {
+    StrideForegroundServiceState.starting ||
+    StrideForegroundServiceState.running ||
+    StrideForegroundServiceState.paused => true,
+    _ => false,
+  };
+
+  bool get isTracking => switch (this) {
+    StrideForegroundServiceState.starting ||
+    StrideForegroundServiceState.running => true,
+    _ => false,
+  };
+
+  String get label => switch (this) {
+    StrideForegroundServiceState.stopped => 'Workout stopped',
+    StrideForegroundServiceState.starting => 'Starting workout…',
+    StrideForegroundServiceState.running => 'Workout in progress',
+    StrideForegroundServiceState.paused => 'Workout paused',
+    StrideForegroundServiceState.stopping => 'Stopping workout…',
+  };
+
+  static StrideForegroundServiceState fromJson(String s) => switch (s) {
+    'stopped' => StrideForegroundServiceState.stopped,
+    'starting' => StrideForegroundServiceState.starting,
+    'running' => StrideForegroundServiceState.running,
+    'paused' => StrideForegroundServiceState.paused,
+    'stopping' => StrideForegroundServiceState.stopping,
+    _ => StrideForegroundServiceState.stopped,
+  };
+
+  String toJson() => switch (this) {
+    StrideForegroundServiceState.stopped => 'stopped',
+    StrideForegroundServiceState.starting => 'starting',
+    StrideForegroundServiceState.running => 'running',
+    StrideForegroundServiceState.paused => 'paused',
+    StrideForegroundServiceState.stopping => 'stopping',
+  };
+}
+
+/// A command to the foreground service state machine.
+enum StrideForegroundServiceCommand {
+  start,
+  pause,
+  resume,
+  stop;
+
+  static StrideForegroundServiceCommand fromJson(String s) => switch (s) {
+    'start' => StrideForegroundServiceCommand.start,
+    'pause' => StrideForegroundServiceCommand.pause,
+    'resume' => StrideForegroundServiceCommand.resume,
+    'stop' => StrideForegroundServiceCommand.stop,
+    _ => StrideForegroundServiceCommand.start,
+  };
+
+  String toJson() => switch (this) {
+    StrideForegroundServiceCommand.start => 'start',
+    StrideForegroundServiceCommand.pause => 'pause',
+    StrideForegroundServiceCommand.resume => 'resume',
+    StrideForegroundServiceCommand.stop => 'stop',
+  };
+}
+
+/// The result of a foreground service state transition.
+class StrideForegroundServiceTransition {
+  final StrideForegroundServiceState previousState;
+  final StrideForegroundServiceState newState;
+  final bool accepted;
+  final String notificationText;
+  final bool shouldKeepServiceAlive;
+  final String message;
+
+  StrideForegroundServiceTransition.fromJson(Map<String, dynamic> j)
+      : previousState = StrideForegroundServiceState.fromJson(j['previous_state'] as String),
+        newState = StrideForegroundServiceState.fromJson(j['new_state'] as String),
+        accepted = j['accepted'] as bool,
+        notificationText = j['notification_text'] as String,
+        shouldKeepServiceAlive = j['should_keep_service_alive'] as bool,
+        message = j['message'] as String;
+}
+
+/// The phase of the workout, which affects checkpoint frequency.
+enum StrideWorkoutPhase {
+  active,
+  paused,
+  ending;
+
+  static StrideWorkoutPhase fromJson(String s) => switch (s) {
+    'active' => StrideWorkoutPhase.active,
+    'paused' => StrideWorkoutPhase.paused,
+    'ending' => StrideWorkoutPhase.ending,
+    _ => StrideWorkoutPhase.active,
+  };
+
+  String toJson() => switch (this) {
+    StrideWorkoutPhase.active => 'active',
+    StrideWorkoutPhase.paused => 'paused',
+    StrideWorkoutPhase.ending => 'ending',
+  };
+}
+
+/// Battery state relevant to checkpoint scheduling.
+class StrideCheckpointBatteryContext {
+  final int batteryPercent;
+  final bool batterySaverEnabled;
+  final bool isCharging;
+
+  StrideCheckpointBatteryContext({
+    required this.batteryPercent,
+    required this.batterySaverEnabled,
+    required this.isCharging,
+  });
+
+  StrideCheckpointBatteryContext.fromJson(Map<String, dynamic> j)
+      : batteryPercent = j['battery_percent'] as int,
+        batterySaverEnabled = j['battery_saver_enabled'] as bool,
+        isCharging = j['is_charging'] as bool;
+
+  Map<String, dynamic> toJson() => {
+    'battery_percent': batteryPercent,
+    'battery_saver_enabled': batterySaverEnabled,
+    'is_charging': isCharging,
+  };
+}
+
+/// The checkpoint write schedule.
+class StrideCheckpointSchedule {
+  final int intervalMs;
+  final int maxDataLossMs;
+  final String reason;
+
+  StrideCheckpointSchedule.fromJson(Map<String, dynamic> j)
+      : intervalMs = j['interval_ms'] as int,
+        maxDataLossMs = j['max_data_loss_ms'] as int,
+        reason = j['reason'] as String;
+}
+
+/// User preference for background tracking.
+enum StrideBackgroundTrackingPreference {
+  unset,
+  enabled,
+  disabled;
+
+  static StrideBackgroundTrackingPreference fromJson(String s) => switch (s) {
+    'unset' => StrideBackgroundTrackingPreference.unset,
+    'enabled' => StrideBackgroundTrackingPreference.enabled,
+    'disabled' => StrideBackgroundTrackingPreference.disabled,
+    _ => StrideBackgroundTrackingPreference.unset,
+  };
+
+  String toJson() => switch (this) {
+    StrideBackgroundTrackingPreference.unset => 'unset',
+    StrideBackgroundTrackingPreference.enabled => 'enabled',
+    StrideBackgroundTrackingPreference.disabled => 'disabled',
+  };
+}
+
+/// The full context for a background execution decision.
+class StrideBackgroundExecutionContext {
+  final StrideBackgroundTrackingPreference preference;
+  final bool serviceRunning;
+  final bool backgroundLocationGranted;
+  final bool workoutActive;
+  final StrideCheckpointBatteryContext battery;
+
+  StrideBackgroundExecutionContext({
+    required this.preference,
+    required this.serviceRunning,
+    required this.backgroundLocationGranted,
+    required this.workoutActive,
+    required this.battery,
+  });
+
+  StrideBackgroundExecutionContext.fromJson(Map<String, dynamic> j)
+      : preference = StrideBackgroundTrackingPreference.fromJson(j['preference'] as String),
+        serviceRunning = j['service_running'] as bool,
+        backgroundLocationGranted = j['background_location_granted'] as bool,
+        workoutActive = j['workout_active'] as bool,
+        battery = StrideCheckpointBatteryContext.fromJson(
+            j['battery'] as Map<String, dynamic>);
+
+  Map<String, dynamic> toJson() => {
+    'preference': preference.toJson(),
+    'service_running': serviceRunning,
+    'background_location_granted': backgroundLocationGranted,
+    'workout_active': workoutActive,
+    'battery': battery.toJson(),
+  };
+}
+
+/// The decision on whether background execution is permitted.
+class StrideBackgroundExecutionDecision {
+  final bool allowed;
+  final bool keepServiceAlive;
+  final String userMessage;
+  final bool shouldPromptUser;
+  final String reason;
+
+  StrideBackgroundExecutionDecision.fromJson(Map<String, dynamic> j)
+      : allowed = j['allowed'] as bool,
+        keepServiceAlive = j['keep_service_alive'] as bool,
+        userMessage = j['user_message'] as String,
+        shouldPromptUser = j['should_prompt_user'] as bool,
+        reason = j['reason'] as String;
+}
+
+/// What to recommend to the user after a process kill.
+enum StrideProcessKillRecommendation {
+  resume,
+  finishAndSave,
+  discard,
+  nothingToRecover;
+
+  static StrideProcessKillRecommendation fromJson(String s) => switch (s) {
+    'resume' => StrideProcessKillRecommendation.resume,
+    'finish_and_save' => StrideProcessKillRecommendation.finishAndSave,
+    'discard' => StrideProcessKillRecommendation.discard,
+    'nothing_to_recover' => StrideProcessKillRecommendation.nothingToRecover,
+    _ => StrideProcessKillRecommendation.nothingToRecover,
+  };
+
+  String toJson() => switch (this) {
+    StrideProcessKillRecommendation.resume => 'resume',
+    StrideProcessKillRecommendation.finishAndSave => 'finish_and_save',
+    StrideProcessKillRecommendation.discard => 'discard',
+    StrideProcessKillRecommendation.nothingToRecover => 'nothing_to_recover',
+  };
+}
+
+/// The result of evaluating process-kill recovery.
+class StrideProcessKillRecoveryDecision {
+  final bool canResume;
+  final bool checkpointIsFresh;
+  final int estimatedDataLossMs;
+  final StrideProcessKillRecommendation recommendation;
+  final String message;
+
+  StrideProcessKillRecoveryDecision.fromJson(Map<String, dynamic> j)
+      : canResume = j['can_resume'] as bool,
+        checkpointIsFresh = j['checkpoint_is_fresh'] as bool,
+        estimatedDataLossMs = j['estimated_data_loss_ms'] as int,
+        recommendation =
+            StrideProcessKillRecommendation.fromJson(j['recommendation'] as String),
+        message = j['message'] as String;
+}
+
+/// The power mode for background execution.
+enum StridePowerMode {
+  full,
+  reduced,
+  critical;
+
+  static StridePowerMode fromJson(String s) => switch (s) {
+    'full' => StridePowerMode.full,
+    'reduced' => StridePowerMode.reduced,
+    'critical' => StridePowerMode.critical,
+    _ => StridePowerMode.full,
+  };
+
+  String toJson() => switch (this) {
+    StridePowerMode.full => 'full',
+    StridePowerMode.reduced => 'reduced',
+    StridePowerMode.critical => 'critical',
+  };
+}
+
+/// The result of a power mode decision.
+class StrideBackgroundPowerModeResult {
+  final StridePowerMode powerMode;
+  final int notificationIntervalMs;
+
+  StrideBackgroundPowerModeResult.fromJson(Map<String, dynamic> j)
+      : powerMode = StridePowerMode.fromJson(j['power_mode'] as String),
+        notificationIntervalMs = j['notification_interval_ms'] as int;
+}
+
+/// An interruption event that can affect background tracking.
+enum StrideInterruptionEvent {
+  screenOff,
+  screenOn,
+  appBackgrounded,
+  appForegrounded,
+  incomingCall,
+  callEnded,
+  lowMemory,
+  deviceShutdown;
+
+  static StrideInterruptionEvent fromJson(String s) => switch (s) {
+    'screen_off' => StrideInterruptionEvent.screenOff,
+    'screen_on' => StrideInterruptionEvent.screenOn,
+    'app_backgrounded' => StrideInterruptionEvent.appBackgrounded,
+    'app_foregrounded' => StrideInterruptionEvent.appForegrounded,
+    'incoming_call' => StrideInterruptionEvent.incomingCall,
+    'call_ended' => StrideInterruptionEvent.callEnded,
+    'low_memory' => StrideInterruptionEvent.lowMemory,
+    'device_shutdown' => StrideInterruptionEvent.deviceShutdown,
+    _ => StrideInterruptionEvent.screenOff,
+  };
+
+  String toJson() => switch (this) {
+    StrideInterruptionEvent.screenOff => 'screen_off',
+    StrideInterruptionEvent.screenOn => 'screen_on',
+    StrideInterruptionEvent.appBackgrounded => 'app_backgrounded',
+    StrideInterruptionEvent.appForegrounded => 'app_foregrounded',
+    StrideInterruptionEvent.incomingCall => 'incoming_call',
+    StrideInterruptionEvent.callEnded => 'call_ended',
+    StrideInterruptionEvent.lowMemory => 'low_memory',
+    StrideInterruptionEvent.deviceShutdown => 'device_shutdown',
+  };
+}
+
+/// The action to take in response to an interruption.
+enum StrideInterruptionAction {
+  continueTracking,
+  pause,
+  writeCheckpointAndContinue,
+  writeCheckpointAndStop,
+  reducePower;
+
+  static StrideInterruptionAction fromJson(String s) => switch (s) {
+    'continue' => StrideInterruptionAction.continueTracking,
+    'pause' => StrideInterruptionAction.pause,
+    'write_checkpoint_and_continue' => StrideInterruptionAction.writeCheckpointAndContinue,
+    'write_checkpoint_and_stop' => StrideInterruptionAction.writeCheckpointAndStop,
+    'reduce_power' => StrideInterruptionAction.reducePower,
+    _ => StrideInterruptionAction.continueTracking,
+  };
+
+  String toJson() => switch (this) {
+    StrideInterruptionAction.continueTracking => 'continue',
+    StrideInterruptionAction.pause => 'pause',
+    StrideInterruptionAction.writeCheckpointAndContinue => 'write_checkpoint_and_continue',
+    StrideInterruptionAction.writeCheckpointAndStop => 'write_checkpoint_and_stop',
+    StrideInterruptionAction.reducePower => 'reduce_power',
+  };
+}
+
+/// The result of a battery-use assessment.
+class StrideBatteryUseAssessment {
+  final bool isAcceptable;
+  final double estimatedDrainPerHour;
+  final bool recommendBatterySaver;
+  final String message;
+
+  StrideBatteryUseAssessment.fromJson(Map<String, dynamic> j)
+      : isAcceptable = j['is_acceptable'] as bool,
+        estimatedDrainPerHour = (j['estimated_drain_per_hour'] as num).toDouble(),
+        recommendBatterySaver = j['recommend_battery_saver'] as bool,
+        message = j['message'] as String;
+}
+
+/// A full background execution status snapshot for the UI / diagnostics.
+class StrideBackgroundStatus {
+  final StrideForegroundServiceState serviceState;
+  final StridePowerMode powerMode;
+  final bool backgroundAllowed;
+  final int checkpointIntervalMs;
+  final int notificationIntervalMs;
+  final StrideBackgroundTrackingPreference preference;
+  final double estimatedDrainPerHour;
+  final bool isCharging;
+  final int batteryPercent;
+
+  StrideBackgroundStatus.fromJson(Map<String, dynamic> j)
+      : serviceState =
+            StrideForegroundServiceState.fromJson(j['service_state'] as String),
+        powerMode = StridePowerMode.fromJson(j['power_mode'] as String),
+        backgroundAllowed = j['background_allowed'] as bool,
+        checkpointIntervalMs = j['checkpoint_interval_ms'] as int,
+        notificationIntervalMs = j['notification_interval_ms'] as int,
+        preference =
+            StrideBackgroundTrackingPreference.fromJson(j['preference'] as String),
+        estimatedDrainPerHour = (j['estimated_drain_per_hour'] as num).toDouble(),
+        isCharging = j['is_charging'] as bool,
+        batteryPercent = j['battery_percent'] as int;
+}
