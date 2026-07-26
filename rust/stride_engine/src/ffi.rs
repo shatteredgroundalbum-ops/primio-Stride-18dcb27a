@@ -122,6 +122,19 @@ use crate::engine::backups::{
     RetentionDataType, RetentionPolicy, RetentionRule, RollbackPlan, RollbackStep,
     RollbackStatus, StorageClass,
 };
+use crate::engine::privacy::{
+    self, PrivacyPolicy, PrivacyPolicyVersion, PrivacyPolicySection,
+    TermsOfService, TermsOfServiceVersion, HealthDisclaimer,
+    DisclaimerStatus, DisclosureType, DataDisclosure,
+    PrivacyDataType, PrivacyRetentionRule, PrivacyRetentionPolicy,
+    AccountDeletionPolicy, SupportContact, ConsentType, ConsentStatus,
+    ConsentRecord, ConsentRegistry, PrivacyExportStatus,
+    PrivacyExportRequest, PrivacyDeletionStatus, PrivacyDeletionRequest,
+    AttributionType, AttributionEntry, OpenStreetMapAttribution,
+    SdkCategory, SdkDataCollection, SdkDisclosure,
+    DataSafetyCategory, DataSafetyPurpose, DataSharingStatus,
+    DataSafetyEntry, DataSafetyForm, PrivacyComplianceStatus,
+};
 use crate::models::{
     ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
     WorkoutSummary,
@@ -5717,5 +5730,205 @@ pub extern "C" fn stride_backup_export(
             req.download_url,
         );
         ok_json(&result)
+    })
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// §18 — Privacy, legal, and safety
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Returns the default privacy policy, terms of service, health
+/// disclaimer, and retention policy as a combined JSON object.
+///
+/// `request_json` shape:
+/// ```json
+/// { "last_updated_ms": 1700000000000 }
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_privacy_get_policy(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            last_updated_ms: i64,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self { last_updated_ms: 0 }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let policy = privacy::build_default_privacy_policy(req.last_updated_ms);
+        let tos = privacy::build_default_terms_of_service(req.last_updated_ms);
+        let health = HealthDisclaimer::new();
+        let retention = privacy::build_default_privacy_retention_policy(req.last_updated_ms);
+
+        let combined = json!({
+            "privacy_policy": policy,
+            "terms_of_service": tos,
+            "health_disclaimer": health,
+            "retention_policy": retention,
+        });
+        ok_json(&combined)
+    })
+}
+
+/// Returns the default consent registry — a record of every consent
+/// type the app tracks, with default (not-yet-granted) status.
+///
+/// `request_json` shape:
+/// ```json
+/// { "last_updated_ms": 1700000000000 }
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_privacy_consent(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            last_updated_ms: i64,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self { last_updated_ms: 0 }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let registry = privacy::build_default_consent_registry(req.last_updated_ms);
+        ok_json(&registry)
+    })
+}
+
+/// Returns all data disclosures (location, wearable, AI, music,
+/// analytics, advertising).
+#[no_mangle]
+pub extern "C" fn stride_privacy_disclosures(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let disclosures = privacy::build_all_disclosures();
+        ok_json(&disclosures)
+    })
+}
+
+/// Computes and returns the privacy compliance status by checking all
+/// the privacy components.
+///
+/// `request_json` shape:
+/// ```json
+/// { "last_updated_ms": 1700000000000, "health_acknowledged": true }
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_privacy_compliance(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            last_updated_ms: i64,
+            health_acknowledged: bool,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self {
+                    last_updated_ms: 0,
+                    health_acknowledged: false,
+                }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut health = HealthDisclaimer::new();
+        if req.health_acknowledged {
+            health = health.acknowledge(req.last_updated_ms);
+        }
+        let disclosures = privacy::build_all_disclosures();
+        let retention = privacy::build_default_privacy_retention_policy(req.last_updated_ms);
+        let consent = privacy::build_default_consent_registry(req.last_updated_ms);
+        let osm = OpenStreetMapAttribution::new();
+        let sdks = privacy::build_all_sdk_disclosures();
+        let form = privacy::build_default_data_safety_form(req.last_updated_ms);
+
+        let status = privacy::build_privacy_compliance_status(
+            &health, &disclosures, &retention, &consent, &osm, &sdks, &form,
+        );
+        ok_json(&status)
+    })
+}
+
+/// Returns the Google Play Data Safety form — the matrix of data
+/// types × purposes × sharing status.
+///
+/// `request_json` shape:
+/// ```json
+/// { "last_updated_ms": 1700000000000 }
+/// ```
+#[no_mangle]
+pub extern "C" fn stride_privacy_data_safety(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            last_updated_ms: i64,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self { last_updated_ms: 0 }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let form = privacy::build_default_data_safety_form(req.last_updated_ms);
+        ok_json(&form)
     })
 }

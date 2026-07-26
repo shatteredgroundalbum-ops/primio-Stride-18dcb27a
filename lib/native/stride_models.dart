@@ -8671,3 +8671,1351 @@ class StrideRecoveryTestSchedule {
         'total_due': totalDue,
       };
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// §18 — Privacy, legal, and safety
+// ═══════════════════════════════════════════════════════════════════════
+
+enum StridePrivacyPolicyVersion {
+  v1,
+  v2,
+  v3,
+  v4;
+
+  static StridePrivacyPolicyVersion fromJson(String s) {
+    switch (s) {
+      case 'v1':
+        return StridePrivacyPolicyVersion.v1;
+      case 'v2':
+        return StridePrivacyPolicyVersion.v2;
+      case 'v3':
+        return StridePrivacyPolicyVersion.v3;
+      case 'v4':
+        return StridePrivacyPolicyVersion.v4;
+      default:
+        return StridePrivacyPolicyVersion.v4;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePrivacyPolicyVersion.v1:
+        return 'v1';
+      case StridePrivacyPolicyVersion.v2:
+        return 'v2';
+      case StridePrivacyPolicyVersion.v3:
+        return 'v3';
+      case StridePrivacyPolicyVersion.v4:
+        return 'v4';
+    }
+  }
+}
+
+enum StridePrivacyPolicySection {
+  introduction,
+  dataCollection,
+  dataUsage,
+  dataSharing,
+  dataRetention,
+  userRights,
+  security,
+  childrensPrivacy,
+  policyChanges,
+  contact;
+
+  static StridePrivacyPolicySection fromJson(String s) {
+    switch (s) {
+      case 'introduction':
+        return StridePrivacyPolicySection.introduction;
+      case 'data_collection':
+        return StridePrivacyPolicySection.dataCollection;
+      case 'data_usage':
+        return StridePrivacyPolicySection.dataUsage;
+      case 'data_sharing':
+        return StridePrivacyPolicySection.dataSharing;
+      case 'data_retention':
+        return StridePrivacyPolicySection.dataRetention;
+      case 'user_rights':
+        return StridePrivacyPolicySection.userRights;
+      case 'security':
+        return StridePrivacyPolicySection.security;
+      case 'childrens_privacy':
+        return StridePrivacyPolicySection.childrensPrivacy;
+      case 'policy_changes':
+        return StridePrivacyPolicySection.policyChanges;
+      case 'contact':
+        return StridePrivacyPolicySection.contact;
+      default:
+        return StridePrivacyPolicySection.introduction;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePrivacyPolicySection.introduction:
+        return 'introduction';
+      case StridePrivacyPolicySection.dataCollection:
+        return 'data_collection';
+      case StridePrivacyPolicySection.dataUsage:
+        return 'data_usage';
+      case StridePrivacyPolicySection.dataSharing:
+        return 'data_sharing';
+      case StridePrivacyPolicySection.dataRetention:
+        return 'data_retention';
+      case StridePrivacyPolicySection.userRights:
+        return 'user_rights';
+      case StridePrivacyPolicySection.security:
+        return 'security';
+      case StridePrivacyPolicySection.childrensPrivacy:
+        return 'childrens_privacy';
+      case StridePrivacyPolicySection.policyChanges:
+        return 'policy_changes';
+      case StridePrivacyPolicySection.contact:
+        return 'contact';
+    }
+  }
+}
+
+enum StrideTermsOfServiceVersion {
+  v1,
+  v2,
+  v3;
+
+  static StrideTermsOfServiceVersion fromJson(String s) {
+    switch (s) {
+      case 'v1':
+        return StrideTermsOfServiceVersion.v1;
+      case 'v2':
+        return StrideTermsOfServiceVersion.v2;
+      case 'v3':
+        return StrideTermsOfServiceVersion.v3;
+      default:
+        return StrideTermsOfServiceVersion.v3;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTermsOfServiceVersion.v1:
+        return 'v1';
+      case StrideTermsOfServiceVersion.v2:
+        return 'v2';
+      case StrideTermsOfServiceVersion.v3:
+        return 'v3';
+    }
+  }
+}
+
+enum StrideDisclaimerStatus {
+  notShown,
+  shown,
+  acknowledged,
+  declined;
+
+  static StrideDisclaimerStatus fromJson(String s) {
+    switch (s) {
+      case 'not_shown':
+        return StrideDisclaimerStatus.notShown;
+      case 'shown':
+        return StrideDisclaimerStatus.shown;
+      case 'acknowledged':
+        return StrideDisclaimerStatus.acknowledged;
+      case 'declined':
+        return StrideDisclaimerStatus.declined;
+      default:
+        return StrideDisclaimerStatus.notShown;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDisclaimerStatus.notShown:
+        return 'not_shown';
+      case StrideDisclaimerStatus.shown:
+        return 'shown';
+      case StrideDisclaimerStatus.acknowledged:
+        return 'acknowledged';
+      case StrideDisclaimerStatus.declined:
+        return 'declined';
+    }
+  }
+}
+
+enum StrideDisclosureType {
+  locationData,
+  wearableData,
+  aiData,
+  musicServiceData,
+  accountData,
+  deviceData;
+
+  static StrideDisclosureType fromJson(String s) {
+    switch (s) {
+      case 'location_data':
+        return StrideDisclosureType.locationData;
+      case 'wearable_data':
+        return StrideDisclosureType.wearableData;
+      case 'ai_data':
+        return StrideDisclosureType.aiData;
+      case 'music_service_data':
+        return StrideDisclosureType.musicServiceData;
+      case 'account_data':
+        return StrideDisclosureType.accountData;
+      case 'device_data':
+        return StrideDisclosureType.deviceData;
+      default:
+        return StrideDisclosureType.locationData;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDisclosureType.locationData:
+        return 'location_data';
+      case StrideDisclosureType.wearableData:
+        return 'wearable_data';
+      case StrideDisclosureType.aiData:
+        return 'ai_data';
+      case StrideDisclosureType.musicServiceData:
+        return 'music_service_data';
+      case StrideDisclosureType.accountData:
+        return 'account_data';
+      case StrideDisclosureType.deviceData:
+        return 'device_data';
+    }
+  }
+}
+
+enum StridePrivacyDataType {
+  workouts,
+  routes,
+  gpsRaw,
+  heartRate,
+  steps,
+  profile,
+  aiCoaching,
+  crashLogs,
+  auditLogs;
+
+  static StridePrivacyDataType fromJson(String s) {
+    switch (s) {
+      case 'workouts':
+        return StridePrivacyDataType.workouts;
+      case 'routes':
+        return StridePrivacyDataType.routes;
+      case 'gps_raw':
+        return StridePrivacyDataType.gpsRaw;
+      case 'heart_rate':
+        return StridePrivacyDataType.heartRate;
+      case 'steps':
+        return StridePrivacyDataType.steps;
+      case 'profile':
+        return StridePrivacyDataType.profile;
+      case 'ai_coaching':
+        return StridePrivacyDataType.aiCoaching;
+      case 'crash_logs':
+        return StridePrivacyDataType.crashLogs;
+      case 'audit_logs':
+        return StridePrivacyDataType.auditLogs;
+      default:
+        return StridePrivacyDataType.workouts;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePrivacyDataType.workouts:
+        return 'workouts';
+      case StridePrivacyDataType.routes:
+        return 'routes';
+      case StridePrivacyDataType.gpsRaw:
+        return 'gps_raw';
+      case StridePrivacyDataType.heartRate:
+        return 'heart_rate';
+      case StridePrivacyDataType.steps:
+        return 'steps';
+      case StridePrivacyDataType.profile:
+        return 'profile';
+      case StridePrivacyDataType.aiCoaching:
+        return 'ai_coaching';
+      case StridePrivacyDataType.crashLogs:
+        return 'crash_logs';
+      case StridePrivacyDataType.auditLogs:
+        return 'audit_logs';
+    }
+  }
+}
+
+enum StrideConsentType {
+  locationCollection,
+  wearableDataCollection,
+  aiDataProcessing,
+  musicControl,
+  crashAnalyticsCollection,
+  privacyPolicy,
+  termsOfService,
+  healthDisclaimer,
+  pushNotifications,
+  dataSync;
+
+  static StrideConsentType fromJson(String s) {
+    switch (s) {
+      case 'location_collection':
+        return StrideConsentType.locationCollection;
+      case 'wearable_data_collection':
+        return StrideConsentType.wearableDataCollection;
+      case 'ai_data_processing':
+        return StrideConsentType.aiDataProcessing;
+      case 'music_control':
+        return StrideConsentType.musicControl;
+      case 'crash_analytics_collection':
+        return StrideConsentType.crashAnalyticsCollection;
+      case 'privacy_policy':
+        return StrideConsentType.privacyPolicy;
+      case 'terms_of_service':
+        return StrideConsentType.termsOfService;
+      case 'health_disclaimer':
+        return StrideConsentType.healthDisclaimer;
+      case 'push_notifications':
+        return StrideConsentType.pushNotifications;
+      case 'data_sync':
+        return StrideConsentType.dataSync;
+      default:
+        return StrideConsentType.locationCollection;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideConsentType.locationCollection:
+        return 'location_collection';
+      case StrideConsentType.wearableDataCollection:
+        return 'wearable_data_collection';
+      case StrideConsentType.aiDataProcessing:
+        return 'ai_data_processing';
+      case StrideConsentType.musicControl:
+        return 'music_control';
+      case StrideConsentType.crashAnalyticsCollection:
+        return 'crash_analytics_collection';
+      case StrideConsentType.privacyPolicy:
+        return 'privacy_policy';
+      case StrideConsentType.termsOfService:
+        return 'terms_of_service';
+      case StrideConsentType.healthDisclaimer:
+        return 'health_disclaimer';
+      case StrideConsentType.pushNotifications:
+        return 'push_notifications';
+      case StrideConsentType.dataSync:
+        return 'data_sync';
+    }
+  }
+}
+
+enum StrideConsentStatus {
+  notRequested,
+  granted,
+  denied,
+  revoked,
+  expired;
+
+  static StrideConsentStatus fromJson(String s) {
+    switch (s) {
+      case 'not_requested':
+        return StrideConsentStatus.notRequested;
+      case 'granted':
+        return StrideConsentStatus.granted;
+      case 'denied':
+        return StrideConsentStatus.denied;
+      case 'revoked':
+        return StrideConsentStatus.revoked;
+      case 'expired':
+        return StrideConsentStatus.expired;
+      default:
+        return StrideConsentStatus.notRequested;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideConsentStatus.notRequested:
+        return 'not_requested';
+      case StrideConsentStatus.granted:
+        return 'granted';
+      case StrideConsentStatus.denied:
+        return 'denied';
+      case StrideConsentStatus.revoked:
+        return 'revoked';
+      case StrideConsentStatus.expired:
+        return 'expired';
+    }
+  }
+}
+
+enum StridePrivacyExportStatus {
+  pending,
+  preparing,
+  ready,
+  downloaded,
+  failed,
+  expired;
+
+  static StridePrivacyExportStatus fromJson(String s) {
+    switch (s) {
+      case 'pending':
+        return StridePrivacyExportStatus.pending;
+      case 'preparing':
+        return StridePrivacyExportStatus.preparing;
+      case 'ready':
+        return StridePrivacyExportStatus.ready;
+      case 'downloaded':
+        return StridePrivacyExportStatus.downloaded;
+      case 'failed':
+        return StridePrivacyExportStatus.failed;
+      case 'expired':
+        return StridePrivacyExportStatus.expired;
+      default:
+        return StridePrivacyExportStatus.pending;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePrivacyExportStatus.pending:
+        return 'pending';
+      case StridePrivacyExportStatus.preparing:
+        return 'preparing';
+      case StridePrivacyExportStatus.ready:
+        return 'ready';
+      case StridePrivacyExportStatus.downloaded:
+        return 'downloaded';
+      case StridePrivacyExportStatus.failed:
+        return 'failed';
+      case StridePrivacyExportStatus.expired:
+        return 'expired';
+    }
+  }
+}
+
+enum StridePrivacyDeletionStatus {
+  pending,
+  inProgress,
+  completed,
+  failed,
+  cancelled;
+
+  static StridePrivacyDeletionStatus fromJson(String s) {
+    switch (s) {
+      case 'pending':
+        return StridePrivacyDeletionStatus.pending;
+      case 'in_progress':
+        return StridePrivacyDeletionStatus.inProgress;
+      case 'completed':
+        return StridePrivacyDeletionStatus.completed;
+      case 'failed':
+        return StridePrivacyDeletionStatus.failed;
+      case 'cancelled':
+        return StridePrivacyDeletionStatus.cancelled;
+      default:
+        return StridePrivacyDeletionStatus.pending;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePrivacyDeletionStatus.pending:
+        return 'pending';
+      case StridePrivacyDeletionStatus.inProgress:
+        return 'in_progress';
+      case StridePrivacyDeletionStatus.completed:
+        return 'completed';
+      case StridePrivacyDeletionStatus.failed:
+        return 'failed';
+      case StridePrivacyDeletionStatus.cancelled:
+        return 'cancelled';
+    }
+  }
+}
+
+enum StrideAttributionType {
+  openStreetMap,
+  googleMaps,
+  flutterFramework,
+  rustEngine,
+  thirdPartySdk,
+  musicService;
+
+  static StrideAttributionType fromJson(String s) {
+    switch (s) {
+      case 'open_street_map':
+        return StrideAttributionType.openStreetMap;
+      case 'google_maps':
+        return StrideAttributionType.googleMaps;
+      case 'flutter_framework':
+        return StrideAttributionType.flutterFramework;
+      case 'rust_engine':
+        return StrideAttributionType.rustEngine;
+      case 'third_party_sdk':
+        return StrideAttributionType.thirdPartySdk;
+      case 'music_service':
+        return StrideAttributionType.musicService;
+      default:
+        return StrideAttributionType.openStreetMap;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAttributionType.openStreetMap:
+        return 'open_street_map';
+      case StrideAttributionType.googleMaps:
+        return 'google_maps';
+      case StrideAttributionType.flutterFramework:
+        return 'flutter_framework';
+      case StrideAttributionType.rustEngine:
+        return 'rust_engine';
+      case StrideAttributionType.thirdPartySdk:
+        return 'third_party_sdk';
+      case StrideAttributionType.musicService:
+        return 'music_service';
+    }
+  }
+}
+
+enum StrideSdkCategory {
+  authentication,
+  cloudDatabase,
+  analytics,
+  crashReporting,
+  maps,
+  audio,
+  aiMl,
+  uiFramework;
+
+  static StrideSdkCategory fromJson(String s) {
+    switch (s) {
+      case 'authentication':
+        return StrideSdkCategory.authentication;
+      case 'cloud_database':
+        return StrideSdkCategory.cloudDatabase;
+      case 'analytics':
+        return StrideSdkCategory.analytics;
+      case 'crash_reporting':
+        return StrideSdkCategory.crashReporting;
+      case 'maps':
+        return StrideSdkCategory.maps;
+      case 'audio':
+        return StrideSdkCategory.audio;
+      case 'ai_ml':
+        return StrideSdkCategory.aiMl;
+      case 'ui_framework':
+        return StrideSdkCategory.uiFramework;
+      default:
+        return StrideSdkCategory.authentication;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideSdkCategory.authentication:
+        return 'authentication';
+      case StrideSdkCategory.cloudDatabase:
+        return 'cloud_database';
+      case StrideSdkCategory.analytics:
+        return 'analytics';
+      case StrideSdkCategory.crashReporting:
+        return 'crash_reporting';
+      case StrideSdkCategory.maps:
+        return 'maps';
+      case StrideSdkCategory.audio:
+        return 'audio';
+      case StrideSdkCategory.aiMl:
+        return 'ai_ml';
+      case StrideSdkCategory.uiFramework:
+        return 'ui_framework';
+    }
+  }
+}
+
+enum StrideSdkDataCollection {
+  none,
+  anonymous,
+  personal,
+  location,
+  healthData;
+
+  static StrideSdkDataCollection fromJson(String s) {
+    switch (s) {
+      case 'none':
+        return StrideSdkDataCollection.none;
+      case 'anonymous':
+        return StrideSdkDataCollection.anonymous;
+      case 'personal':
+        return StrideSdkDataCollection.personal;
+      case 'location':
+        return StrideSdkDataCollection.location;
+      case 'health_data':
+        return StrideSdkDataCollection.healthData;
+      default:
+        return StrideSdkDataCollection.none;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideSdkDataCollection.none:
+        return 'none';
+      case StrideSdkDataCollection.anonymous:
+        return 'anonymous';
+      case StrideSdkDataCollection.personal:
+        return 'personal';
+      case StrideSdkDataCollection.location:
+        return 'location';
+      case StrideSdkDataCollection.healthData:
+        return 'health_data';
+    }
+  }
+}
+
+enum StrideDataSafetyCategory {
+  location,
+  healthFitness,
+  personalInfo,
+  photosVideos,
+  appActivity,
+  appInfoPerformance,
+  deviceIds,
+  financialInfo;
+
+  static StrideDataSafetyCategory fromJson(String s) {
+    switch (s) {
+      case 'location':
+        return StrideDataSafetyCategory.location;
+      case 'health_fitness':
+        return StrideDataSafetyCategory.healthFitness;
+      case 'personal_info':
+        return StrideDataSafetyCategory.personalInfo;
+      case 'photos_videos':
+        return StrideDataSafetyCategory.photosVideos;
+      case 'app_activity':
+        return StrideDataSafetyCategory.appActivity;
+      case 'app_info_performance':
+        return StrideDataSafetyCategory.appInfoPerformance;
+      case 'device_ids':
+        return StrideDataSafetyCategory.deviceIds;
+      case 'financial_info':
+        return StrideDataSafetyCategory.financialInfo;
+      default:
+        return StrideDataSafetyCategory.location;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDataSafetyCategory.location:
+        return 'location';
+      case StrideDataSafetyCategory.healthFitness:
+        return 'health_fitness';
+      case StrideDataSafetyCategory.personalInfo:
+        return 'personal_info';
+      case StrideDataSafetyCategory.photosVideos:
+        return 'photos_videos';
+      case StrideDataSafetyCategory.appActivity:
+        return 'app_activity';
+      case StrideDataSafetyCategory.appInfoPerformance:
+        return 'app_info_performance';
+      case StrideDataSafetyCategory.deviceIds:
+        return 'device_ids';
+      case StrideDataSafetyCategory.financialInfo:
+        return 'financial_info';
+    }
+  }
+}
+
+enum StrideDataSafetyPurpose {
+  appFunctionality,
+  analytics,
+  developerCommunications,
+  advertising,
+  fraudPreventionSecurity,
+  personalization,
+  accountManagement;
+
+  static StrideDataSafetyPurpose fromJson(String s) {
+    switch (s) {
+      case 'app_functionality':
+        return StrideDataSafetyPurpose.appFunctionality;
+      case 'analytics':
+        return StrideDataSafetyPurpose.analytics;
+      case 'developer_communications':
+        return StrideDataSafetyPurpose.developerCommunications;
+      case 'advertising':
+        return StrideDataSafetyPurpose.advertising;
+      case 'fraud_prevention_security':
+        return StrideDataSafetyPurpose.fraudPreventionSecurity;
+      case 'personalization':
+        return StrideDataSafetyPurpose.personalization;
+      case 'account_management':
+        return StrideDataSafetyPurpose.accountManagement;
+      default:
+        return StrideDataSafetyPurpose.appFunctionality;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDataSafetyPurpose.appFunctionality:
+        return 'app_functionality';
+      case StrideDataSafetyPurpose.analytics:
+        return 'analytics';
+      case StrideDataSafetyPurpose.developerCommunications:
+        return 'developer_communications';
+      case StrideDataSafetyPurpose.advertising:
+        return 'advertising';
+      case StrideDataSafetyPurpose.fraudPreventionSecurity:
+        return 'fraud_prevention_security';
+      case StrideDataSafetyPurpose.personalization:
+        return 'personalization';
+      case StrideDataSafetyPurpose.accountManagement:
+        return 'account_management';
+    }
+  }
+}
+
+enum StrideDataSharingStatus {
+  notShared,
+  shared,
+  sharedAnonymized;
+
+  static StrideDataSharingStatus fromJson(String s) {
+    switch (s) {
+      case 'not_shared':
+        return StrideDataSharingStatus.notShared;
+      case 'shared':
+        return StrideDataSharingStatus.shared;
+      case 'shared_anonymized':
+        return StrideDataSharingStatus.sharedAnonymized;
+      default:
+        return StrideDataSharingStatus.notShared;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDataSharingStatus.notShared:
+        return 'not_shared';
+      case StrideDataSharingStatus.shared:
+        return 'shared';
+      case StrideDataSharingStatus.sharedAnonymized:
+        return 'shared_anonymized';
+    }
+  }
+}
+
+// -- Classes --
+
+class StridePrivacyPolicy {
+  final StridePrivacyPolicyVersion version;
+  final String url;
+  final int lastUpdatedAtMs;
+  final bool isEffective;
+  final List<StridePrivacyPolicySection> sections;
+
+  StridePrivacyPolicy({
+    this.version = StridePrivacyPolicyVersion.v4,
+    this.url = '',
+    this.lastUpdatedAtMs = 0,
+    this.isEffective = true,
+    this.sections = const [],
+  });
+
+  StridePrivacyPolicy.fromJson(Map<String, dynamic> j)
+      : version = StridePrivacyPolicyVersion.fromJson(j['version']?.toString() ?? 'v4'),
+        url = j['url']?.toString() ?? '',
+        lastUpdatedAtMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0,
+        isEffective = j['is_effective'] as bool? ?? true,
+        sections = (j['sections'] as List?)
+                ?.map((e) => StridePrivacyPolicySection.fromJson(e.toString()))
+                .toList() ??
+            [];
+
+  Map<String, dynamic> toJson() => {
+        'version': version.toJson(),
+        'url': url,
+        'last_updated_ms': lastUpdatedAtMs,
+        'is_effective': isEffective,
+        'sections': sections.map((e) => e.toJson()).toList(),
+      };
+}
+
+class StrideTermsOfService {
+  final StrideTermsOfServiceVersion version;
+  final String url;
+  final int lastUpdatedAtMs;
+  final bool isEffective;
+
+  StrideTermsOfService({
+    this.version = StrideTermsOfServiceVersion.v3,
+    this.url = '',
+    this.lastUpdatedAtMs = 0,
+    this.isEffective = true,
+  });
+
+  StrideTermsOfService.fromJson(Map<String, dynamic> j)
+      : version = StrideTermsOfServiceVersion.fromJson(j['version']?.toString() ?? 'v3'),
+        url = j['url']?.toString() ?? '',
+        lastUpdatedAtMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0,
+        isEffective = j['is_effective'] as bool? ?? true;
+
+  Map<String, dynamic> toJson() => {
+        'version': version.toJson(),
+        'url': url,
+        'last_updated_ms': lastUpdatedAtMs,
+        'is_effective': isEffective,
+      };
+}
+
+class StrideHealthDisclaimer {
+  final StrideDisclaimerStatus status;
+  final int? acknowledgedAtMs;
+  final String text;
+
+  StrideHealthDisclaimer({
+    this.status = StrideDisclaimerStatus.notShown,
+    this.acknowledgedAtMs,
+    this.text = '',
+  });
+
+  StrideHealthDisclaimer.fromJson(Map<String, dynamic> j)
+      : status = StrideDisclaimerStatus.fromJson(j['status']?.toString() ?? 'not_shown'),
+        acknowledgedAtMs = (j['acknowledged_at_ms'] as num?)?.toInt(),
+        text = j['text']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'status': status.toJson(),
+        'acknowledged_at_ms': acknowledgedAtMs,
+        'text': text,
+      };
+}
+
+class StrideDataDisclosure {
+  final StrideDisclosureType disclosureType;
+  final String dataCollected;
+  final String purpose;
+  final bool sharedWithThirdParties;
+  final bool isOptional;
+  final bool isAcknowledged;
+  final int? acknowledgedAtMs;
+
+  StrideDataDisclosure({
+    this.disclosureType = StrideDisclosureType.locationData,
+    this.dataCollected = '',
+    this.purpose = '',
+    this.sharedWithThirdParties = false,
+    this.isOptional = false,
+    this.isAcknowledged = false,
+    this.acknowledgedAtMs,
+  });
+
+  StrideDataDisclosure.fromJson(Map<String, dynamic> j)
+      : disclosureType =
+            StrideDisclosureType.fromJson(j['disclosure_type']?.toString() ?? 'location_data'),
+        dataCollected = j['data_collected']?.toString() ?? '',
+        purpose = j['purpose']?.toString() ?? '',
+        sharedWithThirdParties = j['shared_with_third_parties'] as bool? ?? false,
+        isOptional = j['is_optional'] as bool? ?? false,
+        isAcknowledged = j['is_acknowledged'] as bool? ?? false,
+        acknowledgedAtMs = (j['acknowledged_at_ms'] as num?)?.toInt();
+
+  Map<String, dynamic> toJson() => {
+        'disclosure_type': disclosureType.toJson(),
+        'data_collected': dataCollected,
+        'purpose': purpose,
+        'shared_with_third_parties': sharedWithThirdParties,
+        'is_optional': isOptional,
+        'is_acknowledged': isAcknowledged,
+        'acknowledged_at_ms': acknowledgedAtMs,
+      };
+}
+
+class StridePrivacyRetentionRule {
+  final StridePrivacyDataType dataType;
+  final int retentionDays;
+  final bool deleteAfterExpiry;
+  final bool userCanDelete;
+
+  StridePrivacyRetentionRule({
+    this.dataType = StridePrivacyDataType.workouts,
+    this.retentionDays = 0,
+    this.deleteAfterExpiry = false,
+    this.userCanDelete = false,
+  });
+
+  StridePrivacyRetentionRule.fromJson(Map<String, dynamic> j)
+      : dataType = StridePrivacyDataType.fromJson(j['data_type']?.toString() ?? 'workouts'),
+        retentionDays = (j['retention_days'] as num?)?.toInt() ?? 0,
+        deleteAfterExpiry = j['delete_after_expiry'] as bool? ?? false,
+        userCanDelete = j['user_can_delete'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'data_type': dataType.toJson(),
+        'retention_days': retentionDays,
+        'delete_after_expiry': deleteAfterExpiry,
+        'user_can_delete': userCanDelete,
+      };
+}
+
+class StridePrivacyRetentionPolicy {
+  final bool enabled;
+  final List<StridePrivacyRetentionRule> rules;
+  final int lastUpdatedAtMs;
+
+  StridePrivacyRetentionPolicy({
+    this.enabled = true,
+    this.rules = const [],
+    this.lastUpdatedAtMs = 0,
+  });
+
+  StridePrivacyRetentionPolicy.fromJson(Map<String, dynamic> j)
+      : enabled = j['enabled'] as bool? ?? true,
+        rules = (j['rules'] as List?)
+                ?.map((e) => StridePrivacyRetentionRule.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+        lastUpdatedAtMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'enabled': enabled,
+        'rules': rules.map((e) => e.toJson()).toList(),
+        'last_updated_ms': lastUpdatedAtMs,
+      };
+}
+
+class StrideAccountDeletionPolicy {
+  final bool isSupported;
+  final String deletionUrl;
+  final int processingTimeHours;
+  final bool canCancel;
+  final int gracePeriodHours;
+  final List<StridePrivacyDataType> permanentlyDeleted;
+  final List<StridePrivacyDataType> retainedForCompliance;
+
+  StrideAccountDeletionPolicy({
+    this.isSupported = true,
+    this.deletionUrl = '',
+    this.processingTimeHours = 0,
+    this.canCancel = false,
+    this.gracePeriodHours = 0,
+    this.permanentlyDeleted = const [],
+    this.retainedForCompliance = const [],
+  });
+
+  StrideAccountDeletionPolicy.fromJson(Map<String, dynamic> j)
+      : isSupported = j['is_supported'] as bool? ?? true,
+        deletionUrl = j['deletion_url']?.toString() ?? '',
+        processingTimeHours = (j['processing_time_hours'] as num?)?.toInt() ?? 0,
+        canCancel = j['can_cancel'] as bool? ?? false,
+        gracePeriodHours = (j['grace_period_hours'] as num?)?.toInt() ?? 0,
+        permanentlyDeleted = (j['permanently_deleted'] as List?)
+                ?.map((e) => StridePrivacyDataType.fromJson(e.toString()))
+                .toList() ??
+            [],
+        retainedForCompliance = (j['retained_for_compliance'] as List?)
+                ?.map((e) => StridePrivacyDataType.fromJson(e.toString()))
+                .toList() ??
+            [];
+
+  Map<String, dynamic> toJson() => {
+        'is_supported': isSupported,
+        'deletion_url': deletionUrl,
+        'processing_time_hours': processingTimeHours,
+        'can_cancel': canCancel,
+        'grace_period_hours': gracePeriodHours,
+        'permanently_deleted': permanentlyDeleted.map((e) => e.toJson()).toList(),
+        'retained_for_compliance': retainedForCompliance.map((e) => e.toJson()).toList(),
+      };
+}
+
+class StrideSupportContact {
+  final String email;
+  final String website;
+  final String? phone;
+  final String hours;
+
+  StrideSupportContact({
+    this.email = '',
+    this.website = '',
+    this.phone,
+    this.hours = '',
+  });
+
+  StrideSupportContact.fromJson(Map<String, dynamic> j)
+      : email = j['email']?.toString() ?? '',
+        website = j['website']?.toString() ?? '',
+        phone = j['phone']?.toString(),
+        hours = j['hours']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'website': website,
+        'phone': phone,
+        'hours': hours,
+      };
+}
+
+class StrideConsentRecord {
+  final StrideConsentType consentType;
+  final StrideConsentStatus status;
+  final int? grantedAtMs;
+  final int? revokedAtMs;
+  final String policyVersion;
+
+  StrideConsentRecord({
+    this.consentType = StrideConsentType.locationCollection,
+    this.status = StrideConsentStatus.notRequested,
+    this.grantedAtMs,
+    this.revokedAtMs,
+    this.policyVersion = '',
+  });
+
+  StrideConsentRecord.fromJson(Map<String, dynamic> j)
+      : consentType = StrideConsentType.fromJson(j['consent_type']?.toString() ?? 'location_collection'),
+        status = StrideConsentStatus.fromJson(j['status']?.toString() ?? 'not_requested'),
+        grantedAtMs = (j['granted_at_ms'] as num?)?.toInt(),
+        revokedAtMs = (j['revoked_at_ms'] as num?)?.toInt(),
+        policyVersion = j['policy_version']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'consent_type': consentType.toJson(),
+        'status': status.toJson(),
+        'granted_at_ms': grantedAtMs,
+        'revoked_at_ms': revokedAtMs,
+        'policy_version': policyVersion,
+      };
+}
+
+class StrideConsentRegistry {
+  final List<StrideConsentRecord> records;
+  final int lastUpdatedAtMs;
+
+  StrideConsentRegistry({
+    this.records = const [],
+    this.lastUpdatedAtMs = 0,
+  });
+
+  StrideConsentRegistry.fromJson(Map<String, dynamic> j)
+      : records = (j['records'] as List?)
+                ?.map((e) => StrideConsentRecord.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+        lastUpdatedAtMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'records': records.map((e) => e.toJson()).toList(),
+        'last_updated_ms': lastUpdatedAtMs,
+      };
+}
+
+class StridePrivacyExportRequest {
+  final String requestId;
+  final String userId;
+  final int requestedAtMs;
+  final StridePrivacyExportStatus status;
+  final String? downloadUrl;
+  final int? expiresAtMs;
+
+  StridePrivacyExportRequest({
+    this.requestId = '',
+    this.userId = '',
+    this.requestedAtMs = 0,
+    this.status = StridePrivacyExportStatus.pending,
+    this.downloadUrl,
+    this.expiresAtMs,
+  });
+
+  StridePrivacyExportRequest.fromJson(Map<String, dynamic> j)
+      : requestId = j['request_id']?.toString() ?? '',
+        userId = j['user_id']?.toString() ?? '',
+        requestedAtMs = (j['requested_at_ms'] as num?)?.toInt() ?? 0,
+        status = StridePrivacyExportStatus.fromJson(j['status']?.toString() ?? 'pending'),
+        downloadUrl = j['download_url']?.toString(),
+        expiresAtMs = (j['expires_at_ms'] as num?)?.toInt();
+
+  Map<String, dynamic> toJson() => {
+        'request_id': requestId,
+        'user_id': userId,
+        'requested_at_ms': requestedAtMs,
+        'status': status.toJson(),
+        'download_url': downloadUrl,
+        'expires_at_ms': expiresAtMs,
+      };
+}
+
+class StridePrivacyDeletionRequest {
+  final String requestId;
+  final String userId;
+  final int requestedAtMs;
+  final StridePrivacyDeletionStatus status;
+  final int? completedAtMs;
+  final int itemsDeleted;
+
+  StridePrivacyDeletionRequest({
+    this.requestId = '',
+    this.userId = '',
+    this.requestedAtMs = 0,
+    this.status = StridePrivacyDeletionStatus.pending,
+    this.completedAtMs,
+    this.itemsDeleted = 0,
+  });
+
+  StridePrivacyDeletionRequest.fromJson(Map<String, dynamic> j)
+      : requestId = j['request_id']?.toString() ?? '',
+        userId = j['user_id']?.toString() ?? '',
+        requestedAtMs = (j['requested_at_ms'] as num?)?.toInt() ?? 0,
+        status = StridePrivacyDeletionStatus.fromJson(j['status']?.toString() ?? 'pending'),
+        completedAtMs = (j['completed_at_ms'] as num?)?.toInt(),
+        itemsDeleted = (j['items_deleted'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'request_id': requestId,
+        'user_id': userId,
+        'requested_at_ms': requestedAtMs,
+        'status': status.toJson(),
+        'completed_at_ms': completedAtMs,
+        'items_deleted': itemsDeleted,
+      };
+}
+
+class StrideAttributionEntry {
+  final StrideAttributionType attributionType;
+  final String text;
+  final String url;
+  final bool isDisplayed;
+
+  StrideAttributionEntry({
+    this.attributionType = StrideAttributionType.openStreetMap,
+    this.text = '',
+    this.url = '',
+    this.isDisplayed = false,
+  });
+
+  StrideAttributionEntry.fromJson(Map<String, dynamic> j)
+      : attributionType =
+            StrideAttributionType.fromJson(j['attribution_type']?.toString() ?? 'open_street_map'),
+        text = j['text']?.toString() ?? '',
+        url = j['url']?.toString() ?? '',
+        isDisplayed = j['is_displayed'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'attribution_type': attributionType.toJson(),
+        'text': text,
+        'url': url,
+        'is_displayed': isDisplayed,
+      };
+}
+
+class StrideOpenStreetMapAttribution {
+  final String attributionText;
+  final String copyrightUrl;
+  final String license;
+  final bool isDisplayedInSettings;
+  final bool isDisplayedOnMap;
+
+  StrideOpenStreetMapAttribution({
+    this.attributionText = '',
+    this.copyrightUrl = '',
+    this.license = '',
+    this.isDisplayedInSettings = true,
+    this.isDisplayedOnMap = true,
+  });
+
+  StrideOpenStreetMapAttribution.fromJson(Map<String, dynamic> j)
+      : attributionText = j['attribution_text']?.toString() ?? '',
+        copyrightUrl = j['copyright_url']?.toString() ?? '',
+        license = j['license']?.toString() ?? '',
+        isDisplayedInSettings = j['is_displayed_in_settings'] as bool? ?? true,
+        isDisplayedOnMap = j['is_displayed_on_map'] as bool? ?? true;
+
+  Map<String, dynamic> toJson() => {
+        'attribution_text': attributionText,
+        'copyright_url': copyrightUrl,
+        'license': license,
+        'is_displayed_in_settings': isDisplayedInSettings,
+        'is_displayed_on_map': isDisplayedOnMap,
+      };
+}
+
+class StrideSdkDisclosure {
+  final String name;
+  final StrideSdkCategory category;
+  final String vendor;
+  final String version;
+  final StrideSdkDataCollection dataCollection;
+  final String privacyPolicyUrl;
+  final bool isOpenSource;
+  final String? license;
+
+  StrideSdkDisclosure({
+    this.name = '',
+    this.category = StrideSdkCategory.authentication,
+    this.vendor = '',
+    this.version = '',
+    this.dataCollection = StrideSdkDataCollection.none,
+    this.privacyPolicyUrl = '',
+    this.isOpenSource = false,
+    this.license,
+  });
+
+  StrideSdkDisclosure.fromJson(Map<String, dynamic> j)
+      : name = j['name']?.toString() ?? '',
+        category = StrideSdkCategory.fromJson(j['category']?.toString() ?? 'authentication'),
+        vendor = j['vendor']?.toString() ?? '',
+        version = j['version']?.toString() ?? '',
+        dataCollection = StrideSdkDataCollection.fromJson(j['data_collection']?.toString() ?? 'none'),
+        privacyPolicyUrl = j['privacy_policy_url']?.toString() ?? '',
+        isOpenSource = j['is_open_source'] as bool? ?? false,
+        license = j['license']?.toString();
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'category': category.toJson(),
+        'vendor': vendor,
+        'version': version,
+        'data_collection': dataCollection.toJson(),
+        'privacy_policy_url': privacyPolicyUrl,
+        'is_open_source': isOpenSource,
+        'license': license,
+      };
+}
+
+class StrideDataSafetyEntry {
+  final StrideDataSafetyCategory category;
+  final List<String> dataTypes;
+  final StrideDataSafetyPurpose purpose;
+  final StrideDataSharingStatus sharing;
+  final bool isRequired;
+
+  StrideDataSafetyEntry({
+    this.category = StrideDataSafetyCategory.location,
+    this.dataTypes = const [],
+    this.purpose = StrideDataSafetyPurpose.appFunctionality,
+    this.sharing = StrideDataSharingStatus.notShared,
+    this.isRequired = false,
+  });
+
+  StrideDataSafetyEntry.fromJson(Map<String, dynamic> j)
+      : category = StrideDataSafetyCategory.fromJson(j['category']?.toString() ?? 'location'),
+        dataTypes = (j['data_types'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        purpose = StrideDataSafetyPurpose.fromJson(j['purpose']?.toString() ?? 'app_functionality'),
+        sharing = StrideDataSharingStatus.fromJson(j['sharing']?.toString() ?? 'not_shared'),
+        isRequired = j['is_required'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'category': category.toJson(),
+        'data_types': dataTypes,
+        'purpose': purpose.toJson(),
+        'sharing': sharing.toJson(),
+        'is_required': isRequired,
+      };
+}
+
+class StrideDataSafetyForm {
+  final List<StrideDataSafetyEntry> entries;
+  final bool dataEncryptedInTransit;
+  final bool dataEncryptedAtRest;
+  final bool dataDeletionSupported;
+  final bool dataExportSupported;
+  final String privacyPolicyUrl;
+  final int lastUpdatedAtMs;
+
+  StrideDataSafetyForm({
+    this.entries = const [],
+    this.dataEncryptedInTransit = true,
+    this.dataEncryptedAtRest = true,
+    this.dataDeletionSupported = true,
+    this.dataExportSupported = true,
+    this.privacyPolicyUrl = '',
+    this.lastUpdatedAtMs = 0,
+  });
+
+  StrideDataSafetyForm.fromJson(Map<String, dynamic> j)
+      : entries = (j['entries'] as List?)
+                ?.map((e) => StrideDataSafetyEntry.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+        dataEncryptedInTransit = j['data_encrypted_in_transit'] as bool? ?? true,
+        dataEncryptedAtRest = j['data_encrypted_at_rest'] as bool? ?? true,
+        dataDeletionSupported = j['data_deletion_supported'] as bool? ?? true,
+        dataExportSupported = j['data_export_supported'] as bool? ?? true,
+        privacyPolicyUrl = j['privacy_policy_url']?.toString() ?? '',
+        lastUpdatedAtMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'entries': entries.map((e) => e.toJson()).toList(),
+        'data_encrypted_in_transit': dataEncryptedInTransit,
+        'data_encrypted_at_rest': dataEncryptedAtRest,
+        'data_deletion_supported': dataDeletionSupported,
+        'data_export_supported': dataExportSupported,
+        'privacy_policy_url': privacyPolicyUrl,
+        'last_updated_ms': lastUpdatedAtMs,
+      };
+}
+
+class StridePrivacyComplianceStatus {
+  final bool privacyPolicyComplete;
+  final bool termsOfServiceComplete;
+  final bool healthDisclaimerAcknowledged;
+  final bool disclosuresComplete;
+  final bool retentionPolicyComplete;
+  final bool deletionPolicyComplete;
+  final bool supportContactConfigured;
+  final bool consentRegistryComplete;
+  final bool attributionsComplete;
+  final bool osmAttributionCompliant;
+  final bool sdkDisclosuresComplete;
+  final bool dataSafetyFormComplete;
+
+  StridePrivacyComplianceStatus({
+    this.privacyPolicyComplete = false,
+    this.termsOfServiceComplete = false,
+    this.healthDisclaimerAcknowledged = false,
+    this.disclosuresComplete = false,
+    this.retentionPolicyComplete = false,
+    this.deletionPolicyComplete = false,
+    this.supportContactConfigured = false,
+    this.consentRegistryComplete = false,
+    this.attributionsComplete = false,
+    this.osmAttributionCompliant = false,
+    this.sdkDisclosuresComplete = false,
+    this.dataSafetyFormComplete = false,
+  });
+
+  StridePrivacyComplianceStatus.fromJson(Map<String, dynamic> j)
+      : privacyPolicyComplete = j['privacy_policy_complete'] as bool? ?? false,
+        termsOfServiceComplete = j['terms_of_service_complete'] as bool? ?? false,
+        healthDisclaimerAcknowledged = j['health_disclaimer_acknowledged'] as bool? ?? false,
+        disclosuresComplete = j['disclosures_complete'] as bool? ?? false,
+        retentionPolicyComplete = j['retention_policy_complete'] as bool? ?? false,
+        deletionPolicyComplete = j['deletion_policy_complete'] as bool? ?? false,
+        supportContactConfigured = j['support_contact_configured'] as bool? ?? false,
+        consentRegistryComplete = j['consent_registry_complete'] as bool? ?? false,
+        attributionsComplete = j['attributions_complete'] as bool? ?? false,
+        osmAttributionCompliant = j['osm_attribution_compliant'] as bool? ?? false,
+        sdkDisclosuresComplete = j['sdk_disclosures_complete'] as bool? ?? false,
+        dataSafetyFormComplete = j['data_safety_form_complete'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'privacy_policy_complete': privacyPolicyComplete,
+        'terms_of_service_complete': termsOfServiceComplete,
+        'health_disclaimer_acknowledged': healthDisclaimerAcknowledged,
+        'disclosures_complete': disclosuresComplete,
+        'retention_policy_complete': retentionPolicyComplete,
+        'deletion_policy_complete': deletionPolicyComplete,
+        'support_contact_configured': supportContactConfigured,
+        'consent_registry_complete': consentRegistryComplete,
+        'attributions_complete': attributionsComplete,
+        'osm_attribution_compliant': osmAttributionCompliant,
+        'sdk_disclosures_complete': sdkDisclosuresComplete,
+        'data_safety_form_complete': dataSafetyFormComplete,
+      };
+}

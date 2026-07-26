@@ -2571,4 +2571,75 @@ class StrideEngineClient {
     return StrideExportResult.fromJson(
         unwrapEnvelope(env) as Map<String, dynamic>);
   }
+
+  // ── §18 Privacy, legal, and safety ──────────────────────────────────
+
+  /// Returns the default privacy policy, terms of service, health
+  /// disclaimer, and retention policy as a combined JSON object.
+  static Map<String, dynamic> privacyGetPolicy({
+    int lastUpdatedAtMs = 0,
+  }) {
+    final env = _bindings.privacyGetPolicy({
+      'last_updated_ms': lastUpdatedAtMs,
+    });
+    final data = unwrapEnvelope(env) as Map<String, dynamic>;
+    return {
+      'privacy_policy': StridePrivacyPolicy.fromJson(
+          data['privacy_policy'] as Map<String, dynamic>),
+      'terms_of_service': StrideTermsOfService.fromJson(
+          data['terms_of_service'] as Map<String, dynamic>),
+      'health_disclaimer': StrideHealthDisclaimer.fromJson(
+          data['health_disclaimer'] as Map<String, dynamic>),
+      'retention_policy': StridePrivacyRetentionPolicy.fromJson(
+          data['retention_policy'] as Map<String, dynamic>),
+    };
+  }
+
+  /// Returns the default consent registry with all consent types and
+  /// their default (not-yet-granted) status.
+  static StrideConsentRegistry privacyConsent({
+    int lastUpdatedAtMs = 0,
+  }) {
+    final env = _bindings.privacyConsent({
+      'last_updated_ms': lastUpdatedAtMs,
+    });
+    return StrideConsentRegistry.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns all data disclosures (location, wearable, AI, music,
+  /// account, device).
+  static List<StrideDataDisclosure> privacyDisclosures() {
+    final env = _bindings.privacyDisclosures({});
+    final list = unwrapEnvelope(env) as List<dynamic>;
+    return list
+        .map((e) => StrideDataDisclosure.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Computes and returns the privacy compliance status by checking all
+  /// privacy components.
+  static StridePrivacyComplianceStatus privacyCompliance({
+    int lastUpdatedAtMs = 0,
+    bool healthAcknowledged = false,
+  }) {
+    final env = _bindings.privacyCompliance({
+      'last_updated_ms': lastUpdatedAtMs,
+      'health_acknowledged': healthAcknowledged,
+    });
+    return StridePrivacyComplianceStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the Google Play Data Safety form (data type × purpose ×
+  /// sharing matrix).
+  static StrideDataSafetyForm privacyDataSafety({
+    int lastUpdatedAtMs = 0,
+  }) {
+    final env = _bindings.privacyDataSafety({
+      'last_updated_ms': lastUpdatedAtMs,
+    });
+    return StrideDataSafetyForm.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }

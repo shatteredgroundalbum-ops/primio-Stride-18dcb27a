@@ -607,6 +607,22 @@ typedef _StrideBackupMigrateDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideBackupExportNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideBackupExportDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// §18 — Privacy, legal, and safety
+typedef _StridePrivacyGetPolicyNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePrivacyGetPolicyDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StridePrivacyConsentNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePrivacyConsentDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StridePrivacyDisclosuresNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePrivacyDisclosuresDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StridePrivacyComplianceNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePrivacyComplianceDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StridePrivacyDataSafetyNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePrivacyDataSafetyDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -994,6 +1010,17 @@ class StrideEngineBindings {
         _StrideBackupMigrateDart>('stride_backup_migrate');
     _BackupExport = _lib.lookupFunction<_StrideBackupExportNative,
         _StrideBackupExportDart>('stride_backup_export');
+    // §18 — Privacy, legal, and safety
+    _PrivacyGetPolicy = _lib.lookupFunction<_StridePrivacyGetPolicyNative,
+        _StridePrivacyGetPolicyDart>('stride_privacy_get_policy');
+    _PrivacyConsent = _lib.lookupFunction<_StridePrivacyConsentNative,
+        _StridePrivacyConsentDart>('stride_privacy_consent');
+    _PrivacyDisclosures = _lib.lookupFunction<_StridePrivacyDisclosuresNative,
+        _StridePrivacyDisclosuresDart>('stride_privacy_disclosures');
+    _PrivacyCompliance = _lib.lookupFunction<_StridePrivacyComplianceNative,
+        _StridePrivacyComplianceDart>('stride_privacy_compliance');
+    _PrivacyDataSafety = _lib.lookupFunction<_StridePrivacyDataSafetyNative,
+        _StridePrivacyDataSafetyDart>('stride_privacy_data_safety');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1198,6 +1225,11 @@ class StrideEngineBindings {
   late final _StrideBackupRestoreDart _BackupRestore;
   late final _StrideBackupMigrateDart _BackupMigrate;
   late final _StrideBackupExportDart _BackupExport;
+  late final _StridePrivacyGetPolicyDart _PrivacyGetPolicy;
+  late final _StridePrivacyConsentDart _PrivacyConsent;
+  late final _StridePrivacyDisclosuresDart _PrivacyDisclosures;
+  late final _StridePrivacyComplianceDart _PrivacyCompliance;
+  late final _StridePrivacyDataSafetyDart _PrivacyDataSafety;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -3079,6 +3111,62 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_BackupExport(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// privacyGetPolicy — §18 — return the default privacy policy, terms
+  /// of service, health disclaimer, and retention policy as a combined
+  /// JSON object.
+  Map<String, dynamic> privacyGetPolicy(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_PrivacyGetPolicy(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// privacyConsent — §18 — return the default consent registry with
+  /// all consent types and their default (not-yet-granted) status.
+  Map<String, dynamic> privacyConsent(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_PrivacyConsent(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// privacyDisclosures — §18 — return all data disclosures (location,
+  /// wearable, AI, music, account, device).
+  Map<String, dynamic> privacyDisclosures(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_PrivacyDisclosures(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// privacyCompliance — §18 — compute and return the privacy
+  /// compliance status by checking all privacy components.
+  Map<String, dynamic> privacyCompliance(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_PrivacyCompliance(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// privacyDataSafety — §18 — return the Google Play Data Safety form
+  /// (data type × purpose × sharing matrix).
+  Map<String, dynamic> privacyDataSafety(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_PrivacyDataSafety(ptr));
     } finally {
       malloc.free(ptr);
     }

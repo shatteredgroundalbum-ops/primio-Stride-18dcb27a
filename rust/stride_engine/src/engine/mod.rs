@@ -30,6 +30,7 @@ pub mod movement;
 pub mod pace;
 pub mod permissions;
 pub mod personal_records;
+pub mod privacy;
 pub mod recovery;
 pub mod route;
 pub mod route_format;
