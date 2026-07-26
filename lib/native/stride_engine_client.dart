@@ -2092,4 +2092,124 @@ class StrideEngineClient {
     final env = _bindings.backgroundExplanation({'short': short});
     return unwrapEnvelope(env) as String;
   }
+
+  // ── §13 — Notifications ───────────────────────────────────────
+
+  /// Decides whether & how to deliver a notification given the full
+  /// decision context (permission, preferences, quiet hours, voice
+  /// coaching, timezone, etc.). This is the main entry point for the
+  /// notification decision logic.
+  static StrideNotificationDecision notificationDecide({
+    required StrideNotificationType notifType,
+    required StrideNotificationPreferences preferences,
+    required StrideNotificationPermission permission,
+    required StrideQuietHoursConfig quietHours,
+    required int nowUtcMs,
+    required StrideTimezoneContext timezone,
+    required StrideNotificationContextParams contextParams,
+  }) {
+    final env = _bindings.notificationDecide({
+      'notif_type': notifType.toJson(),
+      'preferences': preferences.toJson(),
+      'permission': permission.toJson(),
+      'quiet_hours': quietHours.toJson(),
+      'now_utc_ms': nowUtcMs,
+      'timezone': timezone.toJson(),
+      'context_params': contextParams.toJson(),
+    });
+    return StrideNotificationDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds the notification content (title, body, action label) for
+  /// a given notification type and optional context params.
+  static StrideNotificationContent notificationContent({
+    required StrideNotificationType notifType,
+    StrideNotificationContextParams? contextParams,
+  }) {
+    final env = _bindings.notificationContent({
+      'notif_type': notifType.toJson(),
+      'context_params': (contextParams ?? StrideNotificationContextParams())
+          .toJson(),
+    });
+    return StrideNotificationContent.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Evaluates whether a notification should be delivered now given
+  /// the quiet hours configuration, notification type, local minute,
+  /// and critical-bypass flag.
+  static StrideQuietHoursDecision notificationQuietHours({
+    required StrideQuietHoursConfig quietHours,
+    required StrideNotificationType notifType,
+    required int localMinute,
+    required bool criticalBypass,
+  }) {
+    final env = _bindings.notificationQuietHours({
+      'quiet_hours': quietHours.toJson(),
+      'notif_type': notifType.toJson(),
+      'local_minute': localMinute,
+      'critical_bypass': criticalBypass,
+    });
+    return StrideQuietHoursDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Evaluates whether a voice coaching announcement should be made
+  /// now given the coaching config, quiet hours, announcement kind,
+  /// last distance/time, and local minute. Returns a boolean.
+  static bool notificationCoaching({
+    required StrideVoiceCoachingConfig voiceConfig,
+    required StrideQuietHoursConfig quietHours,
+    required StrideCoachingAnnouncementKind kind,
+    required double lastDistanceM,
+    required int lastTimeS,
+    required int localMinute,
+  }) {
+    final env = _bindings.notificationCoaching({
+      'voice_config': voiceConfig.toJson(),
+      'quiet_hours': quietHours.toJson(),
+      'kind': kind.toJson(),
+      'last_distance_m': lastDistanceM,
+      'last_time_s': lastTimeS,
+      'local_minute': localMinute,
+    });
+    return unwrapEnvelope(env) as bool;
+  }
+
+  /// Builds a full notification status snapshot for the UI /
+  /// diagnostics given permission, preferences, quiet hours, voice
+  /// coaching config, and timezone.
+  static StrideNotificationStatus notificationStatus({
+    required StrideNotificationPermission permission,
+    required StrideNotificationPreferences preferences,
+    required StrideQuietHoursConfig quietHours,
+    required StrideVoiceCoachingConfig voiceConfig,
+    required StrideTimezoneContext timezone,
+  }) {
+    final env = _bindings.notificationStatus({
+      'permission': permission.toJson(),
+      'preferences': preferences.toJson(),
+      'quiet_hours': quietHours.toJson(),
+      'voice_config': voiceConfig.toJson(),
+      'timezone': timezone.toJson(),
+    });
+    return StrideNotificationStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Computes the UTC timestamp (epoch milliseconds) for the next
+  /// daily reminder at a given local-time minute.
+  static int notificationNextReminder({
+    required int nowUtcMs,
+    required int localMinute,
+    required StrideTimezoneContext timezone,
+  }) {
+    final env = _bindings.notificationNextReminder({
+      'now_utc_ms': nowUtcMs,
+      'local_minute': localMinute,
+      'timezone': timezone.toJson(),
+    });
+    return unwrapEnvelope(env) as int;
+  }
 }

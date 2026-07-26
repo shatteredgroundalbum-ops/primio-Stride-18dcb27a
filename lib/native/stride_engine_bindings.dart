@@ -526,6 +526,24 @@ typedef _StrideBackgroundBuildStatusDart = Pointer<Utf8> Function(Pointer<Utf8>)
 typedef _StrideBackgroundExplanationNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideBackgroundExplanationDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+typedef _StrideNotificationDecideNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNotificationDecideDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideNotificationContentNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNotificationContentDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideNotificationQuietHoursNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNotificationQuietHoursDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideNotificationCoachingNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNotificationCoachingDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideNotificationStatusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNotificationStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideNotificationNextReminderNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNotificationNextReminderDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -852,6 +870,19 @@ class StrideEngineBindings {
         _StrideBackgroundBuildStatusDart>('stride_background_build_status');
     _BackgroundExplanation = _lib.lookupFunction<_StrideBackgroundExplanationNative,
         _StrideBackgroundExplanationDart>('stride_background_explanation');
+    // ── §13 — Notifications lookups ───────────────────────────
+    _NotificationDecide = _lib.lookupFunction<_StrideNotificationDecideNative,
+        _StrideNotificationDecideDart>('stride_notification_decide');
+    _NotificationContent = _lib.lookupFunction<_StrideNotificationContentNative,
+        _StrideNotificationContentDart>('stride_notification_content');
+    _NotificationQuietHours = _lib.lookupFunction<_StrideNotificationQuietHoursNative,
+        _StrideNotificationQuietHoursDart>('stride_notification_quiet_hours');
+    _NotificationCoaching = _lib.lookupFunction<_StrideNotificationCoachingNative,
+        _StrideNotificationCoachingDart>('stride_notification_coaching');
+    _NotificationStatus = _lib.lookupFunction<_StrideNotificationStatusNative,
+        _StrideNotificationStatusDart>('stride_notification_status');
+    _NotificationNextReminder = _lib.lookupFunction<_StrideNotificationNextReminderNative,
+        _StrideNotificationNextReminderDart>('stride_notification_next_reminder');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1022,6 +1053,12 @@ class StrideEngineBindings {
   late final _StrideBackgroundBatteryAssessmentDart _BackgroundBatteryAssessment;
   late final _StrideBackgroundBuildStatusDart _BackgroundBuildStatus;
   late final _StrideBackgroundExplanationDart _BackgroundExplanation;
+  late final _StrideNotificationDecideDart _NotificationDecide;
+  late final _StrideNotificationContentDart _NotificationContent;
+  late final _StrideNotificationQuietHoursDart _NotificationQuietHours;
+  late final _StrideNotificationCoachingDart _NotificationCoaching;
+  late final _StrideNotificationStatusDart _NotificationStatus;
+  late final _StrideNotificationNextReminderDart _NotificationNextReminder;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2603,6 +2640,78 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_BackgroundExplanation(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// notificationDecide — §13 — decide whether & how to deliver a
+  /// notification given the full decision context (permission,
+  /// preferences, quiet hours, voice coaching, timezone, etc.).
+  Map<String, dynamic> notificationDecide(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_NotificationDecide(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// notificationContent — §13 — build the notification content
+  /// (title, body, action label) for a given notification type and
+  /// optional context params.
+  Map<String, dynamic> notificationContent(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_NotificationContent(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// notificationQuietHours — §13 — evaluate whether a notification
+  /// should be delivered now given the quiet hours configuration,
+  /// notification type, local minute, and critical-bypass flag.
+  Map<String, dynamic> notificationQuietHours(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_NotificationQuietHours(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// notificationCoaching — §13 — evaluate whether a voice coaching
+  /// announcement should be made now given the coaching config, quiet
+  /// hours, announcement kind, last distance/time, and local minute.
+  Map<String, dynamic> notificationCoaching(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_NotificationCoaching(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// notificationStatus — §13 — build a full notification status
+  /// snapshot for the UI / diagnostics given permission, preferences,
+  /// quiet hours, voice coaching config, and timezone.
+  Map<String, dynamic> notificationStatus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_NotificationStatus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// notificationNextReminder — §13 — compute the UTC timestamp
+  /// (epoch milliseconds) for the next daily reminder at a given
+  /// local-time minute.
+  Map<String, dynamic> notificationNextReminder(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_NotificationNextReminder(ptr));
     } finally {
       malloc.free(ptr);
     }

@@ -4534,3 +4534,576 @@ class StrideBackgroundStatus {
         isCharging = j['is_charging'] as bool,
         batteryPercent = j['battery_percent'] as int;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §13 — Notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The category a notification belongs to.
+enum StrideNotificationCategory {
+  reminders,
+  achievements,
+  coaching,
+  system,
+  recovery;
+
+  static StrideNotificationCategory fromJson(String s) => switch (s) {
+    'reminders' => StrideNotificationCategory.reminders,
+    'achievements' => StrideNotificationCategory.achievements,
+    'coaching' => StrideNotificationCategory.coaching,
+    'system' => StrideNotificationCategory.system,
+    'recovery' => StrideNotificationCategory.recovery,
+    _ => StrideNotificationCategory.system,
+  };
+
+  String toJson() => switch (this) {
+    StrideNotificationCategory.reminders => 'reminders',
+    StrideNotificationCategory.achievements => 'achievements',
+    StrideNotificationCategory.coaching => 'coaching',
+    StrideNotificationCategory.system => 'system',
+    StrideNotificationCategory.recovery => 'recovery',
+  };
+}
+
+/// The specific notification to deliver. Each type maps to a
+/// [StrideNotificationCategory] and has a default priority.
+enum StrideNotificationType {
+  scheduledWorkout,
+  planReminder,
+  missedWorkout,
+  goalMilestone,
+  streakWarning,
+  deviceDisconnected,
+  syncFailed,
+  workoutRecovered,
+  badgeEarned,
+  planUpdated,
+  voiceCoaching;
+
+  static StrideNotificationType fromJson(String s) => switch (s) {
+    'scheduled_workout' => StrideNotificationType.scheduledWorkout,
+    'plan_reminder' => StrideNotificationType.planReminder,
+    'missed_workout' => StrideNotificationType.missedWorkout,
+    'goal_milestone' => StrideNotificationType.goalMilestone,
+    'streak_warning' => StrideNotificationType.streakWarning,
+    'device_disconnected' => StrideNotificationType.deviceDisconnected,
+    'sync_failed' => StrideNotificationType.syncFailed,
+    'workout_recovered' => StrideNotificationType.workoutRecovered,
+    'badge_earned' => StrideNotificationType.badgeEarned,
+    'plan_updated' => StrideNotificationType.planUpdated,
+    'voice_coaching' => StrideNotificationType.voiceCoaching,
+    _ => StrideNotificationType.scheduledWorkout,
+  };
+
+  String toJson() => switch (this) {
+    StrideNotificationType.scheduledWorkout => 'scheduled_workout',
+    StrideNotificationType.planReminder => 'plan_reminder',
+    StrideNotificationType.missedWorkout => 'missed_workout',
+    StrideNotificationType.goalMilestone => 'goal_milestone',
+    StrideNotificationType.streakWarning => 'streak_warning',
+    StrideNotificationType.deviceDisconnected => 'device_disconnected',
+    StrideNotificationType.syncFailed => 'sync_failed',
+    StrideNotificationType.workoutRecovered => 'workout_recovered',
+    StrideNotificationType.badgeEarned => 'badge_earned',
+    StrideNotificationType.planUpdated => 'plan_updated',
+    StrideNotificationType.voiceCoaching => 'voice_coaching',
+  };
+}
+
+/// Notification channel importance level.
+enum StrideNotificationPriority {
+  high,
+  defaultPriority,
+  low;
+
+  static StrideNotificationPriority fromJson(String s) => switch (s) {
+    'high' => StrideNotificationPriority.high,
+    'default' => StrideNotificationPriority.defaultPriority,
+    'low' => StrideNotificationPriority.low,
+    _ => StrideNotificationPriority.defaultPriority,
+  };
+
+  String toJson() => switch (this) {
+    StrideNotificationPriority.high => 'high',
+    StrideNotificationPriority.defaultPriority => 'default',
+    StrideNotificationPriority.low => 'low',
+  };
+}
+
+/// Whether the user has granted notification permission.
+enum StrideNotificationPermission {
+  notRequested,
+  granted,
+  denied,
+  permanentlyDenied;
+
+  static StrideNotificationPermission fromJson(String s) => switch (s) {
+    'not_requested' => StrideNotificationPermission.notRequested,
+    'granted' => StrideNotificationPermission.granted,
+    'denied' => StrideNotificationPermission.denied,
+    'permanently_denied' => StrideNotificationPermission.permanentlyDenied,
+    _ => StrideNotificationPermission.notRequested,
+  };
+
+  String toJson() => switch (this) {
+    StrideNotificationPermission.notRequested => 'not_requested',
+    StrideNotificationPermission.granted => 'granted',
+    StrideNotificationPermission.denied => 'denied',
+    StrideNotificationPermission.permanentlyDenied => 'permanently_denied',
+  };
+}
+
+/// How coaching prompts are delivered to the user.
+enum StrideCoachingDeliveryMode {
+  none,
+  visual,
+  voice,
+  both;
+
+  static StrideCoachingDeliveryMode fromJson(String s) => switch (s) {
+    'none' => StrideCoachingDeliveryMode.none,
+    'visual' => StrideCoachingDeliveryMode.visual,
+    'voice' => StrideCoachingDeliveryMode.voice,
+    'both' => StrideCoachingDeliveryMode.both,
+    _ => StrideCoachingDeliveryMode.none,
+  };
+
+  String toJson() => switch (this) {
+    StrideCoachingDeliveryMode.none => 'none',
+    StrideCoachingDeliveryMode.visual => 'visual',
+    StrideCoachingDeliveryMode.voice => 'voice',
+    StrideCoachingDeliveryMode.both => 'both',
+  };
+}
+
+/// The kind of voice coaching announcement being evaluated.
+enum StrideCoachingAnnouncementKind {
+  distance,
+  time,
+  pace,
+  split,
+  goalProgress,
+  encouragement;
+
+  static StrideCoachingAnnouncementKind fromJson(String s) => switch (s) {
+    'distance' => StrideCoachingAnnouncementKind.distance,
+    'time' => StrideCoachingAnnouncementKind.time,
+    'pace' => StrideCoachingAnnouncementKind.pace,
+    'split' => StrideCoachingAnnouncementKind.split,
+    'goal_progress' => StrideCoachingAnnouncementKind.goalProgress,
+    'encouragement' => StrideCoachingAnnouncementKind.encouragement,
+    _ => StrideCoachingAnnouncementKind.distance,
+  };
+
+  String toJson() => switch (this) {
+    StrideCoachingAnnouncementKind.distance => 'distance',
+    StrideCoachingAnnouncementKind.time => 'time',
+    StrideCoachingAnnouncementKind.pace => 'pace',
+    StrideCoachingAnnouncementKind.split => 'split',
+    StrideCoachingAnnouncementKind.goalProgress => 'goal_progress',
+    StrideCoachingAnnouncementKind.encouragement => 'encouragement',
+  };
+}
+
+/// The user's per-category notification preferences. All categories
+/// default to `false` — the user must opt in.
+class StrideNotificationPreferences {
+  final bool remindersEnabled;
+  final bool achievementsEnabled;
+  final bool coachingEnabled;
+  final bool systemEnabled;
+  final bool recoveryEnabled;
+  final bool criticalBypassesQuietHours;
+
+  StrideNotificationPreferences({
+    this.remindersEnabled = false,
+    this.achievementsEnabled = false,
+    this.coachingEnabled = false,
+    this.systemEnabled = false,
+    this.recoveryEnabled = false,
+    this.criticalBypassesQuietHours = true,
+  });
+
+  StrideNotificationPreferences.fromJson(Map<String, dynamic> j)
+      : remindersEnabled = j['reminders_enabled'] as bool,
+        achievementsEnabled = j['achievements_enabled'] as bool,
+        coachingEnabled = j['coaching_enabled'] as bool,
+        systemEnabled = j['system_enabled'] as bool,
+        recoveryEnabled = j['recovery_enabled'] as bool,
+        criticalBypassesQuietHours = j['critical_bypasses_quiet_hours'] as bool;
+
+  Map<String, dynamic> toJson() => {
+    'reminders_enabled': remindersEnabled,
+    'achievements_enabled': achievementsEnabled,
+    'coaching_enabled': coachingEnabled,
+    'system_enabled': systemEnabled,
+    'recovery_enabled': recoveryEnabled,
+    'critical_bypasses_quiet_hours': criticalBypassesQuietHours,
+  };
+}
+
+/// The user's time-zone context for evaluating quiet hours and
+/// scheduling notifications in local time.
+class StrideTimezoneContext {
+  final int utcOffsetSeconds;
+  final bool isDst;
+
+  StrideTimezoneContext({
+    this.utcOffsetSeconds = 0,
+    this.isDst = false,
+  });
+
+  StrideTimezoneContext.fromJson(Map<String, dynamic> j)
+      : utcOffsetSeconds = j['utc_offset_seconds'] as int,
+        isDst = j['is_dst'] as bool;
+
+  Map<String, dynamic> toJson() => {
+    'utc_offset_seconds': utcOffsetSeconds,
+    'is_dst': isDst,
+  };
+}
+
+/// Configuration for quiet hours — a time window during which
+/// non-critical notifications are suppressed.
+class StrideQuietHoursConfig {
+  final bool enabled;
+  final int startMinute;
+  final int endMinute;
+
+  StrideQuietHoursConfig({
+    this.enabled = false,
+    this.startMinute = 1320, // 22:00
+    this.endMinute = 420,    // 07:00
+  });
+
+  StrideQuietHoursConfig.fromJson(Map<String, dynamic> j)
+      : enabled = j['enabled'] as bool,
+        startMinute = j['start_minute'] as int,
+        endMinute = j['end_minute'] as int;
+
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'start_minute': startMinute,
+    'end_minute': endMinute,
+  };
+}
+
+/// The result of a quiet-hours evaluation for a specific notification.
+class StrideQuietHoursDecision {
+  final bool isQuiet;
+  final bool shouldDeliverNow;
+  final int? rescheduleToMinute;
+  final String reason;
+
+  StrideQuietHoursDecision.fromJson(Map<String, dynamic> j)
+      : isQuiet = j['is_quiet'] as bool,
+        shouldDeliverNow = j['should_deliver_now'] as bool,
+        rescheduleToMinute = j['reschedule_to_minute'] as int?,
+        reason = j['reason'] as String;
+}
+
+/// The content of a notification to display.
+class StrideNotificationContent {
+  final StrideNotificationType notifType;
+  final StrideNotificationCategory category;
+  final StrideNotificationPriority priority;
+  final String title;
+  final String body;
+  final String? actionLabel;
+  final String? actionData;
+
+  StrideNotificationContent.fromJson(Map<String, dynamic> j)
+      : notifType =
+            StrideNotificationType.fromJson(j['notif_type'] as String),
+        category =
+            StrideNotificationCategory.fromJson(j['category'] as String),
+        priority =
+            StrideNotificationPriority.fromJson(j['priority'] as String),
+        title = j['title'] as String,
+        body = j['body'] as String,
+        actionLabel = j['action_label'] as String?,
+        actionData = j['action_data'] as String?;
+}
+
+/// Optional context parameters for building notification content.
+class StrideNotificationContextParams {
+  final String? workoutTime;
+  final String? workoutType;
+  final String? goalDescription;
+  final int? streakDays;
+  final String? deviceName;
+  final String? badgeName;
+  final String? coachingMessage;
+  final String? actionData;
+
+  StrideNotificationContextParams({
+    this.workoutTime,
+    this.workoutType,
+    this.goalDescription,
+    this.streakDays,
+    this.deviceName,
+    this.badgeName,
+    this.coachingMessage,
+    this.actionData,
+  });
+
+  StrideNotificationContextParams.fromJson(Map<String, dynamic> j)
+      : workoutTime = j['workout_time'] as String?,
+        workoutType = j['workout_type'] as String?,
+        goalDescription = j['goal_description'] as String?,
+        streakDays = j['streak_days'] as int?,
+        deviceName = j['device_name'] as String?,
+        badgeName = j['badge_name'] as String?,
+        coachingMessage = j['coaching_message'] as String?,
+        actionData = j['action_data'] as String?;
+
+  Map<String, dynamic> toJson() => {
+    'workout_time': workoutTime,
+    'workout_type': workoutType,
+    'goal_description': goalDescription,
+    'streak_days': streakDays,
+    'device_name': deviceName,
+    'badge_name': badgeName,
+    'coaching_message': coachingMessage,
+    'action_data': actionData,
+  };
+}
+
+/// When a notification should be delivered.
+///
+/// Serialized by Rust/serde as a tagged union:
+/// - `Immediate` → `"immediate"`
+/// - `Scheduled { at_utc_ms }` → `{"scheduled":{"at_utc_ms":...}}`
+/// - `Daily { at_local_minute }` → `{"daily":{"at_local_minute":...}}`
+class StrideNotificationSchedule {
+  final StrideScheduleKind kind;
+  final int? atUtcMs;
+  final int? atLocalMinute;
+
+  const StrideNotificationSchedule._({
+    required this.kind,
+    this.atUtcMs,
+    this.atLocalMinute,
+  });
+
+  const StrideNotificationSchedule.immediate()
+      : kind = StrideScheduleKind.immediate,
+        atUtcMs = null,
+        atLocalMinute = null;
+
+  const StrideNotificationSchedule.scheduled(int utcMs)
+      : kind = StrideScheduleKind.scheduled,
+        atUtcMs = utcMs,
+        atLocalMinute = null;
+
+  const StrideNotificationSchedule.daily(int localMinute)
+      : kind = StrideScheduleKind.daily,
+        atUtcMs = null,
+        atLocalMinute = localMinute;
+
+  StrideNotificationSchedule.fromJson(dynamic j)
+      : kind = _kindFromJson(j),
+        atUtcMs = _atUtcMsFromJson(j),
+        atLocalMinute = _atLocalMinuteFromJson(j);
+
+  static StrideScheduleKind _kindFromJson(dynamic j) {
+    if (j is String) {
+      return switch (j) {
+        'immediate' => StrideScheduleKind.immediate,
+        _ => StrideScheduleKind.immediate,
+      };
+    }
+    if (j is Map<String, dynamic>) {
+      if (j.containsKey('scheduled')) return StrideScheduleKind.scheduled;
+      if (j.containsKey('daily')) return StrideScheduleKind.daily;
+    }
+    return StrideScheduleKind.immediate;
+  }
+
+  static int? _atUtcMsFromJson(dynamic j) {
+    if (j is Map<String, dynamic> && j.containsKey('scheduled')) {
+      final inner = j['scheduled'] as Map<String, dynamic>;
+      return inner['at_utc_ms'] as int?;
+    }
+    return null;
+  }
+
+  static int? _atLocalMinuteFromJson(dynamic j) {
+    if (j is Map<String, dynamic> && j.containsKey('daily')) {
+      final inner = j['daily'] as Map<String, dynamic>;
+      return inner['at_local_minute'] as int?;
+    }
+    return null;
+  }
+}
+
+/// The kind of notification schedule.
+enum StrideScheduleKind {
+  immediate,
+  scheduled,
+  daily;
+}
+
+/// A fully specified notification request: what to show, when, and
+/// with what content.
+class StrideNotificationRequest {
+  final StrideNotificationType notifType;
+  final StrideNotificationSchedule schedule;
+  final StrideNotificationContextParams context;
+
+  StrideNotificationRequest({
+    required this.notifType,
+    required this.schedule,
+    required this.context,
+  });
+
+  StrideNotificationRequest.fromJson(Map<String, dynamic> j)
+      : notifType =
+            StrideNotificationType.fromJson(j['notif_type'] as String),
+        schedule = StrideNotificationSchedule.fromJson(j['schedule']),
+        context = StrideNotificationContextParams.fromJson(
+            j['context'] as Map<String, dynamic>);
+
+  Map<String, dynamic> toJson() => {
+    'notif_type': notifType.toJson(),
+    'schedule': _scheduleToJson(),
+    'context': context.toJson(),
+  };
+
+  dynamic _scheduleToJson() {
+    switch (schedule.kind) {
+      case StrideScheduleKind.immediate:
+        return 'immediate';
+      case StrideScheduleKind.scheduled:
+        return {'scheduled': {'at_utc_ms': schedule.atUtcMs}};
+      case StrideScheduleKind.daily:
+        return {'daily': {'at_local_minute': schedule.atLocalMinute}};
+    }
+  }
+}
+
+/// Configuration for voice coaching announcements.
+class StrideVoiceCoachingConfig {
+  final StrideCoachingDeliveryMode mode;
+  final bool announceDistance;
+  final bool announceTime;
+  final bool announcePace;
+  final bool announceSplits;
+  final bool announceGoalProgress;
+  final int distanceIntervalM;
+  final int timeIntervalS;
+
+  StrideVoiceCoachingConfig({
+    this.mode = StrideCoachingDeliveryMode.none,
+    this.announceDistance = true,
+    this.announceTime = true,
+    this.announcePace = false,
+    this.announceSplits = true,
+    this.announceGoalProgress = true,
+    this.distanceIntervalM = 1000,
+    this.timeIntervalS = 300,
+  });
+
+  StrideVoiceCoachingConfig.fromJson(Map<String, dynamic> j)
+      : mode = StrideCoachingDeliveryMode.fromJson(j['mode'] as String),
+        announceDistance = j['announce_distance'] as bool,
+        announceTime = j['announce_time'] as bool,
+        announcePace = j['announce_pace'] as bool,
+        announceSplits = j['announce_splits'] as bool,
+        announceGoalProgress = j['announce_goal_progress'] as bool,
+        distanceIntervalM = j['distance_interval_m'] as int,
+        timeIntervalS = j['time_interval_s'] as int;
+
+  Map<String, dynamic> toJson() => {
+    'mode': mode.toJson(),
+    'announce_distance': announceDistance,
+    'announce_time': announceTime,
+    'announce_pace': announcePace,
+    'announce_splits': announceSplits,
+    'announce_goal_progress': announceGoalProgress,
+    'distance_interval_m': distanceIntervalM,
+    'time_interval_s': timeIntervalS,
+  };
+}
+
+/// The overall decision for a notification request: should it be
+/// delivered, and if so, how and when?
+class StrideNotificationDecision {
+  final StrideNotificationType notifType;
+  final bool shouldDeliver;
+  final bool deliverNow;
+  final StrideNotificationContent? content;
+  final int? rescheduleToMinute;
+  final String reason;
+  final StrideNotificationPriority priority;
+
+  StrideNotificationDecision.fromJson(Map<String, dynamic> j)
+      : notifType =
+            StrideNotificationType.fromJson(j['notif_type'] as String),
+        shouldDeliver = j['should_deliver'] as bool,
+        deliverNow = j['deliver_now'] as bool,
+        content = j['content'] != null
+            ? StrideNotificationContent.fromJson(
+                j['content'] as Map<String, dynamic>)
+            : null,
+        rescheduleToMinute = j['reschedule_to_minute'] as int?,
+        reason = j['reason'] as String,
+        priority =
+            StrideNotificationPriority.fromJson(j['priority'] as String);
+}
+
+/// The full context for making a notification decision.
+class StrideNotificationDecisionContext {
+  final StrideNotificationType notifType;
+  final StrideNotificationPreferences preferences;
+  final StrideNotificationPermission permission;
+  final StrideQuietHoursConfig quietHours;
+  final int nowUtcMs;
+  final StrideTimezoneContext timezone;
+  final StrideNotificationContextParams contextParams;
+
+  StrideNotificationDecisionContext({
+    required this.notifType,
+    required this.preferences,
+    required this.permission,
+    required this.quietHours,
+    required this.nowUtcMs,
+    required this.timezone,
+    required this.contextParams,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'notif_type': notifType.toJson(),
+    'preferences': preferences.toJson(),
+    'permission': permission.toJson(),
+    'quiet_hours': quietHours.toJson(),
+    'now_utc_ms': nowUtcMs,
+    'timezone': timezone.toJson(),
+    'context_params': contextParams.toJson(),
+  };
+}
+
+/// A full status snapshot of the notification system for the UI or
+/// diagnostics screen.
+class StrideNotificationStatus {
+  final bool permissionGranted;
+  final StrideNotificationPermission permission;
+  final int enabledCategoryCount;
+  final bool quietHoursEnabled;
+  final String quietHoursWindow;
+  final bool voiceCoachingEnabled;
+  final StrideCoachingDeliveryMode coachingMode;
+  final String timezoneLabel;
+
+  StrideNotificationStatus.fromJson(Map<String, dynamic> j)
+      : permissionGranted = j['permission_granted'] as bool,
+        permission =
+            StrideNotificationPermission.fromJson(j['permission'] as String),
+        enabledCategoryCount = j['enabled_category_count'] as int,
+        quietHoursEnabled = j['quiet_hours_enabled'] as bool,
+        quietHoursWindow = j['quiet_hours_window'] as String,
+        voiceCoachingEnabled = j['voice_coaching_enabled'] as bool,
+        coachingMode =
+            StrideCoachingDeliveryMode.fromJson(j['coaching_mode'] as String),
+        timezoneLabel = j['timezone_label'] as String;
+}

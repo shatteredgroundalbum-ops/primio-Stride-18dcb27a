@@ -50,6 +50,13 @@ use crate::engine::background::{
     InterruptionAction, InterruptionEvent, PowerMode, ProcessKillRecoveryDecision,
     WorkoutPhase,
 };
+use crate::engine::notifications::{
+    self, CoachingAnnouncementKind, CoachingDeliveryMode, NotificationCategory,
+    NotificationContent, NotificationDecision, NotificationDecisionContext,
+    NotificationPermission, NotificationPreferences, NotificationPriority,
+    NotificationStatus, NotificationType, QuietHoursConfig, TimezoneContext,
+    VoiceCoachingConfig,
+};
 use crate::engine::calories::{self, CalorieEstimate, CalorieEstimateResult, CalorieInputs};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::coaching_plan::{
@@ -4528,5 +4535,213 @@ pub extern "C" fn stride_background_explanation(
         };
 
         ok_json(&text)
+    })
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// §13 — Notifications
+// ──────────────────────────────────────────────────────────────────────
+
+/// Makes a complete notification decision: should the notification be
+/// delivered, when, and with what content? Given the notification type,
+/// preferences, permission, quiet hours, current time, and timezone,
+/// returns a `NotificationDecision`.
+#[no_mangle]
+pub extern "C" fn stride_notification_decide(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let ctx: NotificationDecisionContext = match serde_json::from_str(&raw) {
+            Ok(c) => c,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: NotificationDecision = notifications::decide_notification(&ctx);
+        ok_json(&decision)
+    })
+}
+
+/// Builds the notification content (title, body, action label) for a
+/// given notification type and optional context params. Returns a
+/// `NotificationContent`.
+#[no_mangle]
+pub extern "C" fn stride_notification_content(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            notif_type: NotificationType,
+            context_params: notifications::NotificationContextParams,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let content: NotificationContent =
+            notifications::build_notification_content(req.notif_type, &req.context_params);
+        ok_json(&content)
+    })
+}
+
+/// Evaluates whether a notification should be delivered now given the
+/// quiet hours configuration. Returns a `QuietHoursDecision`-like
+/// struct with `is_quiet`, `should_deliver_now`, `reschedule_to_minute`,
+/// and `reason`.
+#[no_mangle]
+pub extern "C" fn stride_notification_quiet_hours(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            quiet_hours: QuietHoursConfig,
+            notif_type: NotificationType,
+            local_minute: u32,
+            critical_bypass: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision = notifications::evaluate_quiet_hours(
+            req.quiet_hours,
+            req.notif_type,
+            req.local_minute,
+            req.critical_bypass,
+        );
+        ok_json(&decision)
+    })
+}
+
+/// Evaluates whether a voice coaching announcement should be made now.
+/// Given the coaching config, quiet hours, announcement kind, last
+/// announcement distance/time, and local minute, returns a boolean
+/// decision.
+#[no_mangle]
+pub extern "C" fn stride_notification_coaching(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            voice_config: VoiceCoachingConfig,
+            quiet_hours: QuietHoursConfig,
+            kind: CoachingAnnouncementKind,
+            last_distance_m: f64,
+            last_time_s: u64,
+            local_minute: u32,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let should = notifications::should_announce(
+            &req.voice_config,
+            req.quiet_hours,
+            req.kind,
+            req.last_distance_m,
+            req.last_time_s,
+            req.local_minute,
+        );
+        ok_json(&should)
+    })
+}
+
+/// Builds a full notification status snapshot for the UI / diagnostics.
+/// Given the permission, preferences, quiet hours, voice coaching
+/// config, and timezone, returns a `NotificationStatus`.
+#[no_mangle]
+pub extern "C" fn stride_notification_status(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            permission: NotificationPermission,
+            preferences: NotificationPreferences,
+            quiet_hours: QuietHoursConfig,
+            voice_config: VoiceCoachingConfig,
+            timezone: TimezoneContext,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let status: NotificationStatus = notifications::build_notification_status(
+            req.permission,
+            req.preferences,
+            req.quiet_hours,
+            &req.voice_config,
+            req.timezone,
+        );
+        ok_json(&status)
+    })
+}
+
+/// Computes the UTC timestamp (epoch milliseconds) for the next daily
+/// reminder at a given local-time minute. Given the current UTC time,
+/// local minute, and timezone, returns the UTC ms timestamp.
+#[no_mangle]
+pub extern "C" fn stride_notification_next_reminder(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            now_utc_ms: i64,
+            local_minute: u32,
+            timezone: TimezoneContext,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let utc_ms = notifications::next_daily_reminder_utc_ms(
+            req.now_utc_ms,
+            req.local_minute,
+            req.timezone,
+        );
+        ok_json(&utc_ms)
     })
 }
