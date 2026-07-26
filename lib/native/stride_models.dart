@@ -772,3 +772,383 @@ class StrideSyncRetryDecision {
       : shouldRetry = j['retry'] as bool,
         delayMs = j['delay_ms'] as int?;
 }
+
+// =========================================================================
+// Route file format & storage layout (spec section 4)
+// =========================================================================
+
+/// Which on-disk / Cloud-Storage format the full-resolution route uses.
+enum StrideRouteFileFormat {
+  gpx,
+  compressedBinary,
+  polylineOnly,
+}
+
+String _routeFileFormatToJson(StrideRouteFileFormat f) {
+  switch (f) {
+    case StrideRouteFileFormat.gpx:
+      return 'gpx';
+    case StrideRouteFileFormat.compressedBinary:
+      return 'compressed_binary';
+    case StrideRouteFileFormat.polylineOnly:
+      return 'polyline_only';
+  }
+}
+
+StrideRouteFileFormat _routeFileFormatFromJson(String raw) {
+  switch (raw) {
+    case 'gpx':
+      return StrideRouteFileFormat.gpx;
+    case 'compressed_binary':
+      return StrideRouteFileFormat.compressedBinary;
+    case 'polyline_only':
+      return StrideRouteFileFormat.polylineOnly;
+    default:
+      throw ArgumentError('Unknown route file format: $raw');
+  }
+}
+
+/// Sync state of a route file, tracked independently from the Firestore
+/// summary document's sync state. A route can be uploaded to Cloud
+/// Storage while the summary row is still pending, or vice versa.
+enum StrideRouteFileSyncState {
+  localOnly,
+  uploading,
+  uploaded,
+  failed,
+}
+
+String _routeFileSyncStateToJson(StrideRouteFileSyncState s) {
+  switch (s) {
+    case StrideRouteFileSyncState.localOnly:
+      return 'local_only';
+    case StrideRouteFileSyncState.uploading:
+      return 'uploading';
+    case StrideRouteFileSyncState.uploaded:
+      return 'uploaded';
+    case StrideRouteFileSyncState.failed:
+      return 'failed';
+  }
+}
+
+StrideRouteFileSyncState _routeFileSyncStateFromJson(String raw) {
+  switch (raw) {
+    case 'local_only':
+      return StrideRouteFileSyncState.localOnly;
+    case 'uploading':
+      return StrideRouteFileSyncState.uploading;
+    case 'uploaded':
+      return StrideRouteFileSyncState.uploaded;
+    case 'failed':
+      return StrideRouteFileSyncState.failed;
+    default:
+      throw ArgumentError('Unknown route file sync state: $raw');
+  }
+}
+
+/// Metadata about a route file — its Cloud Storage path, format, size,
+/// point count, device source, and sync state. Stored in the local
+/// SQLite `route_files` table alongside the raw points.
+class StrideRouteFileMetadata {
+  final String? filePath;
+  final StrideRouteFileFormat format;
+  final int sizeBytes;
+  final int pointCount;
+  final String deviceSource;
+  final StrideRouteFileSyncState syncState;
+  final int createdAt;
+  final int updatedAt;
+
+  StrideRouteFileMetadata.fromJson(Map<String, dynamic> j)
+      : filePath = j['file_path'] as String?,
+        format = _routeFileFormatFromJson(j['format'] as String),
+        sizeBytes = j['size_bytes'] as int,
+        pointCount = j['point_count'] as int,
+        deviceSource = j['device_source'] as String,
+        syncState = _routeFileSyncStateFromJson(j['sync_state'] as String),
+        createdAt = j['created_at'] as int,
+        updatedAt = j['updated_at'] as int;
+
+  Map<String, dynamic> toJson() => {
+        'file_path': filePath,
+        'format': _routeFileFormatToJson(format),
+        'size_bytes': sizeBytes,
+        'point_count': pointCount,
+        'device_source': deviceSource,
+        'sync_state': _routeFileSyncStateToJson(syncState),
+        'created_at': createdAt,
+        'updated_at': updatedAt,
+      };
+}
+
+/// Sync state of a Firestore summary document (mirrors the Rust
+/// `SyncQueueState` enum). Reused for the `sync_state` field on
+/// `StrideRouteSummary`.
+enum StrideSyncQueueState {
+  pending,
+  uploading,
+  synced,
+  failed,
+}
+
+String _syncQueueStateToJson(StrideSyncQueueState s) {
+  switch (s) {
+    case StrideSyncQueueState.pending:
+      return 'pending';
+    case StrideSyncQueueState.uploading:
+      return 'uploading';
+    case StrideSyncQueueState.synced:
+      return 'synced';
+    case StrideSyncQueueState.failed:
+      return 'failed';
+  }
+}
+
+StrideSyncQueueState _syncQueueStateFromJson(String raw) {
+  switch (raw) {
+    case 'pending':
+      return StrideSyncQueueState.pending;
+    case 'uploading':
+      return StrideSyncQueueState.uploading;
+    case 'synced':
+      return StrideSyncQueueState.synced;
+    case 'failed':
+      return StrideSyncQueueState.failed;
+    default:
+      throw ArgumentError('Unknown sync queue state: $raw');
+  }
+}
+
+/// Where a GPS fix came from (mirrors the Rust `LocationSource` enum).
+/// Used by `dominantLocationSource` to attribute a route to its
+/// primary recording source.
+enum StrideLocationSource {
+  phoneGps,
+  wearOs,
+  healthConnect,
+  manual,
+  serverCorrected,
+  estimated,
+}
+
+String _locationSourceToJson(StrideLocationSource s) {
+  switch (s) {
+    case StrideLocationSource.phoneGps:
+      return 'phone_gps';
+    case StrideLocationSource.wearOs:
+      return 'wear_os';
+    case StrideLocationSource.healthConnect:
+      return 'health_connect';
+    case StrideLocationSource.manual:
+      return 'manual';
+    case StrideLocationSource.serverCorrected:
+      return 'server_corrected';
+    case StrideLocationSource.estimated:
+      return 'estimated';
+  }
+}
+
+StrideLocationSource? _locationSourceFromJson(String? raw) {
+  if (raw == null) return null;
+  switch (raw) {
+    case 'phone_gps':
+      return StrideLocationSource.phoneGps;
+    case 'wear_os':
+      return StrideLocationSource.wearOs;
+    case 'health_connect':
+      return StrideLocationSource.healthConnect;
+    case 'manual':
+      return StrideLocationSource.manual;
+    case 'server_corrected':
+      return StrideLocationSource.serverCorrected;
+    case 'estimated':
+      return StrideLocationSource.estimated;
+    default:
+      throw ArgumentError('Unknown location source: $raw');
+  }
+}
+
+/// Activity type (mirrors the Rust `ActivityType` enum). Used by
+/// `StrideRouteSummary` for the `activity_type` field.
+enum StrideActivityType {
+  walk,
+  run,
+  hike,
+  autoDetect,
+}
+
+String _activityTypeToJson(StrideActivityType a) {
+  switch (a) {
+    case StrideActivityType.walk:
+      return 'walk';
+    case StrideActivityType.run:
+      return 'run';
+    case StrideActivityType.hike:
+      return 'hike';
+    case StrideActivityType.autoDetect:
+      return 'auto_detect';
+  }
+}
+
+StrideActivityType _activityTypeFromJson(String raw) {
+  switch (raw) {
+    case 'walk':
+      return StrideActivityType.walk;
+    case 'run':
+      return StrideActivityType.run;
+    case 'hike':
+      return StrideActivityType.hike;
+    case 'auto_detect':
+      return StrideActivityType.autoDetect;
+    default:
+      throw ArgumentError('Unknown activity type: $raw');
+  }
+}
+
+/// A single GPS point, as deserialized from the Rust `WorkoutPoint`
+/// JSON. Used by `serializeGpx` and `dominantLocationSource`.
+class StrideWorkoutPoint {
+  final String pointId;
+  final String workoutId;
+  final double latitude;
+  final double longitude;
+  final double? altitudeMeters;
+  final double? accuracyMeters;
+  final double? speedMetersPerSecond;
+  final double? bearingDegrees;
+  final int recordedAt;
+  final StrideLocationSource source;
+  final bool isMockLocation;
+  final bool accepted;
+
+  StrideWorkoutPoint.fromJson(Map<String, dynamic> j)
+      : pointId = j['point_id'] as String,
+        workoutId = j['workout_id'] as String,
+        latitude = (j['latitude'] as num).toDouble(),
+        longitude = (j['longitude'] as num).toDouble(),
+        altitudeMeters = (j['altitude_meters'] as num?)?.toDouble(),
+        accuracyMeters = (j['accuracy_meters'] as num?)?.toDouble(),
+        speedMetersPerSecond =
+            (j['speed_meters_per_second'] as num?)?.toDouble(),
+        bearingDegrees = (j['bearing_degrees'] as num?)?.toDouble(),
+        recordedAt = j['recorded_at'] as int,
+        source = _locationSourceFromJson(j['source'] as String)!,
+        isMockLocation = j['is_mock_location'] as bool? ?? false,
+        accepted = j['accepted'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'point_id': pointId,
+        'workout_id': workoutId,
+        'latitude': latitude,
+        'longitude': longitude,
+        'altitude_meters': altitudeMeters,
+        'accuracy_meters': accuracyMeters,
+        'speed_meters_per_second': speedMetersPerSecond,
+        'bearing_degrees': bearingDegrees,
+        'recorded_at': recordedAt,
+        'source': _locationSourceToJson(source),
+        'is_mock_location': isMockLocation,
+        'accepted': accepted,
+      };
+}
+
+/// Firestore-ready summary of a workout. This is the compact document
+/// shape — every field the spec lists for the Firestore summary row,
+/// with the full-resolution route reduced to start/end coordinates +
+/// an encoded polyline + a route file path pointing at Cloud Storage.
+class StrideRouteSummary {
+  final String workoutId;
+  final String userId;
+  final StrideActivityType activityType;
+  final int startedAt;
+  final int endedAt;
+  final int durationMs;
+  final double distanceMeters;
+  final double averagePaceSecPerKm;
+  final double averageSpeedMps;
+  final int steps;
+  final double? averageHeartRateBpm;
+  final int? maxHeartRateBpm;
+  final double calories;
+  final String calorieMethod;
+  final double? startLatitude;
+  final double? startLongitude;
+  final double? endLatitude;
+  final double? endLongitude;
+  final String? encodedPolyline;
+  final String? routeFilePath;
+  final StrideRouteFileFormat routeFileFormat;
+  final StrideSyncQueueState syncState;
+  final String deviceSource;
+  final int createdAt;
+  final int updatedAt;
+
+  StrideRouteSummary.fromJson(Map<String, dynamic> j)
+      : workoutId = j['workout_id'] as String,
+        userId = j['user_id'] as String,
+        activityType = _activityTypeFromJson(j['activity_type'] as String),
+        startedAt = j['started_at'] as int,
+        endedAt = j['ended_at'] as int,
+        durationMs = j['duration_ms'] as int,
+        distanceMeters = (j['distance_meters'] as num).toDouble(),
+        averagePaceSecPerKm =
+            (j['average_pace_sec_per_km'] as num).toDouble(),
+        averageSpeedMps = (j['average_speed_mps'] as num).toDouble(),
+        steps = j['steps'] as int,
+        averageHeartRateBpm =
+            (j['average_heart_rate_bpm'] as num?)?.toDouble(),
+        maxHeartRateBpm = j['max_heart_rate_bpm'] as int?,
+        calories = (j['calories'] as num).toDouble(),
+        calorieMethod = j['calorie_method'] as String,
+        startLatitude = (j['start_latitude'] as num?)?.toDouble(),
+        startLongitude = (j['start_longitude'] as num?)?.toDouble(),
+        endLatitude = (j['end_latitude'] as num?)?.toDouble(),
+        endLongitude = (j['end_longitude'] as num?)?.toDouble(),
+        encodedPolyline = j['encoded_polyline'] as String?,
+        routeFilePath = j['route_file_path'] as String?,
+        routeFileFormat =
+            _routeFileFormatFromJson(j['route_file_format'] as String),
+        syncState = _syncQueueStateFromJson(j['sync_state'] as String),
+        deviceSource = j['device_source'] as String,
+        createdAt = j['created_at'] as int,
+        updatedAt = j['updated_at'] as int;
+
+  Map<String, dynamic> toJson() => {
+        'workout_id': workoutId,
+        'user_id': userId,
+        'activity_type': _activityTypeToJson(activityType),
+        'started_at': startedAt,
+        'ended_at': endedAt,
+        'duration_ms': durationMs,
+        'distance_meters': distanceMeters,
+        'average_pace_sec_per_km': averagePaceSecPerKm,
+        'average_speed_mps': averageSpeedMps,
+        'steps': steps,
+        'average_heart_rate_bpm': averageHeartRateBpm,
+        'max_heart_rate_bpm': maxHeartRateBpm,
+        'calories': calories,
+        'calorie_method': calorieMethod,
+        'start_latitude': startLatitude,
+        'start_longitude': startLongitude,
+        'end_latitude': endLatitude,
+        'end_longitude': endLongitude,
+        'encoded_polyline': encodedPolyline,
+        'route_file_path': routeFilePath,
+        'route_file_format': _routeFileFormatToJson(routeFileFormat),
+        'sync_state': _syncQueueStateToJson(syncState),
+        'device_source': deviceSource,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
+      };
+}
+
+/// Result of `stride_validate_route_summary`: whether the summary is
+/// valid for Firestore, and an error message if not.
+class StrideRouteSummaryValidation {
+  final bool valid;
+  final String? error;
+
+  StrideRouteSummaryValidation.fromJson(Map<String, dynamic> j)
+      : valid = j['valid'] as bool,
+        error = j['error'] as String?;
+}

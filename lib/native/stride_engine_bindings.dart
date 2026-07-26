@@ -137,6 +137,37 @@ typedef _StrideTombstoneShouldRetryDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideTombstoneShouldGcNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideTombstoneShouldGcDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// Route file format & storage layout (spec section 4) — stateless logic.
+typedef _StrideDecideRouteFormatNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDecideRouteFormatDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideGenerateRouteFilePathNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideGenerateRouteFilePathDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideEstimateRouteFileSizeNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideEstimateRouteFileSizeDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideShouldPreferWifiForUploadNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideShouldPreferWifiForUploadDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideSerializeGpxNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSerializeGpxDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBuildRouteFileMetadataNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBuildRouteFileMetadataDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideIsRouteSyncTerminalNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideIsRouteSyncTerminalDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideValidateRouteSummaryNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideValidateRouteSummaryDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideDominantLocationSourceNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDominantLocationSourceDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideLocationSourceLabelNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideLocationSourceLabelDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -222,6 +253,26 @@ class StrideEngineBindings {
         _StrideTombstoneShouldRetryDart>('stride_tombstone_should_retry');
     _tombstoneShouldGc = _lib.lookupFunction<_StrideTombstoneShouldGcNative,
         _StrideTombstoneShouldGcDart>('stride_tombstone_should_gc');
+    _decideRouteFormat = _lib.lookupFunction<_StrideDecideRouteFormatNative,
+        _StrideDecideRouteFormatDart>('stride_decide_route_format');
+    _generateRouteFilePath = _lib.lookupFunction<_StrideGenerateRouteFilePathNative,
+        _StrideGenerateRouteFilePathDart>('stride_generate_route_file_path');
+    _estimateRouteFileSize = _lib.lookupFunction<_StrideEstimateRouteFileSizeNative,
+        _StrideEstimateRouteFileSizeDart>('stride_estimate_route_file_size');
+    _shouldPreferWifiForUpload = _lib.lookupFunction<_StrideShouldPreferWifiForUploadNative,
+        _StrideShouldPreferWifiForUploadDart>('stride_should_prefer_wifi_for_upload');
+    _serializeGpx = _lib.lookupFunction<_StrideSerializeGpxNative,
+        _StrideSerializeGpxDart>('stride_serialize_gpx');
+    _buildRouteFileMetadata = _lib.lookupFunction<_StrideBuildRouteFileMetadataNative,
+        _StrideBuildRouteFileMetadataDart>('stride_build_route_file_metadata');
+    _isRouteSyncTerminal = _lib.lookupFunction<_StrideIsRouteSyncTerminalNative,
+        _StrideIsRouteSyncTerminalDart>('stride_is_route_sync_terminal');
+    _validateRouteSummary = _lib.lookupFunction<_StrideValidateRouteSummaryNative,
+        _StrideValidateRouteSummaryDart>('stride_validate_route_summary');
+    _dominantLocationSource = _lib.lookupFunction<_StrideDominantLocationSourceNative,
+        _StrideDominantLocationSourceDart>('stride_dominant_location_source');
+    _locationSourceLabel = _lib.lookupFunction<_StrideLocationSourceLabelNative,
+        _StrideLocationSourceLabelDart>('stride_location_source_label');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -270,6 +321,16 @@ class StrideEngineBindings {
   late final _StrideDecideDeviceSyncDart _decideDeviceSync;
   late final _StrideTombstoneShouldRetryDart _tombstoneShouldRetry;
   late final _StrideTombstoneShouldGcDart _tombstoneShouldGc;
+  late final _StrideDecideRouteFormatDart _decideRouteFormat;
+  late final _StrideGenerateRouteFilePathDart _generateRouteFilePath;
+  late final _StrideEstimateRouteFileSizeDart _estimateRouteFileSize;
+  late final _StrideShouldPreferWifiForUploadDart _shouldPreferWifiForUpload;
+  late final _StrideSerializeGpxDart _serializeGpx;
+  late final _StrideBuildRouteFileMetadataDart _buildRouteFileMetadata;
+  late final _StrideIsRouteSyncTerminalDart _isRouteSyncTerminal;
+  late final _StrideValidateRouteSummaryDart _validateRouteSummary;
+  late final _StrideDominantLocationSourceDart _dominantLocationSource;
+  late final _StrideLocationSourceLabelDart _locationSourceLabel;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -602,6 +663,135 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_tombstoneShouldGc(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // --- Route file format & storage layout (spec section 4) ---------
+
+  /// Decides which route file format to use for a workout.
+  /// `request`: `{"point_count": 1000, "is_offline": false,
+  /// "wants_gpx_export": false}`.
+  /// Returns `{"format": "gpx"}`.
+  Map<String, dynamic> decideRouteFormat(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_decideRouteFormat(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Generates the Cloud Storage object key for a route file.
+  /// `request`: `{"user_id": "u1", "workout_id": "wk1",
+  /// "format": "gpx"}`.
+  /// Returns `{"path": "routes/u1/wk1.gpx"}` or `{"path": null}`.
+  Map<String, dynamic> generateRouteFilePath(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_generateRouteFilePath(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Estimates the byte size of a route file before serialization.
+  /// `request`: `{"format": "gpx", "point_count": 1000}`.
+  /// Returns `{"size_bytes": 180512}`.
+  Map<String, dynamic> estimateRouteFileSize(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_estimateRouteFileSize(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides whether a route file upload should wait for Wi-Fi.
+  /// `request`: `{"format": "gpx", "point_count": 4000,
+  /// "is_on_wifi": false}`.
+  /// Returns `{"should_prefer_wifi": true}`.
+  Map<String, dynamic> shouldPreferWifiForUpload(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_shouldPreferWifiForUpload(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Serializes WorkoutPoints into a GPX 1.1 XML document.
+  /// `request`: `{"workout_id": "wk1", "started_at_ms": 1000,
+  /// "points": [{...}, ...]}`.
+  /// Returns `{"gpx": "<gpx ...>...</gpx>"}`.
+  Map<String, dynamic> serializeGpx(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_serializeGpx(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Builds route file metadata at workout-finish time.
+  /// `request`: `{"user_id": "u1", "workout_id": "wk1",
+  /// "points": [...], "device_source": "pixel-8",
+  /// "is_offline": false, "wants_gpx_export": false,
+  /// "finished_at": 1900000}`.
+  /// Returns the full RouteFileMetadata JSON object.
+  Map<String, dynamic> buildRouteFileMetadata(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_buildRouteFileMetadata(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Checks whether a route file sync state is terminal.
+  /// `request`: `{"state": "uploaded"}`.
+  /// Returns `{"is_terminal": true}`.
+  Map<String, dynamic> isRouteSyncTerminal(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_isRouteSyncTerminal(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Validates that a RouteSummary is safe to write to Firestore.
+  /// `request`: the full RouteSummary JSON object.
+  /// Returns `{"valid": true}` or `{"valid": false, "error": "..."}`.
+  Map<String, dynamic> validateRouteSummary(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_validateRouteSummary(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Determines the dominant LocationSource of a route.
+  /// `request`: `{"points": [{...}, ...]}`.
+  /// Returns `{"source": "phone_gps"}` or `{"source": null}`.
+  Map<String, dynamic> dominantLocationSource(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_dominantLocationSource(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the human-readable label for a LocationSource.
+  /// `request`: `{"source": "phone_gps"}`.
+  /// Returns `{"label": "Phone GPS"}`.
+  Map<String, dynamic> locationSourceLabel(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_locationSourceLabel(ptr));
     } finally {
       malloc.free(ptr);
     }

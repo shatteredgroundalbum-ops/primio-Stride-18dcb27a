@@ -578,4 +578,170 @@ class StrideEngineClient {
     });
     return unwrapEnvelope(env)['should_gc'] as bool;
   }
+
+  // ─── Route file format & storage layout (spec section 4) ────────
+
+  /// Decides which route file format to use for a workout.
+  ///
+  /// Returns [StrideRouteFileFormat.gpx] when the user wants a GPX
+  /// export, [StrideRouteFileFormat.polylineOnly] for short routes
+  /// (<50 points), [StrideRouteFileFormat.compressedBinary] when
+  /// offline and long, or [StrideRouteFileFormat.gpx] when online and
+  /// long.
+  static StrideRouteFileFormat decideRouteFormat({
+    required int pointCount,
+    required bool isOffline,
+    required bool wantsGpxExport,
+  }) {
+    final env = _bindings.decideRouteFormat({
+      'point_count': pointCount,
+      'is_offline': isOffline,
+      'wants_gpx_export': wantsGpxExport,
+    });
+    return _routeFileFormatFromJson(unwrapEnvelope(env)['format'] as String);
+  }
+
+  /// Generates the Cloud Storage object key for a route file.
+  ///
+  /// Returns `null` for [StrideRouteFileFormat.polylineOnly] (no file
+  /// is uploaded in that case).
+  static String? generateRouteFilePath({
+    required String userId,
+    required String workoutId,
+    required StrideRouteFileFormat format,
+  }) {
+    final env = _bindings.generateRouteFilePath({
+      'user_id': userId,
+      'workout_id': workoutId,
+      'format': _routeFileFormatToJson(format),
+    });
+    return unwrapEnvelope(env)['path'] as String?;
+  }
+
+  /// Estimates the byte size of a route file before it is serialized.
+  ///
+  /// Returns 0 for [StrideRouteFileFormat.polylineOnly].
+  static int estimateRouteFileSize({
+    required StrideRouteFileFormat format,
+    required int pointCount,
+  }) {
+    final env = _bindings.estimateRouteFileSize({
+      'format': _routeFileFormatToJson(format),
+      'point_count': pointCount,
+    });
+    return unwrapEnvelope(env)['size_bytes'] as int;
+  }
+
+  /// Decides whether a route file upload should wait for Wi-Fi rather
+  /// than proceeding over mobile data.
+  ///
+  /// Returns `true` (prefer Wi-Fi) when the estimated file size exceeds
+  /// 512 KiB and the device is not on Wi-Fi.
+  static bool shouldPreferWifiForUpload({
+    required StrideRouteFileFormat format,
+    required int pointCount,
+    required bool isOnWifi,
+  }) {
+    final env = _bindings.shouldPreferWifiForUpload({
+      'format': _routeFileFormatToJson(format),
+      'point_count': pointCount,
+      'is_on_wifi': isOnWifi,
+    });
+    return unwrapEnvelope(env)['should_prefer_wifi'] as bool;
+  }
+
+  /// Serializes a list of [StrideWorkoutPoint]s into a GPX 1.1 XML
+  /// document.
+  ///
+  /// Only accepted points are emitted. The output is a complete, valid
+  /// GPX file suitable for Cloud Storage upload or Strava/Garmin
+  /// sharing.
+  static String serializeGpx({
+    required String workoutId,
+    required int startedAtMs,
+    required List<StrideWorkoutPoint> points,
+  }) {
+    final env = _bindings.serializeGpx({
+      'workout_id': workoutId,
+      'started_at_ms': startedAtMs,
+      'points': points.map((p) => p.toJson()).toList(),
+    });
+    return unwrapEnvelope(env)['gpx'] as String;
+  }
+
+  /// Builds [StrideRouteFileMetadata] from controller inputs at
+  /// workout-finish time.
+  ///
+  /// This is the pure decision logic; the actual file serialization and
+  /// Cloud Storage upload happen on the Dart side (the engine never
+  /// does I/O).
+  static StrideRouteFileMetadata buildRouteFileMetadata({
+    required String userId,
+    required String workoutId,
+    required List<StrideWorkoutPoint> points,
+    required String deviceSource,
+    required bool isOffline,
+    required bool wantsGpxExport,
+    required int finishedAt,
+  }) {
+    final env = _bindings.buildRouteFileMetadata({
+      'user_id': userId,
+      'workout_id': workoutId,
+      'points': points.map((p) => p.toJson()).toList(),
+      'device_source': deviceSource,
+      'is_offline': isOffline,
+      'wants_gpx_export': wantsGpxExport,
+      'finished_at': finishedAt,
+    });
+    return StrideRouteFileMetadata.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Checks whether a route file sync state is terminal (no further
+  /// automatic action will be taken by the sync loop).
+  static bool isRouteSyncTerminal({required StrideRouteFileSyncState state}) {
+    final env = _bindings.isRouteSyncTerminal({
+      'state': _routeFileSyncStateToJson(state),
+    });
+    return unwrapEnvelope(env)['is_terminal'] as bool;
+  }
+
+  /// Validates that a [StrideRouteSummary] is safe to write to
+  /// Firestore.
+  ///
+  /// Checks:
+  ///   - `workoutId` and `userId` are non-empty.
+  ///   - `routeFilePath` (if present) starts with `routes/{userId}/`.
+  ///   - `encodedPolyline` (if present) is under 1 MiB.
+  ///
+  /// Returns `null` if valid, or an error message string if not.
+  static String? validateRouteSummary({required StrideRouteSummary summary}) {
+    final env = _bindings.validateRouteSummary(summary.toJson());
+    final data = unwrapEnvelope(env) as Map<String, dynamic>;
+    if (data['valid'] == true) return null;
+    return data['error'] as String?;
+  }
+
+  /// Determines the dominant [StrideLocationSource] of a route — the
+  /// source that contributed the most accepted points.
+  ///
+  /// Returns `null` if the route has no accepted points.
+  static StrideLocationSource? dominantLocationSource({
+    required List<StrideWorkoutPoint> points,
+  }) {
+    final env = _bindings.dominantLocationSource({
+      'points': points.map((p) => p.toJson()).toList(),
+    });
+    final source = unwrapEnvelope(env)['source'] as String?;
+    return _locationSourceFromJson(source);
+  }
+
+  /// Returns the human-readable label for a [StrideLocationSource],
+  /// for UI display (e.g. "Phone GPS", "Wear OS", "Health Connect").
+  static String locationSourceLabel({required StrideLocationSource source}) {
+    final env = _bindings.locationSourceLabel({
+      'source': _locationSourceToJson(source),
+    });
+    return unwrapEnvelope(env)['label'] as String;
+  }
 }

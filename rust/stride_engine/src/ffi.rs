@@ -40,13 +40,18 @@ use crate::engine::battery::{self, BatteryContext, WorkoutActivityLevel};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::permissions::{self, PermissionContext, PermissionState};
 use crate::engine::personal_records::{self, PriorBests};
+use crate::engine::route_format::{
+    self, RouteFileFormat, RouteFormatInput, RouteSummary,
+    RouteFileSyncState,
+};
 use crate::engine::sync::{
     self, ConflictInfo, ConflictResolutionStrategy, DeviceSyncState,
 };
 use crate::engine::units::{self, ConversionKind, DistanceUnit};
 use crate::engine::validation::{self, ValidationInput};
 use crate::models::{
-    ActivityType, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint, WorkoutSummary,
+    ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
+    WorkoutSummary,
 };
 
 // ─── Global registry of live controllers ───────────────────────────────────
@@ -1054,5 +1059,315 @@ pub extern "C" fn stride_tombstone_should_gc(request_json: *const c_char) -> *mu
 
         let should = sync::tombstone_should_gc(req.state, req.synced_at, req.now_ms);
         ok_json(&json!({ "should_gc": should }))
+    })
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Route file format & storage layout (spec section 4)
+// ════════════════════════════════════════════════════════════════════
+
+/// Decides which route file format to use for a workout.
+///
+/// `request_json` shape:
+/// `{"point_count": 1000, "is_offline": false, "wants_gpx_export": false}`.
+/// Returns `{"format": "gpx" | "compressed_binary" | "polyline_only"}`.
+#[no_mangle]
+pub extern "C" fn stride_decide_route_format(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let req: RouteFormatInput = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let format = route_format::decide_route_format(&req);
+        ok_json(&json!({ "format": format }))
+    })
+}
+
+/// Generates the Cloud Storage object key for a route file.
+///
+/// `request_json` shape:
+/// `{"user_id": "u1", "workout_id": "wk1", "format": "gpx"}`.
+/// Returns `{"path": "routes/u1/wk1.gpx"}` or `{"path": null}` for
+/// polyline-only routes (no file is uploaded).
+#[no_mangle]
+pub extern "C" fn stride_generate_route_file_path(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            user_id: String,
+            workout_id: String,
+            format: RouteFileFormat,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let path = route_format::generate_route_file_path(&req.user_id, &req.workout_id, req.format);
+        ok_json(&json!({ "path": path }))
+    })
+}
+
+/// Estimates the byte size of a route file before it is serialized.
+///
+/// `request_json` shape: `{"format": "gpx", "point_count": 1000}`.
+/// Returns `{"size_bytes": 180512}`.
+#[no_mangle]
+pub extern "C" fn stride_estimate_route_file_size(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            format: RouteFileFormat,
+            point_count: usize,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let size = route_format::estimate_route_file_size(req.format, req.point_count);
+        ok_json(&json!({ "size_bytes": size }))
+    })
+}
+
+/// Decides whether a route file upload should wait for Wi-Fi.
+///
+/// `request_json` shape:
+/// `{"format": "gpx", "point_count": 4000, "is_on_wifi": false}`.
+/// Returns `{"should_prefer_wifi": true}`.
+#[no_mangle]
+pub extern "C" fn stride_should_prefer_wifi_for_upload(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            format: RouteFileFormat,
+            point_count: usize,
+            is_on_wifi: bool,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let prefer = route_format::should_prefer_wifi_for_upload(
+            req.format,
+            req.point_count,
+            req.is_on_wifi,
+        );
+        ok_json(&json!({ "should_prefer_wifi": prefer }))
+    })
+}
+
+/// Serializes a slice of WorkoutPoints into a GPX 1.1 XML document.
+///
+/// `request_json` shape:
+/// `{"workout_id": "wk1", "started_at_ms": 1000, "points": [{...}, ...]}`.
+/// Returns `{"gpx": "<gpx ...>...</gpx>"}`.
+///
+/// Only accepted points are emitted. This is the full-resolution route
+/// export for Cloud Storage upload or Strava/Garmin sharing.
+#[no_mangle]
+pub extern "C" fn stride_serialize_gpx(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            workout_id: String,
+            started_at_ms: i64,
+            points: Vec<WorkoutPoint>,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let gpx = route_format::serialize_gpx(&req.workout_id, req.started_at_ms, &req.points);
+        ok_json(&json!({ "gpx": gpx }))
+    })
+}
+
+/// Builds route file metadata from controller inputs at workout-finish time.
+///
+/// `request_json` shape:
+/// `{"user_id": "u1", "workout_id": "wk1", "points": [...],
+///  "device_source": "pixel-8", "is_offline": false,
+///  "wants_gpx_export": false, "finished_at": 1900000}`.
+/// Returns the full `RouteFileMetadata` JSON object.
+#[no_mangle]
+pub extern "C" fn stride_build_route_file_metadata(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            user_id: String,
+            workout_id: String,
+            points: Vec<WorkoutPoint>,
+            device_source: String,
+            is_offline: bool,
+            wants_gpx_export: bool,
+            finished_at: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let meta = route_format::build_route_file_metadata(
+            &req.user_id,
+            &req.workout_id,
+            &req.points,
+            &req.device_source,
+            req.is_offline,
+            req.wants_gpx_export,
+            req.finished_at,
+        );
+        ok_json(&meta)
+    })
+}
+
+/// Checks whether a route file sync state is terminal (no further
+/// automatic action will be taken).
+///
+/// `request_json` shape: `{"state": "uploaded"}`.
+/// Returns `{"is_terminal": true}`.
+#[no_mangle]
+pub extern "C" fn stride_is_route_sync_terminal(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            state: RouteFileSyncState,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let is_terminal = route_format::is_route_sync_terminal(req.state);
+        ok_json(&json!({ "is_terminal": is_terminal }))
+    })
+}
+
+/// Validates that a RouteSummary is safe to write to Firestore.
+///
+/// `request_json` shape: the full `RouteSummary` JSON object.
+/// Returns `{"valid": true}` or `{"valid": false, "error": "..."}`.
+///
+/// The Dart layer calls this *before* writing to Firestore so a bug
+/// never produces an invalid or oversized document (e.g. a route file
+/// path that doesn't match the user_id prefix, or a polyline that
+/// exceeds the 1 MiB document limit).
+#[no_mangle]
+pub extern "C" fn stride_validate_route_summary(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let summary: RouteSummary = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match route_format::validate_route_summary(&summary) {
+            Ok(()) => ok_json(&json!({ "valid": true })),
+            Err(msg) => ok_json(&json!({ "valid": false, "error": msg })),
+        }
+    })
+}
+
+/// Determines the dominant LocationSource of a route (the source that
+/// contributed the most accepted points).
+///
+/// `request_json` shape: `{"points": [{...}, ...]}`.
+/// Returns `{"source": "phone_gps"}` or `{"source": null}` if no
+/// accepted points exist.
+#[no_mangle]
+pub extern "C" fn stride_dominant_location_source(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            points: Vec<WorkoutPoint>,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let source = route_format::dominant_location_source(&req.points);
+        ok_json(&json!({ "source": source }))
+    })
+}
+
+/// Returns the human-readable label for a LocationSource.
+///
+/// `request_json` shape: `{"source": "phone_gps"}`.
+/// Returns `{"label": "Phone GPS"}`.
+#[no_mangle]
+pub extern "C" fn stride_location_source_label(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            source: LocationSource,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let label = route_format::location_source_label(req.source);
+        ok_json(&json!({ "label": label }))
     })
 }

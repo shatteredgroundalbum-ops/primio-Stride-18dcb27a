@@ -22,6 +22,7 @@ pub mod permissions;
 pub mod personal_records;
 pub mod recovery;
 pub mod route;
+pub mod route_format;
 pub mod speed;
 pub mod splits;
 pub mod steps;
