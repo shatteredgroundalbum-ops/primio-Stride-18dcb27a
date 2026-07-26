@@ -2402,3 +2402,615 @@ class StrideRateLimitResult {
         remainingTokens = j['remaining_tokens'].toDouble(),
         retryAfterMs = j['retry_after_ms'] as int;
 }
+
+// ===========================================================================
+// §8 — AI coaching plan & safety guards
+// ===========================================================================
+
+/// The user's experience level.
+///
+/// Mirrors `coaching_plan::ExperienceLevel`.
+enum StrideExperienceLevel {
+  beginner,
+  intermediate,
+  advanced;
+
+  static StrideExperienceLevel fromJson(String s) {
+    switch (s) {
+      case 'beginner':
+        return StrideExperienceLevel.beginner;
+      case 'intermediate':
+        return StrideExperienceLevel.intermediate;
+      case 'advanced':
+        return StrideExperienceLevel.advanced;
+      default:
+        throw FormatException('Unknown ExperienceLevel: $s');
+    }
+  }
+
+  String toJson() => name;
+}
+
+/// The difficulty/intensity of a single workout day.
+///
+/// Mirrors `coaching_plan::WorkoutDifficulty`.
+enum StrideWorkoutDifficulty {
+  easy,
+  moderate,
+  hard;
+
+  static StrideWorkoutDifficulty fromJson(String s) {
+    switch (s) {
+      case 'easy':
+        return StrideWorkoutDifficulty.easy;
+      case 'moderate':
+        return StrideWorkoutDifficulty.moderate;
+      case 'hard':
+        return StrideWorkoutDifficulty.hard;
+      default:
+        throw FormatException('Unknown WorkoutDifficulty: $s');
+    }
+  }
+
+  String toJson() => name;
+}
+
+/// A single day in a weekly training plan.
+class StrideDayPlan {
+  final int dayOfWeek;
+  final bool isRestDay;
+  final double targetDistanceM;
+  final int targetDurationS;
+  final StrideWorkoutDifficulty difficulty;
+  final String description;
+
+  StrideDayPlan({
+    required this.dayOfWeek,
+    required this.isRestDay,
+    required this.targetDistanceM,
+    required this.targetDurationS,
+    required this.difficulty,
+    required this.description,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'day_of_week': dayOfWeek,
+        'is_rest_day': isRestDay,
+        'target_distance_m': targetDistanceM,
+        'target_duration_s': targetDurationS,
+        'difficulty': difficulty.toJson(),
+        'description': description,
+      };
+
+  StrideDayPlan.fromJson(Map<String, dynamic> j)
+      : dayOfWeek = j['day_of_week'] as int,
+        isRestDay = j['is_rest_day'] as bool,
+        targetDistanceM = j['target_distance_m'].toDouble(),
+        targetDurationS = j['target_duration_s'] as int,
+        difficulty = StrideWorkoutDifficulty.fromJson(j['difficulty'] as String),
+        description = j['description'] as String;
+}
+
+/// A 7-day weekly training plan.
+class StrideWeeklyPlan {
+  final List<StrideDayPlan> days;
+  final double weeklyDistanceM;
+  final int weeklyDurationS;
+  final int restDays;
+  final StrideExperienceLevel experienceLevel;
+
+  StrideWeeklyPlan({
+    required this.days,
+    required this.weeklyDistanceM,
+    required this.weeklyDurationS,
+    required this.restDays,
+    required this.experienceLevel,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'days': days.map((d) => d.toJson()).toList(),
+        'weekly_distance_m': weeklyDistanceM,
+        'weekly_duration_s': weeklyDurationS,
+        'rest_days': restDays,
+        'experience_level': experienceLevel.toJson(),
+      };
+
+  StrideWeeklyPlan.fromJson(Map<String, dynamic> j)
+      : days = (j['days'] as List<dynamic>)
+            .map((e) => StrideDayPlan.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        weeklyDistanceM = j['weekly_distance_m'].toDouble(),
+        weeklyDurationS = j['weekly_duration_s'] as int,
+        restDays = j['rest_days'] as int,
+        experienceLevel =
+            StrideExperienceLevel.fromJson(j['experience_level'] as String);
+}
+
+/// The result of validating a training plan.
+class StridePlanValidationResult {
+  final bool isValid;
+  final List<String> issues;
+  final List<String> adjustments;
+
+  StridePlanValidationResult.fromJson(Map<String, dynamic> j)
+      : isValid = j['is_valid'] as bool,
+        issues = (j['issues'] as List<dynamic>? ?? [])
+            .map((e) => e as String)
+            .toList(),
+        adjustments = (j['adjustments'] as List<dynamic>? ?? [])
+            .map((e) => e as String)
+            .toList();
+}
+
+/// Experience-level caps returned by `coachingPlanExperienceCaps`.
+class StrideExperienceCaps {
+  final StrideExperienceLevel experienceLevel;
+  final String label;
+  final double maxSingleSessionDistanceM;
+  final int maxSingleSessionDurationS;
+  final double maxWeeklyDistanceM;
+  final int recommendedRestDaysPerWeek;
+
+  StrideExperienceCaps.fromJson(Map<String, dynamic> j)
+      : experienceLevel =
+            StrideExperienceLevel.fromJson(j['experience_level'] as String),
+        label = j['label'] as String,
+        maxSingleSessionDistanceM =
+            j['max_single_session_distance_m'].toDouble(),
+        maxSingleSessionDurationS =
+            j['max_single_session_duration_s'] as int,
+        maxWeeklyDistanceM = j['max_weekly_distance_m'].toDouble(),
+        recommendedRestDaysPerWeek =
+            j['recommended_rest_days_per_week'] as int;
+}
+
+/// The type of pain the user reports.
+///
+/// Mirrors `coaching_plan::PainType`.
+enum StridePainType {
+  none,
+  mild,
+  moderate,
+  severe,
+  joint,
+  chest,
+  dizziness;
+
+  static StridePainType fromJson(String s) {
+    switch (s) {
+      case 'none':
+        return StridePainType.none;
+      case 'mild':
+        return StridePainType.mild;
+      case 'moderate':
+        return StridePainType.moderate;
+      case 'severe':
+        return StridePainType.severe;
+      case 'joint':
+        return StridePainType.joint;
+      case 'chest':
+        return StridePainType.chest;
+      case 'dizziness':
+        return StridePainType.dizziness;
+      default:
+        throw FormatException('Unknown PainType: $s');
+    }
+  }
+
+  String toJson() => name;
+}
+
+/// The action the system recommends in response to pain.
+///
+/// Mirrors `coaching_plan::PainAction`.
+enum StridePainAction {
+  continueAction,
+  reduceIntensity,
+  rest,
+  stopAndRest,
+  seekMedicalAttention;
+
+  static StridePainAction fromJson(String s) {
+    switch (s) {
+      case 'continue':
+        return StridePainAction.continueAction;
+      case 'reduce_intensity':
+        return StridePainAction.reduceIntensity;
+      case 'rest':
+        return StridePainAction.rest;
+      case 'stop_and_rest':
+        return StridePainAction.stopAndRest;
+      case 'seek_medical_attention':
+        return StridePainAction.seekMedicalAttention;
+      default:
+        throw FormatException('Unknown PainAction: $s');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePainAction.continueAction:
+        return 'continue';
+      case StridePainAction.reduceIntensity:
+        return 'reduce_intensity';
+      case StridePainAction.rest:
+        return 'rest';
+      case StridePainAction.stopAndRest:
+        return 'stop_and_rest';
+      case StridePainAction.seekMedicalAttention:
+        return 'seek_medical_attention';
+    }
+  }
+}
+
+/// The system's response to a user-reported pain.
+class StridePainResponse {
+  final StridePainAction action;
+  final String message;
+  final bool shouldEscalate;
+  final bool shouldStopTraining;
+
+  StridePainResponse.fromJson(Map<String, dynamic> j)
+      : action = StridePainAction.fromJson(j['action'] as String),
+        message = j['message'] as String,
+        shouldEscalate = j['should_escalate'] as bool,
+        shouldStopTraining = j['should_stop_training'] as bool;
+}
+
+/// The result of validating AI-generated coaching text.
+class StrideContentValidationResult {
+  final bool isSafe;
+  final List<String> violations;
+
+  StrideContentValidationResult.fromJson(Map<String, dynamic> j)
+      : isSafe = j['is_safe'] as bool,
+        violations = (j['violations'] as List<dynamic>? ?? [])
+            .map((e) => e as String)
+            .toList();
+}
+
+/// The reason for escalating to a medical professional.
+///
+/// Mirrors `coaching_plan::EscalationReason`.
+enum StrideEscalationReason {
+  chestPain,
+  severeDizziness,
+  severePersistentPain,
+  cannotBearWeight,
+  neurologicalSymptoms,
+  persistentUnexplainedSymptoms;
+
+  static StrideEscalationReason fromJson(String s) {
+    switch (s) {
+      case 'chest_pain':
+        return StrideEscalationReason.chestPain;
+      case 'severe_dizziness':
+        return StrideEscalationReason.severeDizziness;
+      case 'severe_persistent_pain':
+        return StrideEscalationReason.severePersistentPain;
+      case 'cannot_bear_weight':
+        return StrideEscalationReason.cannotBearWeight;
+      case 'neurological_symptoms':
+        return StrideEscalationReason.neurologicalSymptoms;
+      case 'persistent_unexplained_symptoms':
+        return StrideEscalationReason.persistentUnexplainedSymptoms;
+      default:
+        throw FormatException('Unknown EscalationReason: $s');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideEscalationReason.chestPain:
+        return 'chest_pain';
+      case StrideEscalationReason.severeDizziness:
+        return 'severe_dizziness';
+      case StrideEscalationReason.severePersistentPain:
+        return 'severe_persistent_pain';
+      case StrideEscalationReason.cannotBearWeight:
+        return 'cannot_bear_weight';
+      case StrideEscalationReason.neurologicalSymptoms:
+        return 'neurological_symptoms';
+      case StrideEscalationReason.persistentUnexplainedSymptoms:
+        return 'persistent_unexplained_symptoms';
+    }
+  }
+}
+
+/// An escalation message for the user.
+class StrideEscalationMessage {
+  final StrideEscalationReason reason;
+  final String message;
+  final bool recommendEmergency;
+
+  StrideEscalationMessage.fromJson(Map<String, dynamic> j)
+      : reason = StrideEscalationReason.fromJson(j['reason'] as String),
+        message = j['message'] as String,
+        recommendEmergency = j['recommend_emergency'] as bool;
+}
+
+/// The type of feedback the user gives on a plan.
+///
+/// Mirrors `coaching_plan::UserFeedback`.
+enum StrideUserFeedback {
+  accept,
+  reject,
+  modify,
+  tooHard,
+  tooEasy,
+  noTime,
+  injured;
+
+  static StrideUserFeedback fromJson(String s) {
+    switch (s) {
+      case 'accept':
+        return StrideUserFeedback.accept;
+      case 'reject':
+        return StrideUserFeedback.reject;
+      case 'modify':
+        return StrideUserFeedback.modify;
+      case 'too_hard':
+        return StrideUserFeedback.tooHard;
+      case 'too_easy':
+        return StrideUserFeedback.tooEasy;
+      case 'no_time':
+        return StrideUserFeedback.noTime;
+      case 'injured':
+        return StrideUserFeedback.injured;
+      default:
+        throw FormatException('Unknown UserFeedback: $s');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideUserFeedback.accept:
+        return 'accept';
+      case StrideUserFeedback.reject:
+        return 'reject';
+      case StrideUserFeedback.modify:
+        return 'modify';
+      case StrideUserFeedback.tooHard:
+        return 'too_hard';
+      case StrideUserFeedback.tooEasy:
+        return 'too_easy';
+      case StrideUserFeedback.noTime:
+        return 'no_time';
+      case StrideUserFeedback.injured:
+        return 'injured';
+    }
+  }
+}
+
+/// The action to take based on user feedback.
+///
+/// Mirrors `coaching_plan::FeedbackAction`.
+enum StrideFeedbackAction {
+  keepPlan,
+  adjustPlan,
+  reduceDifficulty,
+  increaseDifficulty,
+  reduceTimeCommitment,
+  switchToRecovery,
+  escalateToHumanCoach;
+
+  static StrideFeedbackAction fromJson(String s) {
+    switch (s) {
+      case 'keep_plan':
+        return StrideFeedbackAction.keepPlan;
+      case 'adjust_plan':
+        return StrideFeedbackAction.adjustPlan;
+      case 'reduce_difficulty':
+        return StrideFeedbackAction.reduceDifficulty;
+      case 'increase_difficulty':
+        return StrideFeedbackAction.increaseDifficulty;
+      case 'reduce_time_commitment':
+        return StrideFeedbackAction.reduceTimeCommitment;
+      case 'switch_to_recovery':
+        return StrideFeedbackAction.switchToRecovery;
+      case 'escalate_to_human_coach':
+        return StrideFeedbackAction.escalateToHumanCoach;
+      default:
+        throw FormatException('Unknown FeedbackAction: $s');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideFeedbackAction.keepPlan:
+        return 'keep_plan';
+      case StrideFeedbackAction.adjustPlan:
+        return 'adjust_plan';
+      case StrideFeedbackAction.reduceDifficulty:
+        return 'reduce_difficulty';
+      case StrideFeedbackAction.increaseDifficulty:
+        return 'increase_difficulty';
+      case StrideFeedbackAction.reduceTimeCommitment:
+        return 'reduce_time_commitment';
+      case StrideFeedbackAction.switchToRecovery:
+        return 'switch_to_recovery';
+      case StrideFeedbackAction.escalateToHumanCoach:
+        return 'escalate_to_human_coach';
+    }
+  }
+}
+
+/// The result of processing user feedback.
+class StrideFeedbackResult {
+  final StrideFeedbackAction action;
+  final String message;
+  final bool shouldRegenerate;
+
+  StrideFeedbackResult.fromJson(Map<String, dynamic> j)
+      : action = StrideFeedbackAction.fromJson(j['action'] as String),
+        message = j['message'] as String,
+        shouldRegenerate = j['should_regenerate'] as bool;
+}
+
+/// Whether the AI service is available for use.
+///
+/// Mirrors `coaching_plan::AiAvailability`.
+enum StrideAiAvailability {
+  available,
+  serviceUnavailable,
+  quotaExceeded,
+  costBudgetExceeded,
+  disabled;
+
+  static StrideAiAvailability fromJson(String s) {
+    switch (s) {
+      case 'available':
+        return StrideAiAvailability.available;
+      case 'service_unavailable':
+        return StrideAiAvailability.serviceUnavailable;
+      case 'quota_exceeded':
+        return StrideAiAvailability.quotaExceeded;
+      case 'cost_budget_exceeded':
+        return StrideAiAvailability.costBudgetExceeded;
+      case 'disabled':
+        return StrideAiAvailability.disabled;
+      default:
+        throw FormatException('Unknown AiAvailability: $s');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAiAvailability.available:
+        return 'available';
+      case StrideAiAvailability.serviceUnavailable:
+        return 'service_unavailable';
+      case StrideAiAvailability.quotaExceeded:
+        return 'quota_exceeded';
+      case StrideAiAvailability.costBudgetExceeded:
+        return 'cost_budget_exceeded';
+      case StrideAiAvailability.disabled:
+        return 'disabled';
+    }
+  }
+}
+
+/// The type of AI operation being performed.
+///
+/// Mirrors `coaching_plan::AiOperation`.
+enum StrideAiOperation {
+  generatePlan,
+  adjustPlan,
+  summarizeWorkout,
+  encouragement,
+  answerQuestion,
+  analyzeProgress;
+
+  static StrideAiOperation fromJson(String s) {
+    switch (s) {
+      case 'generate_plan':
+        return StrideAiOperation.generatePlan;
+      case 'adjust_plan':
+        return StrideAiOperation.adjustPlan;
+      case 'summarize_workout':
+        return StrideAiOperation.summarizeWorkout;
+      case 'encouragement':
+        return StrideAiOperation.encouragement;
+      case 'answer_question':
+        return StrideAiOperation.answerQuestion;
+      case 'analyze_progress':
+        return StrideAiOperation.analyzeProgress;
+      default:
+        throw FormatException('Unknown AiOperation: $s');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAiOperation.generatePlan:
+        return 'generate_plan';
+      case StrideAiOperation.adjustPlan:
+        return 'adjust_plan';
+      case StrideAiOperation.summarizeWorkout:
+        return 'summarize_workout';
+      case StrideAiOperation.encouragement:
+        return 'encouragement';
+      case StrideAiOperation.answerQuestion:
+        return 'answer_question';
+      case StrideAiOperation.analyzeProgress:
+        return 'analyze_progress';
+    }
+  }
+}
+
+/// Input data for summarizing a completed workout.
+class StrideWorkoutSummaryInput {
+  final double distanceM;
+  final int durationS;
+  final double avgSpeedMps;
+  final int steps;
+  final int calories;
+  final StrideExperienceLevel experienceLevel;
+
+  StrideWorkoutSummaryInput({
+    required this.distanceM,
+    required this.durationS,
+    required this.avgSpeedMps,
+    required this.steps,
+    required this.calories,
+    required this.experienceLevel,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'distance_m': distanceM,
+        'duration_s': durationS,
+        'avg_speed_mps': avgSpeedMps,
+        'steps': steps,
+        'calories': calories,
+        'experience_level': experienceLevel.toJson(),
+      };
+}
+
+/// Input for adjusting a plan based on user feedback.
+class StridePlanAdjustmentInput {
+  final double currentWeeklyDistanceM;
+  final StrideExperienceLevel experienceLevel;
+  final StrideUserFeedback feedback;
+  final bool isInjured;
+
+  StridePlanAdjustmentInput({
+    required this.currentWeeklyDistanceM,
+    required this.experienceLevel,
+    required this.feedback,
+    required this.isInjured,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'current_weekly_distance_m': currentWeeklyDistanceM,
+        'experience_level': experienceLevel.toJson(),
+        'feedback': feedback.toJson(),
+        'is_injured': isInjured,
+      };
+}
+
+/// The result of a plan adjustment.
+class StridePlanAdjustmentResult {
+  final double adjustedWeeklyDistanceM;
+  final bool difficultyReduced;
+  final int restDaysAdded;
+  final String message;
+
+  StridePlanAdjustmentResult.fromJson(Map<String, dynamic> j)
+      : adjustedWeeklyDistanceM =
+            j['adjusted_weekly_distance_m'].toDouble(),
+        difficultyReduced = j['difficulty_reduced'] as bool,
+        restDaysAdded = j['rest_days_added'] as int,
+        message = j['message'] as String;
+}
+
+/// The result of moderating a user request for safety.
+class StrideRequestModerationResult {
+  final bool isSafe;
+  final String? refusalMessage;
+  final String? flagReason;
+
+  StrideRequestModerationResult.fromJson(Map<String, dynamic> j)
+      : isSafe = j['is_safe'] as bool,
+        refusalMessage = j['refusal_message'] as String?,
+        flagReason = j['flag_reason'] as String?;
+}

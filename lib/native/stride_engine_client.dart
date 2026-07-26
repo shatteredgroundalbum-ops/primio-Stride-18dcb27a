@@ -1490,4 +1490,218 @@ class StrideEngineClient {
     final env = _bindings.securityGenerateStorageRules({});
     return unwrapEnvelope(env)['rules'] as String;
   }
+
+// ===========================================================================
+// §8 — AI coaching plan & safety guards
+// ===========================================================================
+
+  /// Returns the caps (max distance, duration, rest days) for an experience level.
+  static StrideExperienceCaps coachingPlanExperienceCaps({
+    required StrideExperienceLevel experienceLevel,
+  }) {
+    final env = _bindings.coachingPlanExperienceCaps({
+      'experience_level': experienceLevel.toJson(),
+    });
+    return StrideExperienceCaps.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Validates a single day plan against the experience-level limits.
+  /// Returns a list of validation issues (empty if valid).
+  static List<String> coachingPlanValidateDayPlan({
+    required StrideDayPlan day,
+    required StrideExperienceLevel experienceLevel,
+  }) {
+    final env = _bindings.coachingPlanValidateDayPlan({
+      'day': day.toJson(),
+      'experience_level': experienceLevel.toJson(),
+    });
+    final issues = unwrapEnvelope(env)['issues'] as List<dynamic>;
+    return issues.map((e) => e as String).toList();
+  }
+
+  /// Validates a weekly plan against limits and the 10% increase rule.
+  static StridePlanValidationResult coachingPlanValidateWeeklyPlan({
+    required StrideWeeklyPlan plan,
+    double? previousWeeklyDistanceM,
+  }) {
+    final env = _bindings.coachingPlanValidateWeeklyPlan({
+      'plan': plan.toJson(),
+      'previous_weekly_distance_m': previousWeeklyDistanceM,
+    });
+    return StridePlanValidationResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Generates a deterministic, rule-based fallback weekly plan.
+  static StrideWeeklyPlan coachingPlanGenerateFallback({
+    required StrideExperienceLevel experienceLevel,
+    required double currentWeeklyDistanceM,
+  }) {
+    final env = _bindings.coachingPlanGenerateFallback({
+      'experience_level': experienceLevel.toJson(),
+      'current_weekly_distance_m': currentWeeklyDistanceM,
+    });
+    return StrideWeeklyPlan.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Generates a non-diagnostic pain response for the given pain type.
+  static StridePainResponse coachingPlanRespondToPain({
+    required StridePainType pain,
+  }) {
+    final env = _bindings.coachingPlanRespondToPain({
+      'pain': pain.toJson(),
+    });
+    return StridePainResponse.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Checks whether text contains medical diagnosis language.
+  static bool coachingPlanContainsDiagnosis({required String text}) {
+    final env = _bindings.coachingPlanContainsDiagnosis({'text': text});
+    return unwrapEnvelope(env)['contains_diagnosis'] as bool;
+  }
+
+  /// Checks whether text contains weight-loss guarantee language.
+  static bool coachingPlanContainsWeightLossPromise({required String text}) {
+    final env = _bindings.coachingPlanContainsWeightLossPromise({'text': text});
+    return unwrapEnvelope(env)['contains_weight_loss_promise'] as bool;
+  }
+
+  /// Validates AI-generated coaching text against content guards.
+  static StrideContentValidationResult coachingPlanValidateCoachingText({
+    required String text,
+  }) {
+    final env = _bindings.coachingPlanValidateCoachingText({'text': text});
+    return StrideContentValidationResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Generates an escalation message for concerning symptoms.
+  static StrideEscalationMessage coachingPlanEscalationMessage({
+    required StrideEscalationReason reason,
+  }) {
+    final env = _bindings.coachingPlanEscalationMessage({
+      'reason': reason.toJson(),
+    });
+    return StrideEscalationMessage.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Processes user feedback on a plan and returns the recommended action.
+  static StrideFeedbackResult coachingPlanProcessUserFeedback({
+    required StrideUserFeedback feedback,
+  }) {
+    final env = _bindings.coachingPlanProcessUserFeedback({
+      'feedback': feedback.toJson(),
+    });
+    return StrideFeedbackResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Decides whether the AI should be called or the fallback used.
+  static StrideAiAvailability coachingPlanDecideAiAvailability({
+    required bool isServiceUp,
+    int? remainingQuota,
+    required int estimatedCostCents,
+    int? costBudgetCents,
+    required bool isEnabled,
+  }) {
+    final env = _bindings.coachingPlanDecideAiAvailability({
+      'is_service_up': isServiceUp,
+      'remaining_quota': remainingQuota,
+      'estimated_cost_cents': estimatedCostCents,
+      'cost_budget_cents': costBudgetCents,
+      'is_enabled': isEnabled,
+    });
+    return StrideAiAvailability.fromJson(
+        unwrapEnvelope(env) as String);
+  }
+
+  /// Whether the rule-based fallback should be used instead of the AI.
+  static bool coachingPlanShouldUseFallback({
+    required StrideAiAvailability availability,
+  }) {
+    final env = _bindings.coachingPlanShouldUseFallback({
+      'availability': availability.toJson(),
+    });
+    return unwrapEnvelope(env)['should_use_fallback'] as bool;
+  }
+
+  /// Estimates the cost in cents for an AI operation.
+  static int coachingPlanEstimateAiCost({
+    required StrideAiOperation operation,
+  }) {
+    final env = _bindings.coachingPlanEstimateAiCost({
+      'operation': operation.toJson(),
+    });
+    return unwrapEnvelope(env)['cost_cents'] as int;
+  }
+
+  /// Generates a deterministic cache key for an AI request.
+  static String coachingPlanCacheKey({
+    required StrideAiOperation operation,
+    required String userInput,
+  }) {
+    final env = _bindings.coachingPlanCacheKey({
+      'operation': operation.toJson(),
+      'user_input': userInput,
+    });
+    return unwrapEnvelope(env)['cache_key'] as String;
+  }
+
+  /// Summarizes a completed workout using rule-based logic (fallback).
+  static String coachingPlanSummarizeWorkout({
+    required StrideWorkoutSummaryInput input,
+  }) {
+    final env = _bindings.coachingPlanSummarizeWorkout(input.toJson());
+    return unwrapEnvelope(env)['summary'] as String;
+  }
+
+  /// Generates a rule-based encouragement message based on recent activity.
+  static String coachingPlanGenerateEncouragement({
+    required int daysActiveLastWeek,
+    required double totalDistanceLastWeekM,
+    required double goalDistanceM,
+  }) {
+    final env = _bindings.coachingPlanGenerateEncouragement({
+      'days_active_last_week': daysActiveLastWeek,
+      'total_distance_last_week_m': totalDistanceLastWeekM,
+      'goal_distance_m': goalDistanceM,
+    });
+    return unwrapEnvelope(env)['message'] as String;
+  }
+
+  /// Adjusts a plan based on user feedback using rule-based logic (fallback).
+  static StridePlanAdjustmentResult coachingPlanAdjustPlan({
+    required StridePlanAdjustmentInput input,
+  }) {
+    final env = _bindings.coachingPlanAdjustPlan(input.toJson());
+    return StridePlanAdjustmentResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Recommends a realistic weekly distance progression.
+  static double coachingPlanRecommendProgression({
+    required double currentWeeklyDistanceM,
+    required StrideExperienceLevel experienceLevel,
+    required int weeksAtCurrentLevel,
+  }) {
+    final env = _bindings.coachingPlanRecommendProgression({
+      'current_weekly_distance_m': currentWeeklyDistanceM,
+      'experience_level': experienceLevel.toJson(),
+      'weeks_at_current_level': weeksAtCurrentLevel,
+    });
+    return unwrapEnvelope(env)['recommended_weekly_distance_m'] as double;
+  }
+
+  /// Moderates a user request for safety before processing.
+  static StrideRequestModerationResult coachingPlanModerateRequest({
+    required String request,
+  }) {
+    final env = _bindings.coachingPlanModerateRequest({'request': request});
+    return StrideRequestModerationResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }

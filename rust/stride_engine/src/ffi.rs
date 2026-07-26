@@ -44,6 +44,11 @@ use crate::engine::account::{
 };
 use crate::engine::battery::{self, BatteryContext, WorkoutActivityLevel};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
+use crate::engine::coaching_plan::{
+    self, AiAvailability, AiOperation, DayPlan, EscalationReason,
+    ExperienceLevel, PainType, PlanAdjustmentInput, UserFeedback,
+    WeeklyPlan, WorkoutSummaryInput,
+};
 use crate::engine::permissions::{self, PermissionContext, PermissionState};
 use crate::engine::personal_records::{self, PriorBests};
 use crate::engine::route_format::{
@@ -3098,5 +3103,506 @@ pub extern "C" fn stride_security_generate_storage_rules(
     guarded(move || {
         let rules = security::generate_storage_rules();
         ok_json(&json!({ "rules": rules }))
+    })
+}
+// ===========================================================================
+// §8 — AI coaching backend FFI entry points
+// ===========================================================================
+
+/// Returns the experience-level caps (distance, duration, rest days).
+pub extern "C" fn stride_coaching_plan_experience_caps(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            experience_level: ExperienceLevel,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let level = req.experience_level;
+        ok_json(&json!({
+            "experience_level": level,
+            "label": level.label(),
+            "max_single_session_distance_m": level.max_single_session_distance_m(),
+            "max_single_session_duration_s": level.max_single_session_duration_s(),
+            "max_weekly_distance_m": level.max_weekly_distance_m(),
+            "recommended_rest_days_per_week": level.recommended_rest_days_per_week(),
+        }))
+    })
+}
+
+/// Validates a single day plan.
+pub extern "C" fn stride_coaching_plan_validate_day_plan(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            day: DayPlan,
+            experience_level: ExperienceLevel,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let issues = coaching_plan::validate_day_plan(&req.day, req.experience_level);
+        ok_json(&json!({ "issues": issues }))
+    })
+}
+
+/// Validates a weekly plan.
+pub extern "C" fn stride_coaching_plan_validate_weekly_plan(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            plan: WeeklyPlan,
+            previous_weekly_distance_m: Option<f64>,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = coaching_plan::validate_weekly_plan(&req.plan, req.previous_weekly_distance_m);
+        ok_json(&result)
+    })
+}
+
+/// Generates a fallback weekly plan.
+pub extern "C" fn stride_coaching_plan_generate_fallback(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            experience_level: ExperienceLevel,
+            current_weekly_distance_m: f64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let plan = coaching_plan::generate_fallback_plan(req.experience_level, req.current_weekly_distance_m);
+        ok_json(&plan)
+    })
+}
+
+/// Responds to user-reported pain.
+pub extern "C" fn stride_coaching_plan_respond_to_pain(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            pain: PainType,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let response = coaching_plan::respond_to_pain(req.pain);
+        ok_json(&response)
+    })
+}
+
+/// Checks if text contains medical diagnosis language.
+pub extern "C" fn stride_coaching_plan_contains_diagnosis(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            text: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let contains = coaching_plan::contains_diagnosis(&req.text);
+        ok_json(&json!({ "contains_diagnosis": contains }))
+    })
+}
+
+/// Checks if text contains weight-loss promise language.
+pub extern "C" fn stride_coaching_plan_contains_weight_loss_promise(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            text: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let contains = coaching_plan::contains_weight_loss_promise(&req.text);
+        ok_json(&json!({ "contains_weight_loss_promise": contains }))
+    })
+}
+
+/// Validates AI-generated coaching text against content guards.
+pub extern "C" fn stride_coaching_plan_validate_coaching_text(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            text: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = coaching_plan::validate_coaching_text(&req.text);
+        ok_json(&result)
+    })
+}
+
+/// Generates an escalation message for concerning symptoms.
+pub extern "C" fn stride_coaching_plan_escalation_message(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            reason: EscalationReason,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let message = coaching_plan::escalation_message(req.reason);
+        ok_json(&message)
+    })
+}
+
+/// Processes user feedback on a plan.
+pub extern "C" fn stride_coaching_plan_process_user_feedback(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            feedback: UserFeedback,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = coaching_plan::process_user_feedback(req.feedback);
+        ok_json(&result)
+    })
+}
+
+/// Decides whether the AI should be called or the fallback used.
+pub extern "C" fn stride_coaching_plan_decide_ai_availability(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            is_service_up: bool,
+            remaining_quota: Option<u32>,
+            estimated_cost_cents: u64,
+            cost_budget_cents: Option<u64>,
+            is_enabled: bool,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let availability = coaching_plan::decide_ai_availability(
+            req.is_service_up,
+            req.remaining_quota,
+            req.estimated_cost_cents,
+            req.cost_budget_cents,
+            req.is_enabled,
+        );
+        ok_json(&availability)
+    })
+}
+
+/// Whether the fallback should be used instead of calling the AI.
+pub extern "C" fn stride_coaching_plan_should_use_fallback(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            availability: AiAvailability,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let should = coaching_plan::should_use_fallback(req.availability);
+        ok_json(&json!({ "should_use_fallback": should }))
+    })
+}
+
+/// Estimates the cost in cents for an AI operation.
+pub extern "C" fn stride_coaching_plan_estimate_ai_cost(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            operation: AiOperation,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let cost = coaching_plan::estimate_ai_cost_cents(req.operation);
+        ok_json(&json!({ "cost_cents": cost }))
+    })
+}
+
+/// Generates a deterministic cache key for an AI request.
+pub extern "C" fn stride_coaching_plan_cache_key(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            operation: AiOperation,
+            user_input: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let key = coaching_plan::cache_key(req.operation, &req.user_input);
+        ok_json(&json!({ "cache_key": key }))
+    })
+}
+
+/// Summarizes a completed workout (fallback when AI unavailable).
+pub extern "C" fn stride_coaching_plan_summarize_workout(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let input: WorkoutSummaryInput = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let summary = coaching_plan::summarize_workout(&input);
+        ok_json(&json!({ "summary": summary }))
+    })
+}
+
+/// Generates a rule-based encouragement message.
+pub extern "C" fn stride_coaching_plan_generate_encouragement(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            days_active_last_week: u32,
+            total_distance_last_week_m: f64,
+            goal_distance_m: f64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let message = coaching_plan::generate_encouragement(
+            req.days_active_last_week,
+            req.total_distance_last_week_m,
+            req.goal_distance_m,
+        );
+        ok_json(&json!({ "message": message }))
+    })
+}
+
+/// Adjusts a plan based on user feedback (fallback).
+pub extern "C" fn stride_coaching_plan_adjust_plan(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let input: PlanAdjustmentInput = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = coaching_plan::adjust_plan(&input);
+        ok_json(&result)
+    })
+}
+
+/// Recommends a realistic progression for the next week.
+pub extern "C" fn stride_coaching_plan_recommend_progression(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_weekly_distance_m: f64,
+            experience_level: ExperienceLevel,
+            weeks_at_current_level: u32,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let recommended = coaching_plan::recommend_progression(
+            req.current_weekly_distance_m,
+            req.experience_level,
+            req.weeks_at_current_level,
+        );
+        ok_json(&json!({ "recommended_weekly_distance_m": recommended }))
+    })
+}
+
+/// Moderates a user request for safety.
+pub extern "C" fn stride_coaching_plan_moderate_request(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            request: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = coaching_plan::moderate_request(&req.request);
+        ok_json(&result)
     })
 }

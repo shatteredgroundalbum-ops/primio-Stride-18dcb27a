@@ -11,6 +11,7 @@ pub mod battery;
 pub mod calories;
 pub mod classification;
 pub mod coaching;
+pub mod coaching_plan;
 pub mod controller;
 pub mod distance;
 pub mod elevation;

@@ -387,6 +387,63 @@ typedef _StrideSecurityGenerateFirestoreRulesDart = Pointer<Utf8> Function(Point
 typedef _StrideSecurityGenerateStorageRulesNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideSecurityGenerateStorageRulesDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+typedef _StrideCoachingPlanExperienceCapsNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanExperienceCapsDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanValidateDayPlanNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanValidateDayPlanDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanValidateWeeklyPlanNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanValidateWeeklyPlanDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanGenerateFallbackNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanGenerateFallbackDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanRespondToPainNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanRespondToPainDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanContainsDiagnosisNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanContainsDiagnosisDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanContainsWeightLossPromiseNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanContainsWeightLossPromiseDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanValidateCoachingTextNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanValidateCoachingTextDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanEscalationMessageNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanEscalationMessageDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanProcessUserFeedbackNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanProcessUserFeedbackDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanDecideAiAvailabilityNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanDecideAiAvailabilityDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanShouldUseFallbackNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanShouldUseFallbackDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanEstimateAiCostNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanEstimateAiCostDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanCacheKeyNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanCacheKeyDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanSummarizeWorkoutNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanSummarizeWorkoutDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanGenerateEncouragementNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanGenerateEncouragementDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanAdjustPlanNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanAdjustPlanDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanRecommendProgressionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanRecommendProgressionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCoachingPlanModerateRequestNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCoachingPlanModerateRequestDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -623,6 +680,44 @@ class StrideEngineBindings {
         _StrideSecurityGenerateFirestoreRulesDart>('stride_security_generate_firestore_rules');
     _securityGenerateStorageRules = _lib.lookupFunction<_StrideSecurityGenerateStorageRulesNative,
         _StrideSecurityGenerateStorageRulesDart>('stride_security_generate_storage_rules');
+    _CoachingPlanExperienceCaps = _lib.lookupFunction<_StrideCoachingPlanExperienceCapsNative,
+        _StrideCoachingPlanExperienceCapsDart>('stride_coaching_plan_experience_caps');
+    _CoachingPlanValidateDayPlan = _lib.lookupFunction<_StrideCoachingPlanValidateDayPlanNative,
+        _StrideCoachingPlanValidateDayPlanDart>('stride_coaching_plan_validate_day_plan');
+    _CoachingPlanValidateWeeklyPlan = _lib.lookupFunction<_StrideCoachingPlanValidateWeeklyPlanNative,
+        _StrideCoachingPlanValidateWeeklyPlanDart>('stride_coaching_plan_validate_weekly_plan');
+    _CoachingPlanGenerateFallback = _lib.lookupFunction<_StrideCoachingPlanGenerateFallbackNative,
+        _StrideCoachingPlanGenerateFallbackDart>('stride_coaching_plan_generate_fallback');
+    _CoachingPlanRespondToPain = _lib.lookupFunction<_StrideCoachingPlanRespondToPainNative,
+        _StrideCoachingPlanRespondToPainDart>('stride_coaching_plan_respond_to_pain');
+    _CoachingPlanContainsDiagnosis = _lib.lookupFunction<_StrideCoachingPlanContainsDiagnosisNative,
+        _StrideCoachingPlanContainsDiagnosisDart>('stride_coaching_plan_contains_diagnosis');
+    _CoachingPlanContainsWeightLossPromise = _lib.lookupFunction<_StrideCoachingPlanContainsWeightLossPromiseNative,
+        _StrideCoachingPlanContainsWeightLossPromiseDart>('stride_coaching_plan_contains_weight_loss_promise');
+    _CoachingPlanValidateCoachingText = _lib.lookupFunction<_StrideCoachingPlanValidateCoachingTextNative,
+        _StrideCoachingPlanValidateCoachingTextDart>('stride_coaching_plan_validate_coaching_text');
+    _CoachingPlanEscalationMessage = _lib.lookupFunction<_StrideCoachingPlanEscalationMessageNative,
+        _StrideCoachingPlanEscalationMessageDart>('stride_coaching_plan_escalation_message');
+    _CoachingPlanProcessUserFeedback = _lib.lookupFunction<_StrideCoachingPlanProcessUserFeedbackNative,
+        _StrideCoachingPlanProcessUserFeedbackDart>('stride_coaching_plan_process_user_feedback');
+    _CoachingPlanDecideAiAvailability = _lib.lookupFunction<_StrideCoachingPlanDecideAiAvailabilityNative,
+        _StrideCoachingPlanDecideAiAvailabilityDart>('stride_coaching_plan_decide_ai_availability');
+    _CoachingPlanShouldUseFallback = _lib.lookupFunction<_StrideCoachingPlanShouldUseFallbackNative,
+        _StrideCoachingPlanShouldUseFallbackDart>('stride_coaching_plan_should_use_fallback');
+    _CoachingPlanEstimateAiCost = _lib.lookupFunction<_StrideCoachingPlanEstimateAiCostNative,
+        _StrideCoachingPlanEstimateAiCostDart>('stride_coaching_plan_estimate_ai_cost');
+    _CoachingPlanCacheKey = _lib.lookupFunction<_StrideCoachingPlanCacheKeyNative,
+        _StrideCoachingPlanCacheKeyDart>('stride_coaching_plan_cache_key');
+    _CoachingPlanSummarizeWorkout = _lib.lookupFunction<_StrideCoachingPlanSummarizeWorkoutNative,
+        _StrideCoachingPlanSummarizeWorkoutDart>('stride_coaching_plan_summarize_workout');
+    _CoachingPlanGenerateEncouragement = _lib.lookupFunction<_StrideCoachingPlanGenerateEncouragementNative,
+        _StrideCoachingPlanGenerateEncouragementDart>('stride_coaching_plan_generate_encouragement');
+    _CoachingPlanAdjustPlan = _lib.lookupFunction<_StrideCoachingPlanAdjustPlanNative,
+        _StrideCoachingPlanAdjustPlanDart>('stride_coaching_plan_adjust_plan');
+    _CoachingPlanRecommendProgression = _lib.lookupFunction<_StrideCoachingPlanRecommendProgressionNative,
+        _StrideCoachingPlanRecommendProgressionDart>('stride_coaching_plan_recommend_progression');
+    _CoachingPlanModerateRequest = _lib.lookupFunction<_StrideCoachingPlanModerateRequestNative,
+        _StrideCoachingPlanModerateRequestDart>('stride_coaching_plan_moderate_request');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -747,6 +842,25 @@ class StrideEngineBindings {
   late final _StrideSecurityEnvironmentFromProjectIdDart _securityEnvironmentFromProjectId;
   late final _StrideSecurityGenerateFirestoreRulesDart _securityGenerateFirestoreRules;
   late final _StrideSecurityGenerateStorageRulesDart _securityGenerateStorageRules;
+  late final _StrideCoachingPlanExperienceCapsDart _CoachingPlanExperienceCaps;
+  late final _StrideCoachingPlanValidateDayPlanDart _CoachingPlanValidateDayPlan;
+  late final _StrideCoachingPlanValidateWeeklyPlanDart _CoachingPlanValidateWeeklyPlan;
+  late final _StrideCoachingPlanGenerateFallbackDart _CoachingPlanGenerateFallback;
+  late final _StrideCoachingPlanRespondToPainDart _CoachingPlanRespondToPain;
+  late final _StrideCoachingPlanContainsDiagnosisDart _CoachingPlanContainsDiagnosis;
+  late final _StrideCoachingPlanContainsWeightLossPromiseDart _CoachingPlanContainsWeightLossPromise;
+  late final _StrideCoachingPlanValidateCoachingTextDart _CoachingPlanValidateCoachingText;
+  late final _StrideCoachingPlanEscalationMessageDart _CoachingPlanEscalationMessage;
+  late final _StrideCoachingPlanProcessUserFeedbackDart _CoachingPlanProcessUserFeedback;
+  late final _StrideCoachingPlanDecideAiAvailabilityDart _CoachingPlanDecideAiAvailability;
+  late final _StrideCoachingPlanShouldUseFallbackDart _CoachingPlanShouldUseFallback;
+  late final _StrideCoachingPlanEstimateAiCostDart _CoachingPlanEstimateAiCost;
+  late final _StrideCoachingPlanCacheKeyDart _CoachingPlanCacheKey;
+  late final _StrideCoachingPlanSummarizeWorkoutDart _CoachingPlanSummarizeWorkout;
+  late final _StrideCoachingPlanGenerateEncouragementDart _CoachingPlanGenerateEncouragement;
+  late final _StrideCoachingPlanAdjustPlanDart _CoachingPlanAdjustPlan;
+  late final _StrideCoachingPlanRecommendProgressionDart _CoachingPlanRecommendProgression;
+  late final _StrideCoachingPlanModerateRequestDart _CoachingPlanModerateRequest;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -1885,6 +1999,196 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_securityGenerateStorageRules(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanExperienceCaps — §8 coaching plan — experience-level caps.
+  Map<String, dynamic> coachingPlanExperienceCaps(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanExperienceCaps(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanValidateDayPlan — §8 coaching plan — validate a single day plan.
+  Map<String, dynamic> coachingPlanValidateDayPlan(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanValidateDayPlan(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanValidateWeeklyPlan — §8 coaching plan — validate a weekly plan.
+  Map<String, dynamic> coachingPlanValidateWeeklyPlan(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanValidateWeeklyPlan(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanGenerateFallback — §8 coaching plan — generate a deterministic fallback weekly plan.
+  Map<String, dynamic> coachingPlanGenerateFallback(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanGenerateFallback(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanRespondToPain — §8 coaching plan — non-diagnostic pain response.
+  Map<String, dynamic> coachingPlanRespondToPain(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanRespondToPain(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanContainsDiagnosis — §8 coaching plan — detect medical diagnosis language.
+  Map<String, dynamic> coachingPlanContainsDiagnosis(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanContainsDiagnosis(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanContainsWeightLossPromise — §8 coaching plan — detect weight-loss promise language.
+  Map<String, dynamic> coachingPlanContainsWeightLossPromise(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanContainsWeightLossPromise(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanValidateCoachingText — §8 coaching plan — validate AI coaching text against content guards.
+  Map<String, dynamic> coachingPlanValidateCoachingText(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanValidateCoachingText(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanEscalationMessage — §8 coaching plan — generate escalation message.
+  Map<String, dynamic> coachingPlanEscalationMessage(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanEscalationMessage(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanProcessUserFeedback — §8 coaching plan — process user feedback on a plan.
+  Map<String, dynamic> coachingPlanProcessUserFeedback(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanProcessUserFeedback(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanDecideAiAvailability — §8 coaching plan — decide whether AI should be called.
+  Map<String, dynamic> coachingPlanDecideAiAvailability(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanDecideAiAvailability(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanShouldUseFallback — §8 coaching plan — whether to use rule-based fallback.
+  Map<String, dynamic> coachingPlanShouldUseFallback(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanShouldUseFallback(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanEstimateAiCost — §8 coaching plan — estimate AI operation cost in cents.
+  Map<String, dynamic> coachingPlanEstimateAiCost(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanEstimateAiCost(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanCacheKey — §8 coaching plan — deterministic cache key for an AI request.
+  Map<String, dynamic> coachingPlanCacheKey(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanCacheKey(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanSummarizeWorkout — §8 coaching plan — rule-based workout summary.
+  Map<String, dynamic> coachingPlanSummarizeWorkout(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanSummarizeWorkout(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanGenerateEncouragement — §8 coaching plan — rule-based encouragement message.
+  Map<String, dynamic> coachingPlanGenerateEncouragement(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanGenerateEncouragement(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanAdjustPlan — §8 coaching plan — rule-based plan adjustment.
+  Map<String, dynamic> coachingPlanAdjustPlan(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanAdjustPlan(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanRecommendProgression — §8 coaching plan — recommend weekly distance progression.
+  Map<String, dynamic> coachingPlanRecommendProgression(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanRecommendProgression(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// coachingPlanModerateRequest — §8 coaching plan — safety moderation of user request.
+  Map<String, dynamic> coachingPlanModerateRequest(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CoachingPlanModerateRequest(ptr));
     } finally {
       malloc.free(ptr);
     }
