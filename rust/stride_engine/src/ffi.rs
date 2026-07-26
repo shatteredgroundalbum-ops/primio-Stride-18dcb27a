@@ -100,6 +100,12 @@ use crate::engine::wearable::{
     SourceAvailability, SourceRevocationRecord, WearableConnectionState,
     WearableDeviceInfo, WearableStatus, WearableSyncConfig, WearableSyncStatus,
 };
+use crate::engine::testing::{
+    self, TestCategory, TestConfig, TestEnvironment, TestLayer, TestReport,
+    TestResult, TestSeverity, TestStatus, TestSuite, CoverageMetrics,
+    DeviceProfile, GpsQuality, LocationType,
+    RealDeviceScenario, ScenarioResult, TestRegistry,
+};
 use crate::models::{
     ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
     WorkoutSummary,
@@ -4924,5 +4930,163 @@ pub extern "C" fn stride_error_is_recoverable(
 
         let retryable = error_states::is_retryable(req.category);
         ok_json(&retryable)
+    })
+}
+
+// ===========================================================================
+// §15 — Testing
+// ===========================================================================
+
+/// Runs a test suite (simulated) and returns the suite with results.
+///
+/// `request_json` shape:
+/// ```json
+/// { "suite": { "name": "...", "layer": "unit", "configs": [...], "results": [] } }
+/// ```
+/// Returns a `TestSuite` as JSON with results filled in (all passed,
+/// zero duration — simulated run).
+#[no_mangle]
+pub extern "C" fn stride_testing_run_suite(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            suite: TestSuite,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = testing::run_suite(&req.suite);
+        ok_json(&result)
+    })
+}
+
+/// Runs a real-device scenario (simulated) and returns the result.
+///
+/// `request_json` shape:
+/// ```json
+/// { "scenario": { "id": "...", "name": "...", ... } }
+/// ```
+/// Returns a `ScenarioResult` as JSON (all behaviors passed,
+/// zero duration — simulated run).
+#[no_mangle]
+pub extern "C" fn stride_testing_run_scenario(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            scenario: RealDeviceScenario,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = testing::run_scenario(&req.scenario);
+        ok_json(&result)
+    })
+}
+
+/// Builds a test report from a test registry.
+///
+/// `request_json` shape:
+/// ```json
+/// { "name": "...", "registry": { "suites": [...], "scenarios": [...], "scenario_results": [] } }
+/// ```
+/// Returns a `TestReport` as JSON with aggregated stats and coverage.
+#[no_mangle]
+pub extern "C" fn stride_testing_build_report(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            name: String,
+            registry: TestRegistry,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let report = testing::build_report(req.name, &req.registry);
+        ok_json(&report)
+    })
+}
+
+/// Looks up a test config by its id from the full test registry.
+///
+/// `request_json` shape:
+/// ```json
+/// { "test_id": "unit_distance_haversine_known" }
+/// ```
+/// Returns a `TestConfig` as JSON, or an error if not found.
+#[no_mangle]
+pub extern "C" fn stride_testing_get_config(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            test_id: String,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let registry = testing::build_full_registry();
+        for suite in &registry.suites {
+            for config in &suite.configs {
+                if config.id == req.test_id {
+                    return ok_json(config);
+                }
+            }
+        }
+        err_json(format!("test_not_found: {}", req.test_id))
+    })
+}
+
+/// Returns the list of all standard test suite names.
+///
+/// `request_json` shape: `{ }` (empty JSON object)
+/// Returns a `Vec<String>` as JSON — the names of all suites in the
+/// full registry.
+#[no_mangle]
+pub extern "C" fn stride_testing_list_suites(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let registry = testing::build_full_registry();
+        let names = registry.suite_names();
+        ok_json(&names)
     })
 }

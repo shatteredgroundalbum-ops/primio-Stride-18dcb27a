@@ -559,6 +559,22 @@ typedef _StrideErrorHealthStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideErrorIsRecoverableNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideErrorIsRecoverableDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// §15 — Testing
+typedef _StrideTestingRunSuiteNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTestingRunSuiteDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTestingRunScenarioNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTestingRunScenarioDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTestingBuildReportNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTestingBuildReportDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTestingGetConfigNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTestingGetConfigDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTestingListSuitesNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTestingListSuitesDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -910,6 +926,18 @@ class StrideEngineBindings {
         _StrideErrorHealthStatusDart>('stride_error_health_status');
     _ErrorIsRecoverable = _lib.lookupFunction<_StrideErrorIsRecoverableNative,
         _StrideErrorIsRecoverableDart>('stride_error_is_recoverable');
+
+    // §15 — Testing
+    _TestingRunSuite = _lib.lookupFunction<_StrideTestingRunSuiteNative,
+        _StrideTestingRunSuiteDart>('stride_testing_run_suite');
+    _TestingRunScenario = _lib.lookupFunction<_StrideTestingRunScenarioNative,
+        _StrideTestingRunScenarioDart>('stride_testing_run_scenario');
+    _TestingBuildReport = _lib.lookupFunction<_StrideTestingBuildReportNative,
+        _StrideTestingBuildReportDart>('stride_testing_build_report');
+    _TestingGetConfig = _lib.lookupFunction<_StrideTestingGetConfigNative,
+        _StrideTestingGetConfigDart>('stride_testing_get_config');
+    _TestingListSuites = _lib.lookupFunction<_StrideTestingListSuitesNative,
+        _StrideTestingListSuitesDart>('stride_testing_list_suites');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1093,6 +1121,13 @@ class StrideEngineBindings {
   late final _StrideErrorTransitionDart _ErrorTransition;
   late final _StrideErrorHealthStatusDart _ErrorHealthStatus;
   late final _StrideErrorIsRecoverableDart _ErrorIsRecoverable;
+
+  // §15 — Testing
+  late final _StrideTestingRunSuiteDart _TestingRunSuite;
+  late final _StrideTestingRunScenarioDart _TestingRunScenario;
+  late final _StrideTestingBuildReportDart _TestingBuildReport;
+  late final _StrideTestingGetConfigDart _TestingGetConfig;
+  late final _StrideTestingListSuitesDart _TestingListSuites;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2804,6 +2839,67 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_ErrorIsRecoverable(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // §15 — Testing
+  // -----------------------------------------------------------------------
+
+  /// testingRunSuite — §15 — run a test suite (simulated) and return
+  /// the suite with results filled in (all passed, zero duration).
+  Map<String, dynamic> testingRunSuite(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_TestingRunSuite(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// testingRunScenario — §15 — run a real-device scenario (simulated)
+  /// and return the scenario result (all behaviors passed, zero
+  /// duration).
+  Map<String, dynamic> testingRunScenario(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_TestingRunScenario(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// testingBuildReport — §15 — build a test report from a test
+  /// registry, aggregating all suite and scenario results with
+  /// coverage metrics.
+  Map<String, dynamic> testingBuildReport(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_TestingBuildReport(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// testingGetConfig — §15 — look up a test config by its id from
+  /// the full test registry.
+  Map<String, dynamic> testingGetConfig(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_TestingGetConfig(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// testingListSuites — §15 — return the list of all standard test
+  /// suite names.
+  Map<String, dynamic> testingListSuites(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_TestingListSuites(ptr));
     } finally {
       malloc.free(ptr);
     }

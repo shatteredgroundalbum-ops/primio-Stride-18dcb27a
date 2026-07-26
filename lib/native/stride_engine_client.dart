@@ -2277,4 +2277,65 @@ class StrideEngineClient {
     });
     return unwrapEnvelope(env) as bool;
   }
+
+  // ── §15 — Testing ──────────────────────────────────────────────
+
+  /// Runs a test suite (simulated) and returns the suite with results
+  /// filled in. The actual test execution happens on the Dart/Kotlin
+  /// side — this produces a result structure that can be serialized
+  /// and sent to the UI.
+  static StrideTestSuite testingRunSuite({
+    required StrideTestSuite suite,
+  }) {
+    final env = _bindings.testingRunSuite({
+      'suite': suite.toJson(),
+    });
+    return StrideTestSuite.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Runs a real-device scenario (simulated) and returns the scenario
+  /// result (all behaviors passed, zero duration — simulated run).
+  static StrideScenarioResult testingRunScenario({
+    required StrideRealDeviceScenario scenario,
+  }) {
+    final env = _bindings.testingRunScenario({
+      'scenario': scenario.toJson(),
+    });
+    return StrideScenarioResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds a test report from a test registry, aggregating all suite
+  /// and scenario results with coverage metrics.
+  static StrideTestReport testingBuildReport({
+    required String name,
+    required StrideTestRegistry registry,
+  }) {
+    final env = _bindings.testingBuildReport({
+      'name': name,
+      'registry': registry.toJson(),
+    });
+    return StrideTestReport.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Looks up a test config by its id from the full test registry.
+  /// Returns the [StrideTestConfig] if found, or throws
+  /// [StrideEngineException] if the test id is not found.
+  static StrideTestConfig testingGetConfig({
+    required String testId,
+  }) {
+    final env = _bindings.testingGetConfig({
+      'test_id': testId,
+    });
+    return StrideTestConfig.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the list of all standard test suite names.
+  static List<String> testingListSuites() {
+    final env = _bindings.testingListSuites({});
+    return (unwrapEnvelope(env) as List).cast<String>();
+  }
 }

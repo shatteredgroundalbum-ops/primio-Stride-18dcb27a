@@ -5531,3 +5531,799 @@ class StrideEngineHealthStatus {
             })
             .toList();
 }
+
+// ===========================================================================
+// §15 — Testing
+// ===========================================================================
+
+/// The layer of the testing pyramid a test belongs to.
+enum StrideTestLayer {
+  unit,
+  database,
+  repository,
+  sync,
+  securityRules,
+  aiSchema,
+  widget,
+  navigation,
+  integration;
+
+  static StrideTestLayer fromJson(String s) {
+    switch (s) {
+      case 'unit':
+        return StrideTestLayer.unit;
+      case 'database':
+        return StrideTestLayer.database;
+      case 'repository':
+        return StrideTestLayer.repository;
+      case 'sync':
+        return StrideTestLayer.sync;
+      case 'security_rules':
+        return StrideTestLayer.securityRules;
+      case 'ai_schema':
+        return StrideTestLayer.aiSchema;
+      case 'widget':
+        return StrideTestLayer.widget;
+      case 'navigation':
+        return StrideTestLayer.navigation;
+      case 'integration':
+        return StrideTestLayer.integration;
+      default:
+        return StrideTestLayer.unit;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestLayer.unit:
+        return 'unit';
+      case StrideTestLayer.database:
+        return 'database';
+      case StrideTestLayer.repository:
+        return 'repository';
+      case StrideTestLayer.sync:
+        return 'sync';
+      case StrideTestLayer.securityRules:
+        return 'security_rules';
+      case StrideTestLayer.aiSchema:
+        return 'ai_schema';
+      case StrideTestLayer.widget:
+        return 'widget';
+      case StrideTestLayer.navigation:
+        return 'navigation';
+      case StrideTestLayer.integration:
+        return 'integration';
+    }
+  }
+}
+
+/// The functional category a test covers.
+enum StrideTestCategory {
+  distance,
+  pace,
+  speed,
+  calories,
+  timing,
+  planProgression,
+  database,
+  repository,
+  sync,
+  security,
+  aiSchema,
+  widget,
+  navigation,
+  integration,
+  gps,
+  background,
+  wearable,
+  music,
+  notifications,
+  errorRecovery;
+
+  static StrideTestCategory fromJson(String s) {
+    switch (s) {
+      case 'distance':
+        return StrideTestCategory.distance;
+      case 'pace':
+        return StrideTestCategory.pace;
+      case 'speed':
+        return StrideTestCategory.speed;
+      case 'calories':
+        return StrideTestCategory.calories;
+      case 'timing':
+        return StrideTestCategory.timing;
+      case 'plan_progression':
+        return StrideTestCategory.planProgression;
+      case 'database':
+        return StrideTestCategory.database;
+      case 'repository':
+        return StrideTestCategory.repository;
+      case 'sync':
+        return StrideTestCategory.sync;
+      case 'security':
+        return StrideTestCategory.security;
+      case 'ai_schema':
+        return StrideTestCategory.aiSchema;
+      case 'widget':
+        return StrideTestCategory.widget;
+      case 'navigation':
+        return StrideTestCategory.navigation;
+      case 'integration':
+        return StrideTestCategory.integration;
+      case 'gps':
+        return StrideTestCategory.gps;
+      case 'background':
+        return StrideTestCategory.background;
+      case 'wearable':
+        return StrideTestCategory.wearable;
+      case 'music':
+        return StrideTestCategory.music;
+      case 'notifications':
+        return StrideTestCategory.notifications;
+      case 'error_recovery':
+        return StrideTestCategory.errorRecovery;
+      default:
+        return StrideTestCategory.distance;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestCategory.distance:
+        return 'distance';
+      case StrideTestCategory.pace:
+        return 'pace';
+      case StrideTestCategory.speed:
+        return 'speed';
+      case StrideTestCategory.calories:
+        return 'calories';
+      case StrideTestCategory.timing:
+        return 'timing';
+      case StrideTestCategory.planProgression:
+        return 'plan_progression';
+      case StrideTestCategory.database:
+        return 'database';
+      case StrideTestCategory.repository:
+        return 'repository';
+      case StrideTestCategory.sync:
+        return 'sync';
+      case StrideTestCategory.security:
+        return 'security';
+      case StrideTestCategory.aiSchema:
+        return 'ai_schema';
+      case StrideTestCategory.widget:
+        return 'widget';
+      case StrideTestCategory.navigation:
+        return 'navigation';
+      case StrideTestCategory.integration:
+        return 'integration';
+      case StrideTestCategory.gps:
+        return 'gps';
+      case StrideTestCategory.background:
+        return 'background';
+      case StrideTestCategory.wearable:
+        return 'wearable';
+      case StrideTestCategory.music:
+        return 'music';
+      case StrideTestCategory.notifications:
+        return 'notifications';
+      case StrideTestCategory.errorRecovery:
+        return 'error_recovery';
+    }
+  }
+}
+
+/// The execution status of a test.
+enum StrideTestStatus {
+  pending,
+  running,
+  passed,
+  failed,
+  skipped,
+  flaky;
+
+  static StrideTestStatus fromJson(String s) {
+    switch (s) {
+      case 'pending':
+        return StrideTestStatus.pending;
+      case 'running':
+        return StrideTestStatus.running;
+      case 'passed':
+        return StrideTestStatus.passed;
+      case 'failed':
+        return StrideTestStatus.failed;
+      case 'skipped':
+        return StrideTestStatus.skipped;
+      case 'flaky':
+        return StrideTestStatus.flaky;
+      default:
+        return StrideTestStatus.pending;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestStatus.pending:
+        return 'pending';
+      case StrideTestStatus.running:
+        return 'running';
+      case StrideTestStatus.passed:
+        return 'passed';
+      case StrideTestStatus.failed:
+        return 'failed';
+      case StrideTestStatus.skipped:
+        return 'skipped';
+      case StrideTestStatus.flaky:
+        return 'flaky';
+    }
+  }
+}
+
+/// How critical a test is — critical tests block release.
+enum StrideTestSeverity {
+  low,
+  medium,
+  high,
+  critical;
+
+  static StrideTestSeverity fromJson(String s) {
+    switch (s) {
+      case 'low':
+        return StrideTestSeverity.low;
+      case 'medium':
+        return StrideTestSeverity.medium;
+      case 'high':
+        return StrideTestSeverity.high;
+      case 'critical':
+        return StrideTestSeverity.critical;
+      default:
+        return StrideTestSeverity.medium;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestSeverity.low:
+        return 'low';
+      case StrideTestSeverity.medium:
+        return 'medium';
+      case StrideTestSeverity.high:
+        return 'high';
+      case StrideTestSeverity.critical:
+        return 'critical';
+    }
+  }
+}
+
+/// The type of physical device for real-device testing.
+enum StrideDeviceProfile {
+  lowEndPhone,
+  flagshipPhone,
+  tablet,
+  watchUltra;
+
+  static StrideDeviceProfile fromJson(String s) {
+    switch (s) {
+      case 'low_end_phone':
+        return StrideDeviceProfile.lowEndPhone;
+      case 'flagship_phone':
+        return StrideDeviceProfile.flagshipPhone;
+      case 'tablet':
+        return StrideDeviceProfile.tablet;
+      case 'watch_ultra':
+        return StrideDeviceProfile.watchUltra;
+      default:
+        return StrideDeviceProfile.flagshipPhone;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDeviceProfile.lowEndPhone:
+        return 'low_end_phone';
+      case StrideDeviceProfile.flagshipPhone:
+        return 'flagship_phone';
+      case StrideDeviceProfile.tablet:
+        return 'tablet';
+      case StrideDeviceProfile.watchUltra:
+        return 'watch_ultra';
+    }
+  }
+}
+
+/// The network connectivity state for a test environment.
+enum StrideTestNetworkState {
+  online,
+  weak,
+  offline,
+  intermittent;
+
+  static StrideTestNetworkState fromJson(String s) {
+    switch (s) {
+      case 'online':
+        return StrideTestNetworkState.online;
+      case 'weak':
+        return StrideTestNetworkState.weak;
+      case 'offline':
+        return StrideTestNetworkState.offline;
+      case 'intermittent':
+        return StrideTestNetworkState.intermittent;
+      default:
+        return StrideTestNetworkState.online;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestNetworkState.online:
+        return 'online';
+      case StrideTestNetworkState.weak:
+        return 'weak';
+      case StrideTestNetworkState.offline:
+        return 'offline';
+      case StrideTestNetworkState.intermittent:
+        return 'intermittent';
+    }
+  }
+}
+
+/// The GPS signal quality for a test environment.
+enum StrideTestGpsQuality {
+  noFix,
+  poor,
+  good,
+  excellent;
+
+  static StrideTestGpsQuality fromJson(String s) {
+    switch (s) {
+      case 'no_fix':
+        return StrideTestGpsQuality.noFix;
+      case 'poor':
+        return StrideTestGpsQuality.poor;
+      case 'good':
+        return StrideTestGpsQuality.good;
+      case 'excellent':
+        return StrideTestGpsQuality.excellent;
+      default:
+        return StrideTestGpsQuality.good;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestGpsQuality.noFix:
+        return 'no_fix';
+      case StrideTestGpsQuality.poor:
+        return 'poor';
+      case StrideTestGpsQuality.good:
+        return 'good';
+      case StrideTestGpsQuality.excellent:
+        return 'excellent';
+    }
+  }
+}
+
+/// The type of geographic location for a real-device test.
+enum StrideTestLocationType {
+  indoor,
+  urban,
+  rural,
+  deadZone;
+
+  static StrideTestLocationType fromJson(String s) {
+    switch (s) {
+      case 'indoor':
+        return StrideTestLocationType.indoor;
+      case 'urban':
+        return StrideTestLocationType.urban;
+      case 'rural':
+        return StrideTestLocationType.rural;
+      case 'dead_zone':
+        return StrideTestLocationType.deadZone;
+      default:
+        return StrideTestLocationType.urban;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTestLocationType.indoor:
+        return 'indoor';
+      case StrideTestLocationType.urban:
+        return 'urban';
+      case StrideTestLocationType.rural:
+        return 'rural';
+      case StrideTestLocationType.deadZone:
+        return 'dead_zone';
+    }
+  }
+}
+
+/// Configuration for a single test case.
+class StrideTestConfig {
+  final String id;
+  final String name;
+  final StrideTestLayer layer;
+  final StrideTestCategory category;
+  final String description;
+  final int timeoutMs;
+  final int retryCount;
+  final StrideTestSeverity severity;
+  final List<String> tags;
+  final bool requiresDevice;
+
+  StrideTestConfig({
+    required this.id,
+    required this.name,
+    required this.layer,
+    required this.category,
+    this.description = '',
+    this.timeoutMs = 30000,
+    this.retryCount = 0,
+    this.severity = StrideTestSeverity.medium,
+    this.tags = const [],
+    this.requiresDevice = false,
+  });
+
+  StrideTestConfig.fromJson(Map<String, dynamic> j)
+      : id = j['id'] as String,
+        name = j['name'] as String,
+        layer = StrideTestLayer.fromJson(j['layer'] as String),
+        category = StrideTestCategory.fromJson(j['category'] as String),
+        description = j['description'] as String? ?? '',
+        timeoutMs = j['timeout_ms'] as int? ?? 30000,
+        retryCount = j['retry_count'] as int? ?? 0,
+        severity = StrideTestSeverity.fromJson(j['severity'] as String),
+        tags = (j['tags'] as List?)?.cast<String>() ?? [],
+        requiresDevice = j['requires_device'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'layer': layer.toJson(),
+        'category': category.toJson(),
+        'description': description,
+        'timeout_ms': timeoutMs,
+        'retry_count': retryCount,
+        'severity': severity.toJson(),
+        'tags': tags,
+        'requires_device': requiresDevice,
+      };
+}
+
+/// The result of running a single test.
+class StrideTestResult {
+  final StrideTestConfig config;
+  final StrideTestStatus status;
+  final int durationMs;
+  final String? errorMessage;
+  final int finishedAtMs;
+  final int assertionsPassed;
+  final int assertionsFailed;
+  final int retriesUsed;
+
+  StrideTestResult({
+    required this.config,
+    required this.status,
+    required this.durationMs,
+    this.errorMessage,
+    this.finishedAtMs = 0,
+    this.assertionsPassed = 0,
+    this.assertionsFailed = 0,
+    this.retriesUsed = 0,
+  });
+
+  StrideTestResult.fromJson(Map<String, dynamic> j)
+      : config = StrideTestConfig.fromJson(j['config'] as Map<String, dynamic>),
+        status = StrideTestStatus.fromJson(j['status'] as String),
+        durationMs = j['duration_ms'] as int? ?? 0,
+        errorMessage = j['error_message'] as String?,
+        finishedAtMs = j['finished_at_ms'] as int? ?? 0,
+        assertionsPassed = j['assertions_passed'] as int? ?? 0,
+        assertionsFailed = j['assertions_failed'] as int? ?? 0,
+        retriesUsed = j['retries_used'] as int? ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'config': config.toJson(),
+        'status': status.toJson(),
+        'duration_ms': durationMs,
+        'error_message': errorMessage,
+        'finished_at_ms': finishedAtMs,
+        'assertions_passed': assertionsPassed,
+        'assertions_failed': assertionsFailed,
+        'retries_used': retriesUsed,
+      };
+}
+
+/// A collection of test configs and their results.
+class StrideTestSuite {
+  final String name;
+  final StrideTestLayer layer;
+  final List<StrideTestConfig> configs;
+  final List<StrideTestResult> results;
+
+  StrideTestSuite({
+    required this.name,
+    required this.layer,
+    this.configs = const [],
+    this.results = const [],
+  });
+
+  StrideTestSuite.fromJson(Map<String, dynamic> j)
+      : name = j['name'] as String,
+        layer = StrideTestLayer.fromJson(j['layer'] as String),
+        configs = (j['configs'] as List?)
+            ?.map((e) => StrideTestConfig.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        results = (j['results'] as List?)
+            ?.map((e) => StrideTestResult.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [];
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'layer': layer.toJson(),
+        'configs': configs.map((c) => c.toJson()).toList(),
+        'results': results.map((r) => r.toJson()).toList(),
+      };
+}
+
+/// A complete test environment for real-device testing.
+class StrideTestEnvironment {
+  final StrideDeviceProfile device;
+  final String osVersion;
+  final double screenSizeInches;
+  final bool hasWatch;
+  final StrideTestGpsQuality gpsQuality;
+  final StrideTestNetworkState networkState;
+  final int batteryLevel;
+  final StrideTestLocationType locationType;
+  final bool screenOff;
+  final bool batterySaver;
+  final bool forceStopped;
+  final bool phoneRestarted;
+
+  StrideTestEnvironment({
+    required this.device,
+    required this.osVersion,
+    required this.screenSizeInches,
+    this.hasWatch = false,
+    this.gpsQuality = StrideTestGpsQuality.good,
+    this.networkState = StrideTestNetworkState.online,
+    this.batteryLevel = 80,
+    this.locationType = StrideTestLocationType.urban,
+    this.screenOff = false,
+    this.batterySaver = false,
+    this.forceStopped = false,
+    this.phoneRestarted = false,
+  });
+
+  StrideTestEnvironment.fromJson(Map<String, dynamic> j)
+      : device = StrideDeviceProfile.fromJson(j['device'] as String),
+        osVersion = j['os_version'] as String,
+        screenSizeInches = (j['screen_size_inches'] as num).toDouble(),
+        hasWatch = j['has_watch'] as bool? ?? false,
+        gpsQuality = StrideTestGpsQuality.fromJson(j['gps_quality'] as String),
+        networkState =
+            StrideTestNetworkState.fromJson(j['network_state'] as String),
+        batteryLevel = j['battery_level'] as int? ?? 80,
+        locationType =
+            StrideTestLocationType.fromJson(j['location_type'] as String),
+        screenOff = j['screen_off'] as bool? ?? false,
+        batterySaver = j['battery_saver'] as bool? ?? false,
+        forceStopped = j['force_stopped'] as bool? ?? false,
+        phoneRestarted = j['phone_restarted'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'device': device.toJson(),
+        'os_version': osVersion,
+        'screen_size_inches': screenSizeInches,
+        'has_watch': hasWatch,
+        'gps_quality': gpsQuality.toJson(),
+        'network_state': networkState.toJson(),
+        'battery_level': batteryLevel,
+        'location_type': locationType.toJson(),
+        'screen_off': screenOff,
+        'battery_saver': batterySaver,
+        'force_stopped': forceStopped,
+        'phone_restarted': phoneRestarted,
+      };
+}
+
+/// A real-device test scenario.
+class StrideRealDeviceScenario {
+  final String id;
+  final String name;
+  final String description;
+  final StrideDeviceProfile device;
+  final StrideTestEnvironment environment;
+  final List<String> expectedBehaviors;
+  final int durationMinutes;
+  final StrideTestSeverity severity;
+
+  StrideRealDeviceScenario({
+    required this.id,
+    required this.name,
+    this.description = '',
+    required this.device,
+    required this.environment,
+    this.expectedBehaviors = const [],
+    this.durationMinutes = 30,
+    this.severity = StrideTestSeverity.high,
+  });
+
+  StrideRealDeviceScenario.fromJson(Map<String, dynamic> j)
+      : id = j['id'] as String,
+        name = j['name'] as String,
+        description = j['description'] as String? ?? '',
+        device = StrideDeviceProfile.fromJson(j['device'] as String),
+        environment = StrideTestEnvironment.fromJson(
+            j['environment'] as Map<String, dynamic>),
+        expectedBehaviors =
+            (j['expected_behaviors'] as List?)?.cast<String>() ?? [],
+        durationMinutes = j['duration_minutes'] as int? ?? 30,
+        severity = StrideTestSeverity.fromJson(j['severity'] as String);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        'device': device.toJson(),
+        'environment': environment.toJson(),
+        'expected_behaviors': expectedBehaviors,
+        'duration_minutes': durationMinutes,
+        'severity': severity.toJson(),
+      };
+}
+
+/// The result of running a real-device scenario.
+class StrideScenarioResult {
+  final StrideRealDeviceScenario scenario;
+  final StrideTestStatus status;
+  final int durationMs;
+  final String? errorMessage;
+  final int behaviorsPassed;
+  final int behaviorsFailed;
+  final int finishedAtMs;
+  final String? notes;
+
+  StrideScenarioResult({
+    required this.scenario,
+    required this.status,
+    required this.durationMs,
+    this.errorMessage,
+    this.behaviorsPassed = 0,
+    this.behaviorsFailed = 0,
+    this.finishedAtMs = 0,
+    this.notes,
+  });
+
+  StrideScenarioResult.fromJson(Map<String, dynamic> j)
+      : scenario = StrideRealDeviceScenario.fromJson(
+            j['scenario'] as Map<String, dynamic>),
+        status = StrideTestStatus.fromJson(j['status'] as String),
+        durationMs = j['duration_ms'] as int? ?? 0,
+        errorMessage = j['error_message'] as String?,
+        behaviorsPassed = j['behaviors_passed'] as int? ?? 0,
+        behaviorsFailed = j['behaviors_failed'] as int? ?? 0,
+        finishedAtMs = j['finished_at_ms'] as int? ?? 0,
+        notes = j['notes'] as String?;
+
+  Map<String, dynamic> toJson() => {
+        'scenario': scenario.toJson(),
+        'status': status.toJson(),
+        'duration_ms': durationMs,
+        'error_message': errorMessage,
+        'behaviors_passed': behaviorsPassed,
+        'behaviors_failed': behaviorsFailed,
+        'finished_at_ms': finishedAtMs,
+        'notes': notes,
+      };
+}
+
+/// Test coverage metrics for a specific category or layer.
+class StrideCoverageMetrics {
+  final String name;
+  final int total;
+  final int passed;
+  final int failed;
+  final int skipped;
+  final double passRate;
+
+  StrideCoverageMetrics({
+    required this.name,
+    required this.total,
+    required this.passed,
+    required this.failed,
+    required this.skipped,
+    required this.passRate,
+  });
+
+  StrideCoverageMetrics.fromJson(Map<String, dynamic> j)
+      : name = j['name'] as String,
+        total = j['total'] as int,
+        passed = j['passed'] as int,
+        failed = j['failed'] as int,
+        skipped = j['skipped'] as int,
+        passRate = (j['pass_rate'] as num).toDouble();
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'total': total,
+        'passed': passed,
+        'failed': failed,
+        'skipped': skipped,
+        'pass_rate': passRate,
+      };
+}
+
+/// An aggregate test report covering multiple suites and scenarios.
+class StrideTestReport {
+  final String name;
+  final List<StrideTestSuite> suites;
+  final List<StrideScenarioResult> scenarioResults;
+  final int generatedAtMs;
+
+  StrideTestReport({
+    required this.name,
+    this.suites = const [],
+    this.scenarioResults = const [],
+    this.generatedAtMs = 0,
+  });
+
+  StrideTestReport.fromJson(Map<String, dynamic> j)
+      : name = j['name'] as String,
+        suites = (j['suites'] as List?)
+            ?.map((e) => StrideTestSuite.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        scenarioResults = (j['scenario_results'] as List?)
+            ?.map(
+                (e) => StrideScenarioResult.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        generatedAtMs = j['generated_at_ms'] as int? ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'suites': suites.map((s) => s.toJson()).toList(),
+        'scenario_results': scenarioResults.map((r) => r.toJson()).toList(),
+        'generated_at_ms': generatedAtMs,
+      };
+}
+
+/// A test registry holding all suites and scenarios.
+class StrideTestRegistry {
+  final List<StrideTestSuite> suites;
+  final List<StrideRealDeviceScenario> scenarios;
+  final List<StrideScenarioResult> scenarioResults;
+
+  StrideTestRegistry({
+    this.suites = const [],
+    this.scenarios = const [],
+    this.scenarioResults = const [],
+  });
+
+  StrideTestRegistry.fromJson(Map<String, dynamic> j)
+      : suites = (j['suites'] as List?)
+            ?.map((e) => StrideTestSuite.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        scenarios = (j['scenarios'] as List?)
+            ?.map((e) =>
+                StrideRealDeviceScenario.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        scenarioResults = (j['scenario_results'] as List?)
+            ?.map(
+                (e) => StrideScenarioResult.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [];
+
+  Map<String, dynamic> toJson() => {
+        'suites': suites.map((s) => s.toJson()).toList(),
+        'scenarios': scenarios.map((s) => s.toJson()).toList(),
+        'scenario_results': scenarioResults.map((r) => r.toJson()).toList(),
+      };
+}
