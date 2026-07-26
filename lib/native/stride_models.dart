@@ -1889,3 +1889,516 @@ class StrideDeletionResult {
         authAccountDeleted = j['auth_account_deleted'] as bool,
         isComplete = j['is_complete'] as bool;
 }
+
+// ===========================================================================
+// §7 — Secure Firebase: security validation models
+// ===========================================================================
+
+/// A Firestore collection in the S.T.R.I.D.E. database.
+enum StrideFirestoreCollection {
+  users,
+  workouts,
+  achievements,
+  goals,
+  trainingPlans,
+  savedRoutes,
+  dailySummaries,
+  checkpoints,
+  stepSamples,
+  heartRateSamples,
+  syncQueueItems,
+  coachingHistory,
+  personalRecords,
+  adminFlaggedWorkouts,
+  adminReportedUsers,
+  adminAppConfig;
+
+  static StrideFirestoreCollection fromJson(String s) {
+    switch (s) {
+      case 'users':
+        return StrideFirestoreCollection.users;
+      case 'workouts':
+        return StrideFirestoreCollection.workouts;
+      case 'achievements':
+        return StrideFirestoreCollection.achievements;
+      case 'goals':
+        return StrideFirestoreCollection.goals;
+      case 'training_plans':
+        return StrideFirestoreCollection.trainingPlans;
+      case 'saved_routes':
+        return StrideFirestoreCollection.savedRoutes;
+      case 'daily_summaries':
+        return StrideFirestoreCollection.dailySummaries;
+      case 'checkpoints':
+        return StrideFirestoreCollection.checkpoints;
+      case 'step_samples':
+        return StrideFirestoreCollection.stepSamples;
+      case 'heart_rate_samples':
+        return StrideFirestoreCollection.heartRateSamples;
+      case 'sync_queue_items':
+        return StrideFirestoreCollection.syncQueueItems;
+      case 'coaching_history':
+        return StrideFirestoreCollection.coachingHistory;
+      case 'personal_records':
+        return StrideFirestoreCollection.personalRecords;
+      case 'admin_flagged_workouts':
+        return StrideFirestoreCollection.adminFlaggedWorkouts;
+      case 'admin_reported_users':
+        return StrideFirestoreCollection.adminReportedUsers;
+      case 'admin_app_config':
+        return StrideFirestoreCollection.adminAppConfig;
+      default:
+        return StrideFirestoreCollection.users;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideFirestoreCollection.users:
+        return 'users';
+      case StrideFirestoreCollection.workouts:
+        return 'workouts';
+      case StrideFirestoreCollection.achievements:
+        return 'achievements';
+      case StrideFirestoreCollection.goals:
+        return 'goals';
+      case StrideFirestoreCollection.trainingPlans:
+        return 'training_plans';
+      case StrideFirestoreCollection.savedRoutes:
+        return 'saved_routes';
+      case StrideFirestoreCollection.dailySummaries:
+        return 'daily_summaries';
+      case StrideFirestoreCollection.checkpoints:
+        return 'checkpoints';
+      case StrideFirestoreCollection.stepSamples:
+        return 'step_samples';
+      case StrideFirestoreCollection.heartRateSamples:
+        return 'heart_rate_samples';
+      case StrideFirestoreCollection.syncQueueItems:
+        return 'sync_queue_items';
+      case StrideFirestoreCollection.coachingHistory:
+        return 'coaching_history';
+      case StrideFirestoreCollection.personalRecords:
+        return 'personal_records';
+      case StrideFirestoreCollection.adminFlaggedWorkouts:
+        return 'admin_flagged_workouts';
+      case StrideFirestoreCollection.adminReportedUsers:
+        return 'admin_reported_users';
+      case StrideFirestoreCollection.adminAppConfig:
+        return 'admin_app_config';
+    }
+  }
+}
+
+/// The type of access being requested.
+enum StrideAccessType {
+  read,
+  write,
+  delete;
+
+  static StrideAccessType fromJson(String s) {
+    switch (s) {
+      case 'read':
+        return StrideAccessType.read;
+      case 'write':
+        return StrideAccessType.write;
+      case 'delete':
+        return StrideAccessType.delete;
+      default:
+        return StrideAccessType.read;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAccessType.read:
+        return 'read';
+      case StrideAccessType.write:
+        return 'write';
+      case StrideAccessType.delete:
+        return 'delete';
+    }
+  }
+}
+
+/// The result of an access-control check.
+enum StrideAccessDecision {
+  allow,
+  denyOwnerMismatch,
+  denyAdminOnly,
+  denyNotAuthenticated,
+  denyReadOnly,
+  denyInvalidPath;
+
+  static StrideAccessDecision fromJson(String s) {
+    switch (s) {
+      case 'allow':
+        return StrideAccessDecision.allow;
+      case 'deny_owner_mismatch':
+        return StrideAccessDecision.denyOwnerMismatch;
+      case 'deny_admin_only':
+        return StrideAccessDecision.denyAdminOnly;
+      case 'deny_not_authenticated':
+        return StrideAccessDecision.denyNotAuthenticated;
+      case 'deny_read_only':
+        return StrideAccessDecision.denyReadOnly;
+      case 'deny_invalid_path':
+        return StrideAccessDecision.denyInvalidPath;
+      default:
+        return StrideAccessDecision.denyInvalidPath;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAccessDecision.allow:
+        return 'allow';
+      case StrideAccessDecision.denyOwnerMismatch:
+        return 'deny_owner_mismatch';
+      case StrideAccessDecision.denyAdminOnly:
+        return 'deny_admin_only';
+      case StrideAccessDecision.denyNotAuthenticated:
+        return 'deny_not_authenticated';
+      case StrideAccessDecision.denyReadOnly:
+        return 'deny_read_only';
+      case StrideAccessDecision.denyInvalidPath:
+        return 'deny_invalid_path';
+    }
+  }
+
+  bool get isAllowed => this == StrideAccessDecision.allow;
+}
+
+/// A field type in a Firestore document.
+enum StrideFieldType {
+  string,
+  integer,
+  float,
+  boolean,
+  timestamp,
+  array,
+  map,
+  null_;
+
+  static StrideFieldType fromJson(String s) {
+    switch (s) {
+      case 'string':
+        return StrideFieldType.string;
+      case 'integer':
+        return StrideFieldType.integer;
+      case 'float':
+        return StrideFieldType.float;
+      case 'boolean':
+        return StrideFieldType.boolean;
+      case 'timestamp':
+        return StrideFieldType.timestamp;
+      case 'array':
+        return StrideFieldType.array;
+      case 'map':
+        return StrideFieldType.map;
+      case 'null':
+        return StrideFieldType.null_;
+      default:
+        return StrideFieldType.string;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideFieldType.string:
+        return 'string';
+      case StrideFieldType.integer:
+        return 'integer';
+      case StrideFieldType.float:
+        return 'float';
+      case StrideFieldType.boolean:
+        return 'boolean';
+      case StrideFieldType.timestamp:
+        return 'timestamp';
+      case StrideFieldType.array:
+        return 'array';
+      case StrideFieldType.map:
+        return 'map';
+      case StrideFieldType.null_:
+        return 'null';
+    }
+  }
+}
+
+/// The attestation state from Firebase App Check.
+enum StrideAppCheckState {
+  valid,
+  stale,
+  missing,
+  invalid,
+  notEnforced;
+
+  static StrideAppCheckState fromJson(String s) {
+    switch (s) {
+      case 'valid':
+        return StrideAppCheckState.valid;
+      case 'stale':
+        return StrideAppCheckState.stale;
+      case 'missing':
+        return StrideAppCheckState.missing;
+      case 'invalid':
+        return StrideAppCheckState.invalid;
+      case 'not_enforced':
+        return StrideAppCheckState.notEnforced;
+      default:
+        return StrideAppCheckState.missing;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAppCheckState.valid:
+        return 'valid';
+      case StrideAppCheckState.stale:
+        return 'stale';
+      case StrideAppCheckState.missing:
+        return 'missing';
+      case StrideAppCheckState.invalid:
+        return 'invalid';
+      case StrideAppCheckState.notEnforced:
+        return 'not_enforced';
+    }
+  }
+}
+
+/// The Play Integrity API verdict for an Android device.
+enum StridePlayIntegrityVerdict {
+  pass,
+  appIntegrityFailed,
+  deviceIntegrityFailed,
+  accountIntegrityFailed,
+  basicIntegrityFailed;
+
+  static StridePlayIntegrityVerdict fromJson(String s) {
+    switch (s) {
+      case 'pass':
+        return StridePlayIntegrityVerdict.pass;
+      case 'app_integrity_failed':
+        return StridePlayIntegrityVerdict.appIntegrityFailed;
+      case 'device_integrity_failed':
+        return StridePlayIntegrityVerdict.deviceIntegrityFailed;
+      case 'account_integrity_failed':
+        return StridePlayIntegrityVerdict.accountIntegrityFailed;
+      case 'basic_integrity_failed':
+        return StridePlayIntegrityVerdict.basicIntegrityFailed;
+      default:
+        return StridePlayIntegrityVerdict.basicIntegrityFailed;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StridePlayIntegrityVerdict.pass:
+        return 'pass';
+      case StridePlayIntegrityVerdict.appIntegrityFailed:
+        return 'app_integrity_failed';
+      case StridePlayIntegrityVerdict.deviceIntegrityFailed:
+        return 'device_integrity_failed';
+      case StridePlayIntegrityVerdict.accountIntegrityFailed:
+        return 'account_integrity_failed';
+      case StridePlayIntegrityVerdict.basicIntegrityFailed:
+        return 'basic_integrity_failed';
+    }
+  }
+
+  bool get isPass => this == StridePlayIntegrityVerdict.pass;
+}
+
+/// A rate limit category for Cloud Functions endpoints.
+enum StrideRateLimitCategory {
+  aiCoaching,
+  workoutSync,
+  routeUpload,
+  generalApi;
+
+  static StrideRateLimitCategory fromJson(String s) {
+    switch (s) {
+      case 'ai_coaching':
+        return StrideRateLimitCategory.aiCoaching;
+      case 'workout_sync':
+        return StrideRateLimitCategory.workoutSync;
+      case 'route_upload':
+        return StrideRateLimitCategory.routeUpload;
+      case 'general_api':
+        return StrideRateLimitCategory.generalApi;
+      default:
+        return StrideRateLimitCategory.generalApi;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRateLimitCategory.aiCoaching:
+        return 'ai_coaching';
+      case StrideRateLimitCategory.workoutSync:
+        return 'workout_sync';
+      case StrideRateLimitCategory.routeUpload:
+        return 'route_upload';
+      case StrideRateLimitCategory.generalApi:
+        return 'general_api';
+    }
+  }
+}
+
+/// The Firebase environment (development, staging, or production).
+enum StrideFirebaseEnvironment {
+  development,
+  staging,
+  production;
+
+  static StrideFirebaseEnvironment fromJson(String s) {
+    switch (s) {
+      case 'development':
+        return StrideFirebaseEnvironment.development;
+      case 'staging':
+        return StrideFirebaseEnvironment.staging;
+      case 'production':
+        return StrideFirebaseEnvironment.production;
+      default:
+        return StrideFirebaseEnvironment.development;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideFirebaseEnvironment.development:
+        return 'development';
+      case StrideFirebaseEnvironment.staging:
+        return 'staging';
+      case StrideFirebaseEnvironment.production:
+        return 'production';
+    }
+  }
+}
+
+/// Context for an access-control decision.
+class StrideAccessContext {
+  final String userId;
+  final bool isAdmin;
+  final StrideFirestoreCollection collection;
+  final StrideAccessType accessType;
+  final String docOwnerId;
+
+  StrideAccessContext({
+    required this.userId,
+    required this.isAdmin,
+    required this.collection,
+    required this.accessType,
+    required this.docOwnerId,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'user_id': userId,
+        'is_admin': isAdmin,
+        'collection': collection.toJson(),
+        'access_type': accessType.toJson(),
+        'doc_owner_id': docOwnerId,
+      };
+
+  StrideAccessContext.fromJson(Map<String, dynamic> j)
+      : userId = j['user_id'] as String,
+        isAdmin = j['is_admin'] as bool,
+        collection = StrideFirestoreCollection.fromJson(j['collection'] as String),
+        accessType = StrideAccessType.fromJson(j['access_type'] as String),
+        docOwnerId = j['doc_owner_id'] as String;
+}
+
+/// A field validation rule for a Firestore collection.
+class StrideFieldRule {
+  final String field;
+  final StrideFieldType fieldType;
+  final bool required;
+  final double? min;
+  final double? max;
+
+  StrideFieldRule({
+    required this.field,
+    required this.fieldType,
+    required this.required,
+    this.min,
+    this.max,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'field': field,
+        'field_type': fieldType.toJson(),
+        'required': required,
+        'min': min,
+        'max': max,
+      };
+
+  StrideFieldRule.fromJson(Map<String, dynamic> j)
+      : field = j['field'] as String,
+        fieldType = StrideFieldType.fromJson(j['field_type'] as String),
+        required = j['required'] as bool,
+        min = j['min']?.toDouble(),
+        max = j['max']?.toDouble();
+}
+
+/// A validation issue found in a document.
+class StrideFieldValidationIssue {
+  final String field;
+  final String issue;
+
+  StrideFieldValidationIssue.fromJson(Map<String, dynamic> j)
+      : field = j['field'] as String,
+        issue = j['issue'] as String;
+}
+
+/// The result of validating a document's fields.
+class StrideFieldValidationResult {
+  final bool isValid;
+  final List<StrideFieldValidationIssue> issues;
+
+  StrideFieldValidationResult.fromJson(Map<String, dynamic> j)
+      : isValid = j['is_valid'] as bool,
+        issues = (j['issues'] as List<dynamic>? ?? [])
+            .map((e) => StrideFieldValidationIssue.fromJson(
+                Map<String, dynamic>.from(e as Map)))
+            .toList();
+}
+
+/// A token-bucket rate limiter state.
+class StrideRateLimitBucket {
+  final double capacity;
+  final double refillRate;
+  final double currentTokens;
+  final int lastRefillMs;
+
+  StrideRateLimitBucket({
+    required this.capacity,
+    required this.refillRate,
+    required this.currentTokens,
+    required this.lastRefillMs,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'capacity': capacity,
+        'refill_rate': refillRate,
+        'current_tokens': currentTokens,
+        'last_refill_ms': lastRefillMs,
+      };
+
+  StrideRateLimitBucket.fromJson(Map<String, dynamic> j)
+      : capacity = j['capacity'].toDouble(),
+        refillRate = j['refill_rate'].toDouble(),
+        currentTokens = j['current_tokens'].toDouble(),
+        lastRefillMs = j['last_refill_ms'] as int;
+}
+
+/// The result of a rate-limit check.
+class StrideRateLimitResult {
+  final bool allowed;
+  final double remainingTokens;
+  final int retryAfterMs;
+
+  StrideRateLimitResult.fromJson(Map<String, dynamic> j)
+      : allowed = j['allowed'] as bool,
+        remainingTokens = j['remaining_tokens'].toDouble(),
+        retryAfterMs = j['retry_after_ms'] as int;
+}

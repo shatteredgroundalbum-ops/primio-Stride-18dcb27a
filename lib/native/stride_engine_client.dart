@@ -1248,4 +1248,246 @@ class StrideEngineClient {
     });
     return unwrapEnvelope(env)['can_upgrade'] as bool;
   }
+
+  // ===========================================================================
+  // §7 — Secure Firebase: security validation wrappers
+  // ===========================================================================
+
+  /// Returns the Firestore collection path template for a collection.
+  static String securityCollectionPathTemplate({
+    required StrideFirestoreCollection collection,
+  }) {
+    final env = _bindings.securityCollectionPathTemplate({
+      'collection': collection.toJson(),
+    });
+    return unwrapEnvelope(env)['path_template'] as String;
+  }
+
+  /// Whether a Firestore collection is admin-only.
+  static bool securityCollectionIsAdminOnly({
+    required StrideFirestoreCollection collection,
+  }) {
+    final env = _bindings.securityCollectionIsAdminOnly({
+      'collection': collection.toJson(),
+    });
+    return unwrapEnvelope(env)['is_admin_only'] as bool;
+  }
+
+  /// Whether a Firestore collection is user-scoped.
+  static bool securityCollectionIsUserScoped({
+    required StrideFirestoreCollection collection,
+  }) {
+    final env = _bindings.securityCollectionIsUserScoped({
+      'collection': collection.toJson(),
+    });
+    return unwrapEnvelope(env)['is_user_scoped'] as bool;
+  }
+
+  /// Checks access for a given access context.
+  static StrideAccessDecision securityCheckAccess({
+    required String userId,
+    required bool isAdmin,
+    required StrideFirestoreCollection collection,
+    required StrideAccessType accessType,
+    required String docOwnerId,
+  }) {
+    final env = _bindings.securityCheckAccess({
+      'user_id': userId,
+      'is_admin': isAdmin,
+      'collection': collection.toJson(),
+      'access_type': accessType.toJson(),
+      'doc_owner_id': docOwnerId,
+    });
+    return StrideAccessDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Validates that a Firestore path belongs to the given user.
+  /// Returns `null` if valid, or an error message if not.
+  static String? securityValidatePathOwnership({
+    required String path,
+    required String userId,
+  }) {
+    final env = _bindings.securityValidatePathOwnership({
+      'path': path,
+      'user_id': userId,
+    });
+    final data = unwrapEnvelope(env);
+    if (data['valid'] as bool) return null;
+    return data['error'] as String;
+  }
+
+  /// Returns the field validation rules for a collection.
+  static List<StrideFieldRule> securityFieldRulesForCollection({
+    required StrideFirestoreCollection collection,
+  }) {
+    final env = _bindings.securityFieldRulesForCollection({
+      'collection': collection.toJson(),
+    });
+    final rules = unwrapEnvelope(env)['rules'] as List<dynamic>;
+    return rules
+        .map((e) => StrideFieldRule.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  /// Returns the allowed field names for a collection.
+  static List<String> securityAllowedFieldsForCollection({
+    required StrideFirestoreCollection collection,
+  }) {
+    final env = _bindings.securityAllowedFieldsForCollection({
+      'collection': collection.toJson(),
+    });
+    final fields = unwrapEnvelope(env)['allowed_fields'] as List<dynamic>;
+    return fields.map((e) => e as String).toList();
+  }
+
+  /// Validates a document against field rules for a collection.
+  static StrideFieldValidationResult securityValidateDocument({
+    required StrideFirestoreCollection collection,
+    required Map<String, dynamic> doc,
+  }) {
+    final env = _bindings.securityValidateDocument({
+      'collection': collection.toJson(),
+      'doc': doc,
+    });
+    return StrideFieldValidationResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Sanitizes a string (trims, removes control chars, strips XSS patterns).
+  static String securitySanitizeString({required String input}) {
+    final env = _bindings.securitySanitizeString({'input': input});
+    return unwrapEnvelope(env)['sanitized'] as String;
+  }
+
+  /// Detects injection patterns in a string.
+  /// Returns `null` if clean, or a reason string if suspicious.
+  static String? securityDetectInjection({required String input}) {
+    final env = _bindings.securityDetectInjection({'input': input});
+    return unwrapEnvelope(env)['detected'] as String?;
+  }
+
+  /// Whether a string is safe (no injection patterns).
+  static bool securityIsSafeString({required String input}) {
+    final env = _bindings.securityIsSafeString({'input': input});
+    return unwrapEnvelope(env)['is_safe'] as bool;
+  }
+
+  /// Validates a Cloud Storage path for user ownership.
+  /// Returns `null` if valid, or an error message if not.
+  static String? securityValidateStoragePath({
+    required String path,
+    required String userId,
+  }) {
+    final env = _bindings.securityValidateStoragePath({
+      'path': path,
+      'user_id': userId,
+    });
+    final data = unwrapEnvelope(env);
+    if (data['valid'] as bool) return null;
+    return data['error'] as String;
+  }
+
+  /// Returns the access decision for an App Check state.
+  static StrideAccessDecision securityAppCheckDecision({
+    required StrideAppCheckState state,
+  }) {
+    final env = _bindings.securityAppCheckDecision({'state': state.toJson()});
+    return StrideAccessDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the access decision for a Play Integrity verdict.
+  static StrideAccessDecision securityPlayIntegrityDecision({
+    required StridePlayIntegrityVerdict verdict,
+  }) {
+    final env =
+        _bindings.securityPlayIntegrityDecision({'verdict': verdict.toJson()});
+    return StrideAccessDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Checks and consumes a token from the rate limit bucket.
+  /// Returns the rate limit result and updates the bucket.
+  static ({StrideRateLimitResult result, StrideRateLimitBucket bucket})
+      securityCheckRateLimit({
+    required StrideRateLimitBucket bucket,
+    required int nowMs,
+  }) {
+    final env = _bindings.securityCheckRateLimit({
+      'bucket': bucket.toJson(),
+      'now_ms': nowMs,
+    });
+    final data = unwrapEnvelope(env) as Map<String, dynamic>;
+    final result = StrideRateLimitResult.fromJson(
+        Map<String, dynamic>.from(data['result'] as Map));
+    final updatedBucket = StrideRateLimitBucket.fromJson(
+        Map<String, dynamic>.from(data['bucket'] as Map));
+    return (result: result, bucket: updatedBucket);
+  }
+
+  /// Returns the default capacity and refill rate for a rate limit category.
+  static ({double capacity, double refillRate}) securityRateLimitConfig({
+    required StrideRateLimitCategory category,
+  }) {
+    final env = _bindings.securityRateLimitConfig({'category': category.toJson()});
+    final data = unwrapEnvelope(env);
+    return (
+      capacity: data['capacity'] as double,
+      refillRate: data['refill_rate'] as double,
+    );
+  }
+
+  /// Checks a config map for secret keys.
+  static List<String> securityCheckForSecrets({
+    required Map<String, dynamic> config,
+  }) {
+    final env = _bindings.securityCheckForSecrets({'config': config});
+    final found = unwrapEnvelope(env)['found_secrets'] as List<dynamic>;
+    return found.map((e) => e as String).toList();
+  }
+
+  /// Whether a config map is free of secrets.
+  static bool securityIsSecretFree({required Map<String, dynamic> config}) {
+    final env = _bindings.securityIsSecretFree({'config': config});
+    return unwrapEnvelope(env)['is_secret_free'] as bool;
+  }
+
+  /// Validates that a project ID matches the expected environment.
+  /// Returns `null` if valid, or an error message if not.
+  static String? securityValidateProjectId({
+    required String projectId,
+    required StrideFirebaseEnvironment expected,
+  }) {
+    final env = _bindings.securityValidateProjectId({
+      'project_id': projectId,
+      'expected': expected.toJson(),
+    });
+    final data = unwrapEnvelope(env);
+    if (data['valid'] as bool) return null;
+    return data['error'] as String;
+  }
+
+  /// Parses a project ID string into a Firebase environment.
+  static StrideFirebaseEnvironment? securityEnvironmentFromProjectId({
+    required String projectId,
+  }) {
+    final env =
+        _bindings.securityEnvironmentFromProjectId({'project_id': projectId});
+    final result = unwrapEnvelope(env)['environment'];
+    if (result == null) return null;
+    return StrideFirebaseEnvironment.fromJson(result as String);
+  }
+
+  /// Generates the Firestore security rules text.
+  static String securityGenerateFirestoreRules() {
+    final env = _bindings.securityGenerateFirestoreRules({});
+    return unwrapEnvelope(env)['rules'] as String;
+  }
+
+  /// Generates the Cloud Storage security rules text.
+  static String securityGenerateStorageRules() {
+    final env = _bindings.securityGenerateStorageRules({});
+    return unwrapEnvelope(env)['rules'] as String;
+  }
 }

@@ -50,6 +50,11 @@ use crate::engine::route_format::{
     self, RouteFileFormat, RouteFormatInput, RouteSummary,
     RouteFileSyncState,
 };
+use crate::engine::security::{
+    self, AccessContext, AccessDecision, AppCheckState, FieldRule,
+    FieldValidationResult, FirestoreCollection, PlayIntegrityVerdict,
+    RateLimitBucket, RateLimitCategory, RateLimitResult, FirebaseEnvironment,
+};
 use crate::engine::maps::{
     self, GpsAccuracyLevel, MapViewType, OfflineRegion, SavedRoute,
     TileCoord, TileProvider,
@@ -2573,5 +2578,525 @@ pub extern "C" fn stride_can_upgrade_anonymous(
             req.target_provider,
         );
         ok_json(&json!({ "can_upgrade": can }))
+    })
+}
+
+// ===========================================================================
+// §7 — Secure Firebase: security validation FFI entry points
+// ===========================================================================
+
+pub extern "C" fn stride_security_collection_path_template(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            collection: FirestoreCollection,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let path = req.collection.path_template();
+        ok_json(&json!({ "path_template": path }))
+    })
+}
+
+pub extern "C" fn stride_security_collection_is_admin_only(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            collection: FirestoreCollection,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let is_admin = req.collection.is_admin_only();
+        ok_json(&json!({ "is_admin_only": is_admin }))
+    })
+}
+
+pub extern "C" fn stride_security_collection_is_user_scoped(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            collection: FirestoreCollection,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let is_user_scoped = req.collection.is_user_scoped();
+        ok_json(&json!({ "is_user_scoped": is_user_scoped }))
+    })
+}
+
+pub extern "C" fn stride_security_check_access(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let ctx: AccessContext = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: AccessDecision = security::check_access(&ctx);
+        ok_json(&decision)
+    })
+}
+
+pub extern "C" fn stride_security_validate_path_ownership(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            path: String,
+            user_id: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match security::validate_path_ownership(&req.path, &req.user_id) {
+            Ok(()) => ok_json(&json!({ "valid": true })),
+            Err(e) => ok_json(&json!({ "valid": false, "error": e })),
+        }
+    })
+}
+
+pub extern "C" fn stride_security_field_rules_for_collection(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            collection: FirestoreCollection,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let rules: Vec<FieldRule> = security::field_rules_for_collection(req.collection);
+        ok_json(&json!({ "rules": rules }))
+    })
+}
+
+pub extern "C" fn stride_security_allowed_fields_for_collection(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            collection: FirestoreCollection,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let fields: Vec<String> = security::allowed_fields_for_collection(req.collection);
+        ok_json(&json!({ "allowed_fields": fields }))
+    })
+}
+
+pub extern "C" fn stride_security_validate_document(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            collection: FirestoreCollection,
+            doc: serde_json::Value,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result: FieldValidationResult =
+            security::validate_document(req.collection, &req.doc);
+        ok_json(&result)
+    })
+}
+
+pub extern "C" fn stride_security_sanitize_string(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            input: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let sanitized = security::sanitize_string(&req.input);
+        ok_json(&json!({ "sanitized": sanitized }))
+    })
+}
+
+pub extern "C" fn stride_security_detect_injection(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            input: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let detected = security::detect_injection(&req.input);
+        ok_json(&json!({ "detected": detected }))
+    })
+}
+
+pub extern "C" fn stride_security_is_safe_string(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            input: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let is_safe = security::is_safe_string(&req.input);
+        ok_json(&json!({ "is_safe": is_safe }))
+    })
+}
+
+pub extern "C" fn stride_security_validate_storage_path(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            path: String,
+            user_id: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match security::validate_storage_path(&req.path, &req.user_id) {
+            Ok(()) => ok_json(&json!({ "valid": true })),
+            Err(e) => ok_json(&json!({ "valid": false, "error": e })),
+        }
+    })
+}
+
+pub extern "C" fn stride_security_app_check_decision(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            state: AppCheckState,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: AccessDecision = security::app_check_decision(req.state);
+        ok_json(&decision)
+    })
+}
+
+pub extern "C" fn stride_security_play_integrity_decision(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            verdict: PlayIntegrityVerdict,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: AccessDecision = security::play_integrity_decision(req.verdict);
+        ok_json(&decision)
+    })
+}
+
+pub extern "C" fn stride_security_check_rate_limit(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            bucket: RateLimitBucket,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut bucket = req.bucket;
+        let result: RateLimitResult = security::check_rate_limit(&mut bucket, req.now_ms);
+        ok_json(&json!({ "result": result, "bucket": bucket }))
+    })
+}
+
+pub extern "C" fn stride_security_rate_limit_config(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            category: RateLimitCategory,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let (capacity, refill_rate) = security::rate_limit_config(req.category);
+        ok_json(&json!({ "capacity": capacity, "refill_rate": refill_rate }))
+    })
+}
+
+pub extern "C" fn stride_security_check_for_secrets(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            config: serde_json::Value,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let config = match req.config.as_object() {
+            Some(m) => m,
+            None => return err_json("config must be a JSON object".to_string()),
+        };
+
+        let found = security::check_for_secrets(config);
+        ok_json(&json!({ "found_secrets": found }))
+    })
+}
+
+pub extern "C" fn stride_security_is_secret_free(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            config: serde_json::Value,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let config = match req.config.as_object() {
+            Some(m) => m,
+            None => return err_json("config must be a JSON object".to_string()),
+        };
+
+        let is_free = security::is_secret_free(config);
+        ok_json(&json!({ "is_secret_free": is_free }))
+    })
+}
+
+pub extern "C" fn stride_security_validate_project_id(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            project_id: String,
+            expected: FirebaseEnvironment,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match security::validate_project_id(&req.project_id, req.expected) {
+            Ok(()) => ok_json(&json!({ "valid": true })),
+            Err(e) => ok_json(&json!({ "valid": false, "error": e })),
+        }
+    })
+}
+
+pub extern "C" fn stride_security_environment_from_project_id(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            project_id: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let env = security::environment_from_project_id(&req.project_id);
+        ok_json(&json!({ "environment": env }))
+    })
+}
+
+pub extern "C" fn stride_security_generate_firestore_rules(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let rules = security::generate_firestore_rules();
+        ok_json(&json!({ "rules": rules }))
+    })
+}
+
+pub extern "C" fn stride_security_generate_storage_rules(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let rules = security::generate_storage_rules();
+        ok_json(&json!({ "rules": rules }))
     })
 }

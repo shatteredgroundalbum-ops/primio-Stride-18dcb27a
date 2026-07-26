@@ -299,6 +299,94 @@ typedef _StrideShouldAutoSignoutDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideCanUpgradeAnonymousNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideCanUpgradeAnonymousDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+
+typedef _StrideSecurityCollectionPathTemplateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityCollectionPathTemplateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityCollectionIsAdminOnlyNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityCollectionIsAdminOnlyDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityCollectionIsUserScopedNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityCollectionIsUserScopedDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityCheckAccessNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityCheckAccessDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityValidatePathOwnershipNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityValidatePathOwnershipDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityFieldRulesForCollectionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityFieldRulesForCollectionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityAllowedFieldsForCollectionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityAllowedFieldsForCollectionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityValidateDocumentNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityValidateDocumentDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecuritySanitizeStringNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecuritySanitizeStringDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityDetectInjectionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityDetectInjectionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityIsSafeStringNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityIsSafeStringDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityValidateStoragePathNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityValidateStoragePathDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityAppCheckDecisionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityAppCheckDecisionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityPlayIntegrityDecisionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityPlayIntegrityDecisionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityCheckRateLimitNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityCheckRateLimitDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityRateLimitConfigNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityRateLimitConfigDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityCheckForSecretsNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityCheckForSecretsDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityIsSecretFreeNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityIsSecretFreeDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityValidateProjectIdNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityValidateProjectIdDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityEnvironmentFromProjectIdNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityEnvironmentFromProjectIdDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityGenerateFirestoreRulesNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityGenerateFirestoreRulesDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+
+typedef _StrideSecurityGenerateStorageRulesNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSecurityGenerateStorageRulesDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -491,6 +579,50 @@ class StrideEngineBindings {
         _StrideShouldAutoSignoutDart>('stride_should_auto_signout');
     _canUpgradeAnonymous = _lib.lookupFunction<_StrideCanUpgradeAnonymousNative,
         _StrideCanUpgradeAnonymousDart>('stride_can_upgrade_anonymous');
+    _securityCollectionPathTemplate = _lib.lookupFunction<_StrideSecurityCollectionPathTemplateNative,
+        _StrideSecurityCollectionPathTemplateDart>('stride_security_collection_path_template');
+    _securityCollectionIsAdminOnly = _lib.lookupFunction<_StrideSecurityCollectionIsAdminOnlyNative,
+        _StrideSecurityCollectionIsAdminOnlyDart>('stride_security_collection_is_admin_only');
+    _securityCollectionIsUserScoped = _lib.lookupFunction<_StrideSecurityCollectionIsUserScopedNative,
+        _StrideSecurityCollectionIsUserScopedDart>('stride_security_collection_is_user_scoped');
+    _securityCheckAccess = _lib.lookupFunction<_StrideSecurityCheckAccessNative,
+        _StrideSecurityCheckAccessDart>('stride_security_check_access');
+    _securityValidatePathOwnership = _lib.lookupFunction<_StrideSecurityValidatePathOwnershipNative,
+        _StrideSecurityValidatePathOwnershipDart>('stride_security_validate_path_ownership');
+    _securityFieldRulesForCollection = _lib.lookupFunction<_StrideSecurityFieldRulesForCollectionNative,
+        _StrideSecurityFieldRulesForCollectionDart>('stride_security_field_rules_for_collection');
+    _securityAllowedFieldsForCollection = _lib.lookupFunction<_StrideSecurityAllowedFieldsForCollectionNative,
+        _StrideSecurityAllowedFieldsForCollectionDart>('stride_security_allowed_fields_for_collection');
+    _securityValidateDocument = _lib.lookupFunction<_StrideSecurityValidateDocumentNative,
+        _StrideSecurityValidateDocumentDart>('stride_security_validate_document');
+    _securitySanitizeString = _lib.lookupFunction<_StrideSecuritySanitizeStringNative,
+        _StrideSecuritySanitizeStringDart>('stride_security_sanitize_string');
+    _securityDetectInjection = _lib.lookupFunction<_StrideSecurityDetectInjectionNative,
+        _StrideSecurityDetectInjectionDart>('stride_security_detect_injection');
+    _securityIsSafeString = _lib.lookupFunction<_StrideSecurityIsSafeStringNative,
+        _StrideSecurityIsSafeStringDart>('stride_security_is_safe_string');
+    _securityValidateStoragePath = _lib.lookupFunction<_StrideSecurityValidateStoragePathNative,
+        _StrideSecurityValidateStoragePathDart>('stride_security_validate_storage_path');
+    _securityAppCheckDecision = _lib.lookupFunction<_StrideSecurityAppCheckDecisionNative,
+        _StrideSecurityAppCheckDecisionDart>('stride_security_app_check_decision');
+    _securityPlayIntegrityDecision = _lib.lookupFunction<_StrideSecurityPlayIntegrityDecisionNative,
+        _StrideSecurityPlayIntegrityDecisionDart>('stride_security_play_integrity_decision');
+    _securityCheckRateLimit = _lib.lookupFunction<_StrideSecurityCheckRateLimitNative,
+        _StrideSecurityCheckRateLimitDart>('stride_security_check_rate_limit');
+    _securityRateLimitConfig = _lib.lookupFunction<_StrideSecurityRateLimitConfigNative,
+        _StrideSecurityRateLimitConfigDart>('stride_security_rate_limit_config');
+    _securityCheckForSecrets = _lib.lookupFunction<_StrideSecurityCheckForSecretsNative,
+        _StrideSecurityCheckForSecretsDart>('stride_security_check_for_secrets');
+    _securityIsSecretFree = _lib.lookupFunction<_StrideSecurityIsSecretFreeNative,
+        _StrideSecurityIsSecretFreeDart>('stride_security_is_secret_free');
+    _securityValidateProjectId = _lib.lookupFunction<_StrideSecurityValidateProjectIdNative,
+        _StrideSecurityValidateProjectIdDart>('stride_security_validate_project_id');
+    _securityEnvironmentFromProjectId = _lib.lookupFunction<_StrideSecurityEnvironmentFromProjectIdNative,
+        _StrideSecurityEnvironmentFromProjectIdDart>('stride_security_environment_from_project_id');
+    _securityGenerateFirestoreRules = _lib.lookupFunction<_StrideSecurityGenerateFirestoreRulesNative,
+        _StrideSecurityGenerateFirestoreRulesDart>('stride_security_generate_firestore_rules');
+    _securityGenerateStorageRules = _lib.lookupFunction<_StrideSecurityGenerateStorageRulesNative,
+        _StrideSecurityGenerateStorageRulesDart>('stride_security_generate_storage_rules');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -593,6 +725,28 @@ class StrideEngineBindings {
   late final _StrideBuildDeletionResultDart _buildDeletionResult;
   late final _StrideShouldAutoSignoutDart _shouldAutoSignout;
   late final _StrideCanUpgradeAnonymousDart _canUpgradeAnonymous;
+  late final _StrideSecurityCollectionPathTemplateDart _securityCollectionPathTemplate;
+  late final _StrideSecurityCollectionIsAdminOnlyDart _securityCollectionIsAdminOnly;
+  late final _StrideSecurityCollectionIsUserScopedDart _securityCollectionIsUserScoped;
+  late final _StrideSecurityCheckAccessDart _securityCheckAccess;
+  late final _StrideSecurityValidatePathOwnershipDart _securityValidatePathOwnership;
+  late final _StrideSecurityFieldRulesForCollectionDart _securityFieldRulesForCollection;
+  late final _StrideSecurityAllowedFieldsForCollectionDart _securityAllowedFieldsForCollection;
+  late final _StrideSecurityValidateDocumentDart _securityValidateDocument;
+  late final _StrideSecuritySanitizeStringDart _securitySanitizeString;
+  late final _StrideSecurityDetectInjectionDart _securityDetectInjection;
+  late final _StrideSecurityIsSafeStringDart _securityIsSafeString;
+  late final _StrideSecurityValidateStoragePathDart _securityValidateStoragePath;
+  late final _StrideSecurityAppCheckDecisionDart _securityAppCheckDecision;
+  late final _StrideSecurityPlayIntegrityDecisionDart _securityPlayIntegrityDecision;
+  late final _StrideSecurityCheckRateLimitDart _securityCheckRateLimit;
+  late final _StrideSecurityRateLimitConfigDart _securityRateLimitConfig;
+  late final _StrideSecurityCheckForSecretsDart _securityCheckForSecrets;
+  late final _StrideSecurityIsSecretFreeDart _securityIsSecretFree;
+  late final _StrideSecurityValidateProjectIdDart _securityValidateProjectId;
+  late final _StrideSecurityEnvironmentFromProjectIdDart _securityEnvironmentFromProjectId;
+  late final _StrideSecurityGenerateFirestoreRulesDart _securityGenerateFirestoreRules;
+  late final _StrideSecurityGenerateStorageRulesDart _securityGenerateStorageRules;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -1494,6 +1648,248 @@ class StrideEngineBindings {
       malloc.free(ptr);
     }
   }
+
+  /// securityCollectionPathTemplate — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityCollectionPathTemplate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityCollectionPathTemplate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityCollectionIsAdminOnly — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityCollectionIsAdminOnly(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityCollectionIsAdminOnly(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityCollectionIsUserScoped — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityCollectionIsUserScoped(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityCollectionIsUserScoped(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityCheckAccess — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityCheckAccess(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityCheckAccess(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityValidatePathOwnership — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityValidatePathOwnership(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityValidatePathOwnership(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityFieldRulesForCollection — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityFieldRulesForCollection(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityFieldRulesForCollection(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityAllowedFieldsForCollection — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityAllowedFieldsForCollection(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityAllowedFieldsForCollection(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityValidateDocument — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityValidateDocument(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityValidateDocument(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securitySanitizeString — §7 Secure Firebase security validation.
+  Map<String, dynamic> securitySanitizeString(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securitySanitizeString(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityDetectInjection — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityDetectInjection(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityDetectInjection(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityIsSafeString — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityIsSafeString(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityIsSafeString(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityValidateStoragePath — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityValidateStoragePath(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityValidateStoragePath(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityAppCheckDecision — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityAppCheckDecision(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityAppCheckDecision(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityPlayIntegrityDecision — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityPlayIntegrityDecision(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityPlayIntegrityDecision(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securitySecurityCheckRateLimit — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityCheckRateLimit(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityCheckRateLimit(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityRateLimitConfig — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityRateLimitConfig(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityRateLimitConfig(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityCheckForSecrets — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityCheckForSecrets(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityCheckForSecrets(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityIsSecretFree — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityIsSecretFree(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityIsSecretFree(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityValidateProjectId — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityValidateProjectId(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityValidateProjectId(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityEnvironmentFromProjectId — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityEnvironmentFromProjectId(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityEnvironmentFromProjectId(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityGenerateFirestoreRules — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityGenerateFirestoreRules(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityGenerateFirestoreRules(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+
+  /// securityGenerateStorageRules — §7 Secure Firebase security validation.
+  Map<String, dynamic> securityGenerateStorageRules(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_securityGenerateStorageRules(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
 }
 
 /// Thrown when the native engine reports `{"ok": false, ...}` for a call
