@@ -591,6 +591,22 @@ typedef _StrideMonitoringCrashReportDart = Pointer<Utf8> Function(Pointer<Utf8>)
 typedef _StrideMonitoringUptimeNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideMonitoringUptimeDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// §17 — Backups and disaster recovery
+typedef _StrideBackupGetConfigNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackupGetConfigDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackupManifestNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackupManifestDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackupRestoreNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackupRestoreDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackupMigrateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackupMigrateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBackupExportNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBackupExportDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -966,6 +982,18 @@ class StrideEngineBindings {
         _StrideMonitoringCrashReportDart>('stride_monitoring_crash_report');
     _MonitoringUptime = _lib.lookupFunction<_StrideMonitoringUptimeNative,
         _StrideMonitoringUptimeDart>('stride_monitoring_uptime');
+
+    // §17 — Backups and disaster recovery
+    _BackupGetConfig = _lib.lookupFunction<_StrideBackupGetConfigNative,
+        _StrideBackupGetConfigDart>('stride_backup_get_config');
+    _BackupManifest = _lib.lookupFunction<_StrideBackupManifestNative,
+        _StrideBackupManifestDart>('stride_backup_manifest');
+    _BackupRestore = _lib.lookupFunction<_StrideBackupRestoreNative,
+        _StrideBackupRestoreDart>('stride_backup_restore');
+    _BackupMigrate = _lib.lookupFunction<_StrideBackupMigrateNative,
+        _StrideBackupMigrateDart>('stride_backup_migrate');
+    _BackupExport = _lib.lookupFunction<_StrideBackupExportNative,
+        _StrideBackupExportDart>('stride_backup_export');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1163,6 +1191,13 @@ class StrideEngineBindings {
   late final _StrideMonitoringLogEntryDart _MonitoringLogEntry;
   late final _StrideMonitoringCrashReportDart _MonitoringCrashReport;
   late final _StrideMonitoringUptimeDart _MonitoringUptime;
+
+  // §17 — Backups and disaster recovery
+  late final _StrideBackupGetConfigDart _BackupGetConfig;
+  late final _StrideBackupManifestDart _BackupManifest;
+  late final _StrideBackupRestoreDart _BackupRestore;
+  late final _StrideBackupMigrateDart _BackupMigrate;
+  late final _StrideBackupExportDart _BackupExport;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2988,6 +3023,62 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_MonitoringUptime(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backupGetConfig — §17 — return the default backup schedule
+  /// configuration (weekly, Sunday 02:00 UTC, 30-day retention, all
+  /// collections, includes Cloud Storage).
+  Map<String, dynamic> backupGetConfig(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackupGetConfig(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backupManifest — §17 — build a backup manifest from a config,
+  /// timestamp, and list of backup records.
+  Map<String, dynamic> backupManifest(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackupManifest(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backupRestore — §17 — execute a restore operation from a restore
+  /// request, returning the completed restore result.
+  Map<String, dynamic> backupRestore(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackupRestore(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backupMigrate — §17 — run the default migration plan (v1→v2),
+  /// executing all steps and returning the completed plan.
+  Map<String, dynamic> backupMigrate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackupMigrate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// backupExport — §17 — create a user data export result from an
+  /// export request, returning the completed export with download URL.
+  Map<String, dynamic> backupExport(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_BackupExport(ptr));
     } finally {
       malloc.free(ptr);
     }

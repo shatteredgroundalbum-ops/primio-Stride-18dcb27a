@@ -114,6 +114,14 @@ use crate::engine::monitoring::{
     ReleaseHealthStatus, ServiceStatus, SyncFailureMetrics, UptimeMonitor,
     KeyValuePair,
 };
+use crate::engine::backups::{
+    self, BackupConfig, BackupFrequency, BackupManifest, BackupRecord, BackupStatus,
+    BackupType, ExportDataCategory, ExportFormat, ExportRequest, ExportResult,
+    ExportStatus, MigrationPlan, MigrationStep, MigrationStepType, MigrationStatus,
+    RecoveryTestSchedule, RestoreRequest, RestoreResult, RestoreScope, RestoreStatus,
+    RetentionDataType, RetentionPolicy, RetentionRule, RollbackPlan, RollbackStep,
+    RollbackStatus, StorageClass,
+};
 use crate::models::{
     ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
     WorkoutSummary,
@@ -5475,5 +5483,239 @@ pub extern "C" fn stride_monitoring_uptime(
         }
         monitor.recompute();
         ok_json(&monitor)
+    })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §17 — Backups and disaster recovery
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Returns the default backup schedule configuration.
+///
+/// `request_json` shape: `{ }` (empty JSON object)
+/// Returns a `BackupConfig` as JSON — the standard default schedule
+/// (weekly, Sunday 02:00 UTC, 30-day retention, all collections, includes
+/// Cloud Storage, bucket `stride-backups`, region `us-central1`).
+#[no_mangle]
+pub extern "C" fn stride_backup_get_config(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let config = backups::build_default_backup_schedule();
+        ok_json(&config)
+    })
+}
+
+/// Builds a backup manifest from a list of backup records.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "config": { … BackupConfig … },
+///   "generated_at_ms": 1700000000000,
+///   "records": [ … BackupRecord … ]
+/// }
+/// ```
+/// Returns a `BackupManifest` as JSON, assembled from the given records and
+/// config, with recomputed aggregate fields (total size, success/fail counts).
+#[no_mangle]
+pub extern "C" fn stride_backup_manifest(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            config: BackupConfig,
+            generated_at_ms: i64,
+            records: Vec<BackupRecord>,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self {
+                    config: backups::build_default_backup_schedule(),
+                    generated_at_ms: 0,
+                    records: Vec::new(),
+                }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut manifest = BackupManifest::new(req.config, req.generated_at_ms);
+        for record in req.records {
+            manifest.add_record(record);
+        }
+        ok_json(&manifest)
+    })
+}
+
+/// Executes a restore operation from a restore request.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "request": { … RestoreRequest … },
+///   "completed_at_ms": 1700000005000,
+///   "documents_restored": 5000,
+///   "files_restored": 120,
+///   "size_restored_bytes": 536870912,
+///   "validation_passed": true
+/// }
+/// ```
+/// Returns a `RestoreResult` as JSON — the restore is marked `Completed`
+/// with the given counts and validation flag.
+#[no_mangle]
+pub extern "C" fn stride_backup_restore(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            request: RestoreRequest,
+            completed_at_ms: i64,
+            documents_restored: u64,
+            files_restored: u64,
+            size_restored_bytes: u64,
+            validation_passed: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = RestoreResult::new(req.request).complete(
+            req.completed_at_ms,
+            req.documents_restored,
+            req.files_restored,
+            req.size_restored_bytes,
+            req.validation_passed,
+        );
+        ok_json(&result)
+    })
+}
+
+/// Runs a migration plan, executing all steps and returning the completed plan.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "created_at_ms": 1700000000000,
+///   "executed_at_ms": 1700000005000
+/// }
+/// ```
+/// Returns a `MigrationPlan` as JSON — the default v1→v2 migration plan,
+/// with all steps executed (marked `Completed`) and the plan itself marked
+/// `Completed` at the given timestamp.
+#[no_mangle]
+pub extern "C" fn stride_backup_migrate(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            created_at_ms: i64,
+            executed_at_ms: i64,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self {
+                    created_at_ms: 0,
+                    executed_at_ms: 0,
+                }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut plan = backups::build_default_migration_plan(req.created_at_ms);
+        let steps: Vec<MigrationStep> = plan
+            .steps
+            .iter()
+            .map(|s| {
+                let mut clone = s.clone();
+                clone = clone.execute(req.executed_at_ms);
+                clone
+            })
+            .collect();
+        plan.steps = steps;
+        plan = plan.complete(req.executed_at_ms);
+        ok_json(&plan)
+    })
+}
+
+/// Creates a user data export result from an export request.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "request": { … ExportRequest … },
+///   "completed_at_ms": 1700000005000,
+///   "size_bytes": 10485760,
+///   "workout_count": 42,
+///   "route_count": 42,
+///   "download_url": "https://storage.googleapis.com/stride-exports/..."
+/// }
+/// ```
+/// Returns an `ExportResult` as JSON — the export is marked `Completed`
+/// with the given size, counts, and download URL.
+#[no_mangle]
+pub extern "C" fn stride_backup_export(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            request: ExportRequest,
+            completed_at_ms: i64,
+            size_bytes: u64,
+            workout_count: u32,
+            route_count: u32,
+            download_url: String,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = ExportResult::new(req.request).complete(
+            req.completed_at_ms,
+            req.size_bytes,
+            req.workout_count,
+            req.route_count,
+            req.download_url,
+        );
+        ok_json(&result)
     })
 }

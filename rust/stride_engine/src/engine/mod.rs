@@ -7,6 +7,7 @@
 pub mod achievements;
 pub mod account;
 pub mod autopause;
+pub mod backups;
 pub mod background;
 pub mod battery;
 pub mod calories;

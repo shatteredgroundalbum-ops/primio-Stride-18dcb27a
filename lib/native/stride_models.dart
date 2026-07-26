@@ -7340,3 +7340,1334 @@ class StrideLogBuffer {
         'max_entries': maxEntries,
       };
 }
+
+enum StrideBackupFrequency {
+  daily,
+  weekly,
+  monthly,
+  onDemand;
+
+  static StrideBackupFrequency fromJson(String s) {
+    switch (s) {
+      case 'daily':
+        return StrideBackupFrequency.daily;
+      case 'weekly':
+        return StrideBackupFrequency.weekly;
+      case 'monthly':
+        return StrideBackupFrequency.monthly;
+      case 'on_demand':
+        return StrideBackupFrequency.onDemand;
+      default:
+        return StrideBackupFrequency.daily;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideBackupFrequency.daily:
+        return 'daily';
+      case StrideBackupFrequency.weekly:
+        return 'weekly';
+      case StrideBackupFrequency.monthly:
+        return 'monthly';
+      case StrideBackupFrequency.onDemand:
+        return 'on_demand';
+    }
+  }
+}
+
+enum StrideBackupType {
+  firestoreFull,
+  incremental,
+  cloudStorageSnapshot,
+  localDatabase,
+  combined;
+
+  static StrideBackupType fromJson(String s) {
+    switch (s) {
+      case 'firestore_full':
+        return StrideBackupType.firestoreFull;
+      case 'incremental':
+        return StrideBackupType.incremental;
+      case 'cloud_storage_snapshot':
+        return StrideBackupType.cloudStorageSnapshot;
+      case 'local_database':
+        return StrideBackupType.localDatabase;
+      case 'combined':
+        return StrideBackupType.combined;
+      default:
+        return StrideBackupType.firestoreFull;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideBackupType.firestoreFull:
+        return 'firestore_full';
+      case StrideBackupType.incremental:
+        return 'incremental';
+      case StrideBackupType.cloudStorageSnapshot:
+        return 'cloud_storage_snapshot';
+      case StrideBackupType.localDatabase:
+        return 'local_database';
+      case StrideBackupType.combined:
+        return 'combined';
+    }
+  }
+}
+
+enum StrideBackupStatus {
+  scheduled,
+  inProgress,
+  completed,
+  failed,
+  cancelled,
+  expired;
+
+  static StrideBackupStatus fromJson(String s) {
+    switch (s) {
+      case 'scheduled':
+        return StrideBackupStatus.scheduled;
+      case 'in_progress':
+        return StrideBackupStatus.inProgress;
+      case 'completed':
+        return StrideBackupStatus.completed;
+      case 'failed':
+        return StrideBackupStatus.failed;
+      case 'cancelled':
+        return StrideBackupStatus.cancelled;
+      case 'expired':
+        return StrideBackupStatus.expired;
+      default:
+        return StrideBackupStatus.scheduled;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideBackupStatus.scheduled:
+        return 'scheduled';
+      case StrideBackupStatus.inProgress:
+        return 'in_progress';
+      case StrideBackupStatus.completed:
+        return 'completed';
+      case StrideBackupStatus.failed:
+        return 'failed';
+      case StrideBackupStatus.cancelled:
+        return 'cancelled';
+      case StrideBackupStatus.expired:
+        return 'expired';
+    }
+  }
+}
+
+enum StrideRestoreStatus {
+  pending,
+  validating,
+  downloading,
+  restoring,
+  completed,
+  failed,
+  cancelled;
+
+  static StrideRestoreStatus fromJson(String s) {
+    switch (s) {
+      case 'pending':
+        return StrideRestoreStatus.pending;
+      case 'validating':
+        return StrideRestoreStatus.validating;
+      case 'downloading':
+        return StrideRestoreStatus.downloading;
+      case 'restoring':
+        return StrideRestoreStatus.restoring;
+      case 'completed':
+        return StrideRestoreStatus.completed;
+      case 'failed':
+        return StrideRestoreStatus.failed;
+      case 'cancelled':
+        return StrideRestoreStatus.cancelled;
+      default:
+        return StrideRestoreStatus.pending;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRestoreStatus.pending:
+        return 'pending';
+      case StrideRestoreStatus.validating:
+        return 'validating';
+      case StrideRestoreStatus.downloading:
+        return 'downloading';
+      case StrideRestoreStatus.restoring:
+        return 'restoring';
+      case StrideRestoreStatus.completed:
+        return 'completed';
+      case StrideRestoreStatus.failed:
+        return 'failed';
+      case StrideRestoreStatus.cancelled:
+        return 'cancelled';
+    }
+  }
+}
+
+enum StrideRestoreScope {
+  full,
+  firestoreOnly,
+  storageOnly,
+  localOnly,
+  specificCollections;
+
+  static StrideRestoreScope fromJson(String s) {
+    switch (s) {
+      case 'full':
+        return StrideRestoreScope.full;
+      case 'firestore_only':
+        return StrideRestoreScope.firestoreOnly;
+      case 'storage_only':
+        return StrideRestoreScope.storageOnly;
+      case 'local_only':
+        return StrideRestoreScope.localOnly;
+      case 'specific_collections':
+        return StrideRestoreScope.specificCollections;
+      default:
+        return StrideRestoreScope.full;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRestoreScope.full:
+        return 'full';
+      case StrideRestoreScope.firestoreOnly:
+        return 'firestore_only';
+      case StrideRestoreScope.storageOnly:
+        return 'storage_only';
+      case StrideRestoreScope.localOnly:
+        return 'local_only';
+      case StrideRestoreScope.specificCollections:
+        return 'specific_collections';
+    }
+  }
+}
+
+enum StrideStorageClass {
+  standard,
+  nearline,
+  coldline,
+  archive;
+
+  static StrideStorageClass fromJson(String s) {
+    switch (s) {
+      case 'standard':
+        return StrideStorageClass.standard;
+      case 'nearline':
+        return StrideStorageClass.nearline;
+      case 'coldline':
+        return StrideStorageClass.coldline;
+      case 'archive':
+        return StrideStorageClass.archive;
+      default:
+        return StrideStorageClass.standard;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideStorageClass.standard:
+        return 'standard';
+      case StrideStorageClass.nearline:
+        return 'nearline';
+      case StrideStorageClass.coldline:
+        return 'coldline';
+      case StrideStorageClass.archive:
+        return 'archive';
+    }
+  }
+}
+
+enum StrideRetentionDataType {
+  workoutSummaries,
+  routeFiles,
+  gpsRawData,
+  heartRateData,
+  stepData,
+  userProfile,
+  trainingPlans,
+  crashLogs,
+  auditLogs,
+  systemBackups;
+
+  static StrideRetentionDataType fromJson(String s) {
+    switch (s) {
+      case 'workout_summaries':
+        return StrideRetentionDataType.workoutSummaries;
+      case 'route_files':
+        return StrideRetentionDataType.routeFiles;
+      case 'gps_raw_data':
+        return StrideRetentionDataType.gpsRawData;
+      case 'heart_rate_data':
+        return StrideRetentionDataType.heartRateData;
+      case 'step_data':
+        return StrideRetentionDataType.stepData;
+      case 'user_profile':
+        return StrideRetentionDataType.userProfile;
+      case 'training_plans':
+        return StrideRetentionDataType.trainingPlans;
+      case 'crash_logs':
+        return StrideRetentionDataType.crashLogs;
+      case 'audit_logs':
+        return StrideRetentionDataType.auditLogs;
+      case 'system_backups':
+        return StrideRetentionDataType.systemBackups;
+      default:
+        return StrideRetentionDataType.workoutSummaries;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRetentionDataType.workoutSummaries:
+        return 'workout_summaries';
+      case StrideRetentionDataType.routeFiles:
+        return 'route_files';
+      case StrideRetentionDataType.gpsRawData:
+        return 'gps_raw_data';
+      case StrideRetentionDataType.heartRateData:
+        return 'heart_rate_data';
+      case StrideRetentionDataType.stepData:
+        return 'step_data';
+      case StrideRetentionDataType.userProfile:
+        return 'user_profile';
+      case StrideRetentionDataType.trainingPlans:
+        return 'training_plans';
+      case StrideRetentionDataType.crashLogs:
+        return 'crash_logs';
+      case StrideRetentionDataType.auditLogs:
+        return 'audit_logs';
+      case StrideRetentionDataType.systemBackups:
+        return 'system_backups';
+    }
+  }
+}
+
+enum StrideMigrationStatus {
+  notStarted,
+  inProgress,
+  completed,
+  failed,
+  rolledBack,
+  skipped;
+
+  static StrideMigrationStatus fromJson(String s) {
+    switch (s) {
+      case 'not_started':
+        return StrideMigrationStatus.notStarted;
+      case 'in_progress':
+        return StrideMigrationStatus.inProgress;
+      case 'completed':
+        return StrideMigrationStatus.completed;
+      case 'failed':
+        return StrideMigrationStatus.failed;
+      case 'rolled_back':
+        return StrideMigrationStatus.rolledBack;
+      case 'skipped':
+        return StrideMigrationStatus.skipped;
+      default:
+        return StrideMigrationStatus.notStarted;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideMigrationStatus.notStarted:
+        return 'not_started';
+      case StrideMigrationStatus.inProgress:
+        return 'in_progress';
+      case StrideMigrationStatus.completed:
+        return 'completed';
+      case StrideMigrationStatus.failed:
+        return 'failed';
+      case StrideMigrationStatus.rolledBack:
+        return 'rolled_back';
+      case StrideMigrationStatus.skipped:
+        return 'skipped';
+    }
+  }
+}
+
+enum StrideMigrationStepType {
+  addField,
+  removeField,
+  renameField,
+  changeFieldType,
+  createCollection,
+  dropCollection,
+  addIndex,
+  removeIndex,
+  dataTransformation,
+  localSchemaChange;
+
+  static StrideMigrationStepType fromJson(String s) {
+    switch (s) {
+      case 'add_field':
+        return StrideMigrationStepType.addField;
+      case 'remove_field':
+        return StrideMigrationStepType.removeField;
+      case 'rename_field':
+        return StrideMigrationStepType.renameField;
+      case 'change_field_type':
+        return StrideMigrationStepType.changeFieldType;
+      case 'create_collection':
+        return StrideMigrationStepType.createCollection;
+      case 'drop_collection':
+        return StrideMigrationStepType.dropCollection;
+      case 'add_index':
+        return StrideMigrationStepType.addIndex;
+      case 'remove_index':
+        return StrideMigrationStepType.removeIndex;
+      case 'data_transformation':
+        return StrideMigrationStepType.dataTransformation;
+      case 'local_schema_change':
+        return StrideMigrationStepType.localSchemaChange;
+      default:
+        return StrideMigrationStepType.addField;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideMigrationStepType.addField:
+        return 'add_field';
+      case StrideMigrationStepType.removeField:
+        return 'remove_field';
+      case StrideMigrationStepType.renameField:
+        return 'rename_field';
+      case StrideMigrationStepType.changeFieldType:
+        return 'change_field_type';
+      case StrideMigrationStepType.createCollection:
+        return 'create_collection';
+      case StrideMigrationStepType.dropCollection:
+        return 'drop_collection';
+      case StrideMigrationStepType.addIndex:
+        return 'add_index';
+      case StrideMigrationStepType.removeIndex:
+        return 'remove_index';
+      case StrideMigrationStepType.dataTransformation:
+        return 'data_transformation';
+      case StrideMigrationStepType.localSchemaChange:
+        return 'local_schema_change';
+    }
+  }
+}
+
+enum StrideRollbackStatus {
+  notStarted,
+  inProgress,
+  completed,
+  failed,
+  partiallyRolledBack;
+
+  static StrideRollbackStatus fromJson(String s) {
+    switch (s) {
+      case 'not_started':
+        return StrideRollbackStatus.notStarted;
+      case 'in_progress':
+        return StrideRollbackStatus.inProgress;
+      case 'completed':
+        return StrideRollbackStatus.completed;
+      case 'failed':
+        return StrideRollbackStatus.failed;
+      case 'partially_rolled_back':
+        return StrideRollbackStatus.partiallyRolledBack;
+      default:
+        return StrideRollbackStatus.notStarted;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRollbackStatus.notStarted:
+        return 'not_started';
+      case StrideRollbackStatus.inProgress:
+        return 'in_progress';
+      case StrideRollbackStatus.completed:
+        return 'completed';
+      case StrideRollbackStatus.failed:
+        return 'failed';
+      case StrideRollbackStatus.partiallyRolledBack:
+        return 'partially_rolled_back';
+    }
+  }
+}
+
+enum StrideExportFormat {
+  json,
+  csv,
+  gpx,
+  zip;
+
+  static StrideExportFormat fromJson(String s) {
+    switch (s) {
+      case 'json':
+        return StrideExportFormat.json;
+      case 'csv':
+        return StrideExportFormat.csv;
+      case 'gpx':
+        return StrideExportFormat.gpx;
+      case 'zip':
+        return StrideExportFormat.zip;
+      default:
+        return StrideExportFormat.json;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideExportFormat.json:
+        return 'json';
+      case StrideExportFormat.csv:
+        return 'csv';
+      case StrideExportFormat.gpx:
+        return 'gpx';
+      case StrideExportFormat.zip:
+        return 'zip';
+    }
+  }
+}
+
+enum StrideExportStatus {
+  pending,
+  generating,
+  uploading,
+  completed,
+  failed,
+  expired;
+
+  static StrideExportStatus fromJson(String s) {
+    switch (s) {
+      case 'pending':
+        return StrideExportStatus.pending;
+      case 'generating':
+        return StrideExportStatus.generating;
+      case 'uploading':
+        return StrideExportStatus.uploading;
+      case 'completed':
+        return StrideExportStatus.completed;
+      case 'failed':
+        return StrideExportStatus.failed;
+      case 'expired':
+        return StrideExportStatus.expired;
+      default:
+        return StrideExportStatus.pending;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideExportStatus.pending:
+        return 'pending';
+      case StrideExportStatus.generating:
+        return 'generating';
+      case StrideExportStatus.uploading:
+        return 'uploading';
+      case StrideExportStatus.completed:
+        return 'completed';
+      case StrideExportStatus.failed:
+        return 'failed';
+      case StrideExportStatus.expired:
+        return 'expired';
+    }
+  }
+}
+
+enum StrideExportDataCategory {
+  workouts,
+  routes,
+  gpsData,
+  heartRateData,
+  stepData,
+  profile,
+  trainingPlans,
+  achievements,
+  settings;
+
+  static StrideExportDataCategory fromJson(String s) {
+    switch (s) {
+      case 'workouts':
+        return StrideExportDataCategory.workouts;
+      case 'routes':
+        return StrideExportDataCategory.routes;
+      case 'gps_data':
+        return StrideExportDataCategory.gpsData;
+      case 'heart_rate_data':
+        return StrideExportDataCategory.heartRateData;
+      case 'step_data':
+        return StrideExportDataCategory.stepData;
+      case 'profile':
+        return StrideExportDataCategory.profile;
+      case 'training_plans':
+        return StrideExportDataCategory.trainingPlans;
+      case 'achievements':
+        return StrideExportDataCategory.achievements;
+      case 'settings':
+        return StrideExportDataCategory.settings;
+      default:
+        return StrideExportDataCategory.workouts;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideExportDataCategory.workouts:
+        return 'workouts';
+      case StrideExportDataCategory.routes:
+        return 'routes';
+      case StrideExportDataCategory.gpsData:
+        return 'gps_data';
+      case StrideExportDataCategory.heartRateData:
+        return 'heart_rate_data';
+      case StrideExportDataCategory.stepData:
+        return 'step_data';
+      case StrideExportDataCategory.profile:
+        return 'profile';
+      case StrideExportDataCategory.trainingPlans:
+        return 'training_plans';
+      case StrideExportDataCategory.achievements:
+        return 'achievements';
+      case StrideExportDataCategory.settings:
+        return 'settings';
+    }
+  }
+}
+
+enum StrideRecoveryTestType {
+  backupRestore,
+  migrationRollback,
+  localDbRecovery,
+  fullDisasterRecovery,
+  dataExport,
+  accountDeletion;
+
+  static StrideRecoveryTestType fromJson(String s) {
+    switch (s) {
+      case 'backup_restore':
+        return StrideRecoveryTestType.backupRestore;
+      case 'migration_rollback':
+        return StrideRecoveryTestType.migrationRollback;
+      case 'local_db_recovery':
+        return StrideRecoveryTestType.localDbRecovery;
+      case 'full_disaster_recovery':
+        return StrideRecoveryTestType.fullDisasterRecovery;
+      case 'data_export':
+        return StrideRecoveryTestType.dataExport;
+      case 'account_deletion':
+        return StrideRecoveryTestType.accountDeletion;
+      default:
+        return StrideRecoveryTestType.backupRestore;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRecoveryTestType.backupRestore:
+        return 'backup_restore';
+      case StrideRecoveryTestType.migrationRollback:
+        return 'migration_rollback';
+      case StrideRecoveryTestType.localDbRecovery:
+        return 'local_db_recovery';
+      case StrideRecoveryTestType.fullDisasterRecovery:
+        return 'full_disaster_recovery';
+      case StrideRecoveryTestType.dataExport:
+        return 'data_export';
+      case StrideRecoveryTestType.accountDeletion:
+        return 'account_deletion';
+    }
+  }
+}
+
+enum StrideRecoveryTestStatus {
+  scheduled,
+  inProgress,
+  passed,
+  failed,
+  skipped;
+
+  static StrideRecoveryTestStatus fromJson(String s) {
+    switch (s) {
+      case 'scheduled':
+        return StrideRecoveryTestStatus.scheduled;
+      case 'in_progress':
+        return StrideRecoveryTestStatus.inProgress;
+      case 'passed':
+        return StrideRecoveryTestStatus.passed;
+      case 'failed':
+        return StrideRecoveryTestStatus.failed;
+      case 'skipped':
+        return StrideRecoveryTestStatus.skipped;
+      default:
+        return StrideRecoveryTestStatus.scheduled;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideRecoveryTestStatus.scheduled:
+        return 'scheduled';
+      case StrideRecoveryTestStatus.inProgress:
+        return 'in_progress';
+      case StrideRecoveryTestStatus.passed:
+        return 'passed';
+      case StrideRecoveryTestStatus.failed:
+        return 'failed';
+      case StrideRecoveryTestStatus.skipped:
+        return 'skipped';
+    }
+  }
+}
+
+
+// §17 — Backups and disaster recovery
+
+class StrideBackupConfig {
+  final bool enabled;
+  final StrideBackupFrequency frequency;
+  final int hourUtc;
+  final int dayOfWeek;
+  final int retentionCount;
+  final List<String> collections;
+  final bool includeCloudStorage;
+  final String backupBucket;
+  final String region;
+
+  StrideBackupConfig({
+    this.enabled = true,
+    this.frequency = StrideBackupFrequency.daily,
+    this.hourUtc = 3,
+    this.dayOfWeek = 0,
+    this.retentionCount = 7,
+    this.collections = const [],
+    this.includeCloudStorage = true,
+    this.backupBucket = '',
+    this.region = '',
+  });
+
+  StrideBackupConfig.fromJson(Map<String, dynamic> j)
+      : enabled = j['enabled'] as bool? ?? true,
+        frequency = StrideBackupFrequency.fromJson(j['frequency']?.toString() ?? 'daily'),
+        hourUtc = (j['hour_utc'] as num?)?.toInt() ?? 3,
+        dayOfWeek = (j['day_of_week'] as num?)?.toInt() ?? 0,
+        retentionCount = (j['retention_count'] as num?)?.toInt() ?? 7,
+        collections = (j['collections'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        includeCloudStorage = j['include_cloud_storage'] as bool? ?? true,
+        backupBucket = j['backup_bucket']?.toString() ?? '',
+        region = j['region']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'enabled': enabled,
+        'frequency': frequency.toJson(),
+        'hour_utc': hourUtc,
+        'day_of_week': dayOfWeek,
+        'retention_count': retentionCount,
+        'collections': collections,
+        'include_cloud_storage': includeCloudStorage,
+        'backup_bucket': backupBucket,
+        'region': region,
+      };
+}
+
+class StrideBackupRecord {
+  final String backupId;
+  final StrideBackupType backupType;
+  final StrideBackupStatus status;
+  final int startedAtMs;
+  final int? completedAtMs;
+  final int sizeBytes;
+  final int documentCount;
+  final int fileCount;
+  final String backupUri;
+  final String? errorMessage;
+  final int durationMs;
+
+  StrideBackupRecord({
+    required this.backupId,
+    this.backupType = StrideBackupType.firestoreFull,
+    this.status = StrideBackupStatus.scheduled,
+    this.startedAtMs = 0,
+    this.completedAtMs,
+    this.sizeBytes = 0,
+    this.documentCount = 0,
+    this.fileCount = 0,
+    this.backupUri = '',
+    this.errorMessage,
+    this.durationMs = 0,
+  });
+
+  StrideBackupRecord.fromJson(Map<String, dynamic> j)
+      : backupId = j['backup_id']?.toString() ?? '',
+        backupType = StrideBackupType.fromJson(j['backup_type']?.toString() ?? 'firestore_full'),
+        status = StrideBackupStatus.fromJson(j['status']?.toString() ?? 'scheduled'),
+        startedAtMs = (j['started_at_ms'] as num?)?.toInt() ?? 0,
+        completedAtMs = (j['completed_at_ms'] as num?)?.toInt(),
+        sizeBytes = (j['size_bytes'] as num?)?.toInt() ?? 0,
+        documentCount = (j['document_count'] as num?)?.toInt() ?? 0,
+        fileCount = (j['file_count'] as num?)?.toInt() ?? 0,
+        backupUri = j['backup_uri']?.toString() ?? '',
+        errorMessage = j['error_message']?.toString(),
+        durationMs = (j['duration_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'backup_id': backupId,
+        'backup_type': backupType.toJson(),
+        'status': status.toJson(),
+        'started_at_ms': startedAtMs,
+        'completed_at_ms': completedAtMs,
+        'size_bytes': sizeBytes,
+        'document_count': documentCount,
+        'file_count': fileCount,
+        'backup_uri': backupUri,
+        'error_message': errorMessage,
+        'duration_ms': durationMs,
+      };
+}
+
+class StrideBackupManifest {
+  final List<StrideBackupRecord> records;
+  final StrideBackupConfig config;
+  final int generatedAtMs;
+  final int totalSizeBytes;
+  final int successfulCount;
+  final int failedCount;
+
+  StrideBackupManifest({
+    this.records = const [],
+    this.config = const StrideBackupConfig(),
+    this.generatedAtMs = 0,
+    this.totalSizeBytes = 0,
+    this.successfulCount = 0,
+    this.failedCount = 0,
+  });
+
+  StrideBackupManifest.fromJson(Map<String, dynamic> j)
+      : records = (j['records'] as List?)
+            ?.map((e) => StrideBackupRecord.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        config = StrideBackupConfig.fromJson(j['config'] as Map<String, dynamic>? ?? {}),
+        generatedAtMs = (j['generated_at_ms'] as num?)?.toInt() ?? 0,
+        totalSizeBytes = (j['total_size_bytes'] as num?)?.toInt() ?? 0,
+        successfulCount = (j['successful_count'] as num?)?.toInt() ?? 0,
+        failedCount = (j['failed_count'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'records': records.map((e) => e.toJson()).toList(),
+        'config': config.toJson(),
+        'generated_at_ms': generatedAtMs,
+        'total_size_bytes': totalSizeBytes,
+        'successful_count': successfulCount,
+        'failed_count': failedCount,
+      };
+}
+
+class StrideRestoreRequest {
+  final String backupId;
+  final String backupUri;
+  final StrideRestoreScope restoreScope;
+  final bool overwrite;
+  final int requestedAtMs;
+  final String requestedBy;
+
+  StrideRestoreRequest({
+    required this.backupId,
+    this.backupUri = '',
+    this.restoreScope = StrideRestoreScope.full,
+    this.overwrite = false,
+    this.requestedAtMs = 0,
+    this.requestedBy = '',
+  });
+
+  StrideRestoreRequest.fromJson(Map<String, dynamic> j)
+      : backupId = j['backup_id']?.toString() ?? '',
+        backupUri = j['backup_uri']?.toString() ?? '',
+        restoreScope = StrideRestoreScope.fromJson(j['restore_scope']?.toString() ?? 'full'),
+        overwrite = j['overwrite'] as bool? ?? false,
+        requestedAtMs = (j['requested_at_ms'] as num?)?.toInt() ?? 0,
+        requestedBy = j['requested_by']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'backup_id': backupId,
+        'backup_uri': backupUri,
+        'restore_scope': restoreScope.toJson(),
+        'overwrite': overwrite,
+        'requested_at_ms': requestedAtMs,
+        'requested_by': requestedBy,
+      };
+}
+
+class StrideRestoreResult {
+  final StrideRestoreRequest request;
+  final StrideRestoreStatus status;
+  final int completedAtMs;
+  final int documentsRestored;
+  final int filesRestored;
+  final int sizeRestoredBytes;
+  final int durationMs;
+  final String? errorMessage;
+  final bool validationPassed;
+
+  StrideRestoreResult({
+    required this.request,
+    this.status = StrideRestoreStatus.pending,
+    this.completedAtMs = 0,
+    this.documentsRestored = 0,
+    this.filesRestored = 0,
+    this.sizeRestoredBytes = 0,
+    this.durationMs = 0,
+    this.errorMessage,
+    this.validationPassed = false,
+  });
+
+  StrideRestoreResult.fromJson(Map<String, dynamic> j)
+      : request = StrideRestoreRequest.fromJson(j['request'] as Map<String, dynamic>? ?? {}),
+        status = StrideRestoreStatus.fromJson(j['status']?.toString() ?? 'pending'),
+        completedAtMs = (j['completed_at_ms'] as num?)?.toInt() ?? 0,
+        documentsRestored = (j['documents_restored'] as num?)?.toInt() ?? 0,
+        filesRestored = (j['files_restored'] as num?)?.toInt() ?? 0,
+        sizeRestoredBytes = (j['size_restored_bytes'] as num?)?.toInt() ?? 0,
+        durationMs = (j['duration_ms'] as num?)?.toInt() ?? 0,
+        errorMessage = j['error_message']?.toString(),
+        validationPassed = j['validation_passed'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'request': request.toJson(),
+        'status': status.toJson(),
+        'completed_at_ms': completedAtMs,
+        'documents_restored': documentsRestored,
+        'files_restored': filesRestored,
+        'size_restored_bytes': sizeRestoredBytes,
+        'duration_ms': durationMs,
+        'error_message': errorMessage,
+        'validation_passed': validationPassed,
+      };
+}
+
+class StrideRetentionRule {
+  final String name;
+  final StrideRetentionDataType dataType;
+  final int retentionDays;
+  final StrideStorageClass storageClass;
+  final bool deleteAfterExpiry;
+
+  StrideRetentionRule({
+    required this.name,
+    this.dataType = StrideRetentionDataType.workoutSummaries,
+    this.retentionDays = 90,
+    this.storageClass = StrideStorageClass.standard,
+    this.deleteAfterExpiry = true,
+  });
+
+  StrideRetentionRule.fromJson(Map<String, dynamic> j)
+      : name = j['name']?.toString() ?? '',
+        dataType = StrideRetentionDataType.fromJson(j['data_type']?.toString() ?? 'workout_summaries'),
+        retentionDays = (j['retention_days'] as num?)?.toInt() ?? 90,
+        storageClass = StrideStorageClass.fromJson(j['storage_class']?.toString() ?? 'standard'),
+        deleteAfterExpiry = j['delete_after_expiry'] as bool? ?? true;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'data_type': dataType.toJson(),
+        'retention_days': retentionDays,
+        'storage_class': storageClass.toJson(),
+        'delete_after_expiry': deleteAfterExpiry,
+      };
+}
+
+class StrideRetentionPolicy {
+  final bool enabled;
+  final List<StrideRetentionRule> rules;
+  final String bucketName;
+  final bool useLifecycleManagement;
+  final int lastUpdatedMs;
+
+  StrideRetentionPolicy({
+    this.enabled = true,
+    this.rules = const [],
+    this.bucketName = '',
+    this.useLifecycleManagement = true,
+    this.lastUpdatedMs = 0,
+  });
+
+  StrideRetentionPolicy.fromJson(Map<String, dynamic> j)
+      : enabled = j['enabled'] as bool? ?? true,
+        rules = (j['rules'] as List?)
+            ?.map((e) => StrideRetentionRule.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        bucketName = j['bucket_name']?.toString() ?? '',
+        useLifecycleManagement = j['use_lifecycle_management'] as bool? ?? true,
+        lastUpdatedMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'enabled': enabled,
+        'rules': rules.map((e) => e.toJson()).toList(),
+        'bucket_name': bucketName,
+        'use_lifecycle_management': useLifecycleManagement,
+        'last_updated_ms': lastUpdatedMs,
+      };
+}
+
+class StrideMigrationStep {
+  final String stepId;
+  final String description;
+  final StrideMigrationStepType stepType;
+  final String target;
+  final String? fieldName;
+  final int fromVersion;
+  final int toVersion;
+  final StrideMigrationStatus status;
+  final bool reversible;
+  final String? errorMessage;
+  final int? executedAtMs;
+
+  StrideMigrationStep({
+    required this.stepId,
+    required this.description,
+    this.stepType = StrideMigrationStepType.addField,
+    this.target = '',
+    this.fieldName,
+    this.fromVersion = 0,
+    this.toVersion = 0,
+    this.status = StrideMigrationStatus.notStarted,
+    this.reversible = true,
+    this.errorMessage,
+    this.executedAtMs,
+  });
+
+  StrideMigrationStep.fromJson(Map<String, dynamic> j)
+      : stepId = j['step_id']?.toString() ?? '',
+        description = j['description']?.toString() ?? '',
+        stepType = StrideMigrationStepType.fromJson(j['step_type']?.toString() ?? 'add_field'),
+        target = j['target']?.toString() ?? '',
+        fieldName = j['field_name']?.toString(),
+        fromVersion = (j['from_version'] as num?)?.toInt() ?? 0,
+        toVersion = (j['to_version'] as num?)?.toInt() ?? 0,
+        status = StrideMigrationStatus.fromJson(j['status']?.toString() ?? 'not_started'),
+        reversible = j['reversible'] as bool? ?? true,
+        errorMessage = j['error_message']?.toString(),
+        executedAtMs = (j['executed_at_ms'] as num?)?.toInt();
+
+  Map<String, dynamic> toJson() => {
+        'step_id': stepId,
+        'description': description,
+        'step_type': stepType.toJson(),
+        'target': target,
+        'field_name': fieldName,
+        'from_version': fromVersion,
+        'to_version': toVersion,
+        'status': status.toJson(),
+        'reversible': reversible,
+        'error_message': errorMessage,
+        'executed_at_ms': executedAtMs,
+      };
+}
+
+class StrideMigrationPlan {
+  final String planId;
+  final String name;
+  final int fromVersion;
+  final int toVersion;
+  final List<StrideMigrationStep> steps;
+  final StrideMigrationStatus status;
+  final int createdAtMs;
+  final int? completedAtMs;
+  final bool testedInStaging;
+
+  StrideMigrationPlan({
+    required this.planId,
+    required this.name,
+    this.fromVersion = 0,
+    this.toVersion = 0,
+    this.steps = const [],
+    this.status = StrideMigrationStatus.notStarted,
+    this.createdAtMs = 0,
+    this.completedAtMs,
+    this.testedInStaging = false,
+  });
+
+  StrideMigrationPlan.fromJson(Map<String, dynamic> j)
+      : planId = j['plan_id']?.toString() ?? '',
+        name = j['name']?.toString() ?? '',
+        fromVersion = (j['from_version'] as num?)?.toInt() ?? 0,
+        toVersion = (j['to_version'] as num?)?.toInt() ?? 0,
+        steps = (j['steps'] as List?)
+            ?.map((e) => StrideMigrationStep.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        status = StrideMigrationStatus.fromJson(j['status']?.toString() ?? 'not_started'),
+        createdAtMs = (j['created_at_ms'] as num?)?.toInt() ?? 0,
+        completedAtMs = (j['completed_at_ms'] as num?)?.toInt(),
+        testedInStaging = j['tested_in_staging'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'plan_id': planId,
+        'name': name,
+        'from_version': fromVersion,
+        'to_version': toVersion,
+        'steps': steps.map((e) => e.toJson()).toList(),
+        'status': status.toJson(),
+        'created_at_ms': createdAtMs,
+        'completed_at_ms': completedAtMs,
+        'tested_in_staging': testedInStaging,
+      };
+}
+
+class StrideRollbackStep {
+  final String originalStepId;
+  final String description;
+  final String target;
+  final StrideRollbackStatus status;
+  final String? errorMessage;
+
+  StrideRollbackStep({
+    required this.originalStepId,
+    required this.description,
+    this.target = '',
+    this.status = StrideRollbackStatus.notStarted,
+    this.errorMessage,
+  });
+
+  StrideRollbackStep.fromJson(Map<String, dynamic> j)
+      : originalStepId = j['original_step_id']?.toString() ?? '',
+        description = j['description']?.toString() ?? '',
+        target = j['target']?.toString() ?? '',
+        status = StrideRollbackStatus.fromJson(j['status']?.toString() ?? 'not_started'),
+        errorMessage = j['error_message']?.toString();
+
+  Map<String, dynamic> toJson() => {
+        'original_step_id': originalStepId,
+        'description': description,
+        'target': target,
+        'status': status.toJson(),
+        'error_message': errorMessage,
+      };
+}
+
+class StrideRollbackPlan {
+  final String originalPlanId;
+  final List<StrideRollbackStep> steps;
+  final StrideRollbackStatus status;
+  final int initiatedAtMs;
+  final int? completedAtMs;
+  final bool backupAvailable;
+  final String? backupId;
+
+  StrideRollbackPlan({
+    required this.originalPlanId,
+    this.steps = const [],
+    this.status = StrideRollbackStatus.notStarted,
+    this.initiatedAtMs = 0,
+    this.completedAtMs,
+    this.backupAvailable = false,
+    this.backupId,
+  });
+
+  StrideRollbackPlan.fromJson(Map<String, dynamic> j)
+      : originalPlanId = j['original_plan_id']?.toString() ?? '',
+        steps = (j['steps'] as List?)
+            ?.map((e) => StrideRollbackStep.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        status = StrideRollbackStatus.fromJson(j['status']?.toString() ?? 'not_started'),
+        initiatedAtMs = (j['initiated_at_ms'] as num?)?.toInt() ?? 0,
+        completedAtMs = (j['completed_at_ms'] as num?)?.toInt(),
+        backupAvailable = j['backup_available'] as bool? ?? false,
+        backupId = j['backup_id']?.toString();
+
+  Map<String, dynamic> toJson() => {
+        'original_plan_id': originalPlanId,
+        'steps': steps.map((e) => e.toJson()).toList(),
+        'status': status.toJson(),
+        'initiated_at_ms': initiatedAtMs,
+        'completed_at_ms': completedAtMs,
+        'backup_available': backupAvailable,
+        'backup_id': backupId,
+      };
+}
+
+class StrideExportRequest {
+  final String exportId;
+  final String userId;
+  final StrideExportFormat format;
+  final List<StrideExportDataCategory> includeCategories;
+  final int requestedAtMs;
+  final String? downloadUrl;
+  final int? expiresAtMs;
+
+  StrideExportRequest({
+    required this.exportId,
+    required this.userId,
+    this.format = StrideExportFormat.json,
+    this.includeCategories = const [],
+    this.requestedAtMs = 0,
+    this.downloadUrl,
+    this.expiresAtMs,
+  });
+
+  StrideExportRequest.fromJson(Map<String, dynamic> j)
+      : exportId = j['export_id']?.toString() ?? '',
+        userId = j['user_id']?.toString() ?? '',
+        format = StrideExportFormat.fromJson(j['format']?.toString() ?? 'json'),
+        includeCategories = (j['include_categories'] as List?)
+            ?.map((e) => StrideExportDataCategory.fromJson(e.toString()))
+            .toList() ??
+            [],
+        requestedAtMs = (j['requested_at_ms'] as num?)?.toInt() ?? 0,
+        downloadUrl = j['download_url']?.toString(),
+        expiresAtMs = (j['expires_at_ms'] as num?)?.toInt();
+
+  Map<String, dynamic> toJson() => {
+        'export_id': exportId,
+        'user_id': userId,
+        'format': format.toJson(),
+        'include_categories': includeCategories.map((e) => e.toJson()).toList(),
+        'requested_at_ms': requestedAtMs,
+        'download_url': downloadUrl,
+        'expires_at_ms': expiresAtMs,
+      };
+}
+
+class StrideExportResult {
+  final StrideExportRequest request;
+  final StrideExportStatus status;
+  final int completedAtMs;
+  final int sizeBytes;
+  final int workoutCount;
+  final int routeCount;
+  final String downloadUrl;
+  final String? errorMessage;
+  final int durationMs;
+
+  StrideExportResult({
+    required this.request,
+    this.status = StrideExportStatus.pending,
+    this.completedAtMs = 0,
+    this.sizeBytes = 0,
+    this.workoutCount = 0,
+    this.routeCount = 0,
+    this.downloadUrl = '',
+    this.errorMessage,
+    this.durationMs = 0,
+  });
+
+  StrideExportResult.fromJson(Map<String, dynamic> j)
+      : request = StrideExportRequest.fromJson(j['request'] as Map<String, dynamic>? ?? {}),
+        status = StrideExportStatus.fromJson(j['status']?.toString() ?? 'pending'),
+        completedAtMs = (j['completed_at_ms'] as num?)?.toInt() ?? 0,
+        sizeBytes = (j['size_bytes'] as num?)?.toInt() ?? 0,
+        workoutCount = (j['workout_count'] as num?)?.toInt() ?? 0,
+        routeCount = (j['route_count'] as num?)?.toInt() ?? 0,
+        downloadUrl = j['download_url']?.toString() ?? '',
+        errorMessage = j['error_message']?.toString(),
+        durationMs = (j['duration_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'request': request.toJson(),
+        'status': status.toJson(),
+        'completed_at_ms': completedAtMs,
+        'size_bytes': sizeBytes,
+        'workout_count': workoutCount,
+        'route_count': routeCount,
+        'download_url': downloadUrl,
+        'error_message': errorMessage,
+        'duration_ms': durationMs,
+      };
+}
+
+class StrideRecoveryTestEntry {
+  final String testId;
+  final StrideRecoveryTestType testType;
+  final String description;
+  final int frequencyDays;
+  final StrideRecoveryTestStatus status;
+  final int? lastRunMs;
+  final int? nextScheduledMs;
+  final String? lastResult;
+  final int runCount;
+  final int passCount;
+
+  StrideRecoveryTestEntry({
+    required this.testId,
+    this.testType = StrideRecoveryTestType.backupRestore,
+    required this.description,
+    this.frequencyDays = 7,
+    this.status = StrideRecoveryTestStatus.scheduled,
+    this.lastRunMs,
+    this.nextScheduledMs,
+    this.lastResult,
+    this.runCount = 0,
+    this.passCount = 0,
+  });
+
+  StrideRecoveryTestEntry.fromJson(Map<String, dynamic> j)
+      : testId = j['test_id']?.toString() ?? '',
+        testType = StrideRecoveryTestType.fromJson(j['test_type']?.toString() ?? 'backup_restore'),
+        description = j['description']?.toString() ?? '',
+        frequencyDays = (j['frequency_days'] as num?)?.toInt() ?? 7,
+        status = StrideRecoveryTestStatus.fromJson(j['status']?.toString() ?? 'scheduled'),
+        lastRunMs = (j['last_run_ms'] as num?)?.toInt(),
+        nextScheduledMs = (j['next_scheduled_ms'] as num?)?.toInt(),
+        lastResult = j['last_result']?.toString(),
+        runCount = (j['run_count'] as num?)?.toInt() ?? 0,
+        passCount = (j['pass_count'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'test_id': testId,
+        'test_type': testType.toJson(),
+        'description': description,
+        'frequency_days': frequencyDays,
+        'status': status.toJson(),
+        'last_run_ms': lastRunMs,
+        'next_scheduled_ms': nextScheduledMs,
+        'last_result': lastResult,
+        'run_count': runCount,
+        'pass_count': passCount,
+      };
+}
+
+class StrideRecoveryTestSchedule {
+  final List<StrideRecoveryTestEntry> tests;
+  final int createdAtMs;
+  final int lastUpdatedMs;
+  final int totalPassed;
+  final int totalFailed;
+  final int totalDue;
+
+  StrideRecoveryTestSchedule({
+    this.tests = const [],
+    this.createdAtMs = 0,
+    this.lastUpdatedMs = 0,
+    this.totalPassed = 0,
+    this.totalFailed = 0,
+    this.totalDue = 0,
+  });
+
+  StrideRecoveryTestSchedule.fromJson(Map<String, dynamic> j)
+      : tests = (j['tests'] as List?)
+            ?.map((e) => StrideRecoveryTestEntry.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        createdAtMs = (j['created_at_ms'] as num?)?.toInt() ?? 0,
+        lastUpdatedMs = (j['last_updated_ms'] as num?)?.toInt() ?? 0,
+        totalPassed = (j['total_passed'] as num?)?.toInt() ?? 0,
+        totalFailed = (j['total_failed'] as num?)?.toInt() ?? 0,
+        totalDue = (j['total_due'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'tests': tests.map((e) => e.toJson()).toList(),
+        'created_at_ms': createdAtMs,
+        'last_updated_ms': lastUpdatedMs,
+        'total_passed': totalPassed,
+        'total_failed': totalFailed,
+        'total_due': totalDue,
+      };
+}

@@ -2482,4 +2482,93 @@ class StrideEngineClient {
     return StrideUptimeMonitor.fromJson(
         unwrapEnvelope(env) as Map<String, dynamic>);
   }
+
+  // ─── §17 Backups and disaster recovery ─────────────────────────
+
+  /// Returns the default backup schedule configuration (weekly,
+  /// Sunday 02:00 UTC, 30-day retention, all collections, includes
+  /// Cloud Storage, bucket `stride-backups`, region `us-central1`).
+  static StrideBackupConfig backupGetConfig() {
+    final env = _bindings.backupGetConfig({});
+    return StrideBackupConfig.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds a backup manifest from the given config, timestamp, and
+  /// list of backup records, returning the assembled manifest with
+  /// recomputed aggregate fields (total size, success/fail counts).
+  static StrideBackupManifest backupManifest({
+    StrideBackupConfig? config,
+    required int generatedAtMs,
+    List<StrideBackupRecord> records = const [],
+  }) {
+    final env = _bindings.backupManifest({
+      'config': (config ?? StrideBackupConfig()).toJson(),
+      'generated_at_ms': generatedAtMs,
+      'records': records.map((e) => e.toJson()).toList(),
+    });
+    return StrideBackupManifest.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Executes a restore operation from the given restore request,
+  /// returning the completed restore result with the given document
+  /// and file counts, size, and validation flag.
+  static StrideRestoreResult backupRestore({
+    required StrideRestoreRequest request,
+    required int completedAtMs,
+    int documentsRestored = 0,
+    int filesRestored = 0,
+    int sizeRestoredBytes = 0,
+    bool validationPassed = true,
+  }) {
+    final env = _bindings.backupRestore({
+      'request': request.toJson(),
+      'completed_at_ms': completedAtMs,
+      'documents_restored': documentsRestored,
+      'files_restored': filesRestored,
+      'size_restored_bytes': sizeRestoredBytes,
+      'validation_passed': validationPassed,
+    });
+    return StrideRestoreResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Runs the default migration plan (v1→v2), executing all steps
+  /// and returning the completed plan with all steps marked
+  /// `completed`.
+  static StrideMigrationPlan backupMigrate({
+    required int createdAtMs,
+    required int executedAtMs,
+  }) {
+    final env = _bindings.backupMigrate({
+      'created_at_ms': createdAtMs,
+      'executed_at_ms': executedAtMs,
+    });
+    return StrideMigrationPlan.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Creates a user data export result from the given export request,
+  /// returning the completed export with the given size, workout and
+  /// route counts, and download URL.
+  static StrideExportResult backupExport({
+    required StrideExportRequest request,
+    required int completedAtMs,
+    int sizeBytes = 0,
+    int workoutCount = 0,
+    int routeCount = 0,
+    String downloadUrl = '',
+  }) {
+    final env = _bindings.backupExport({
+      'request': request.toJson(),
+      'completed_at_ms': completedAtMs,
+      'size_bytes': sizeBytes,
+      'workout_count': workoutCount,
+      'route_count': routeCount,
+      'download_url': downloadUrl,
+    });
+    return StrideExportResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }
