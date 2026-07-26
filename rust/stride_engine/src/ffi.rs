@@ -44,6 +44,10 @@ use crate::engine::route_format::{
     self, RouteFileFormat, RouteFormatInput, RouteSummary,
     RouteFileSyncState,
 };
+use crate::engine::maps::{
+    self, GpsAccuracyLevel, MapViewType, OfflineRegion, SavedRoute,
+    TileCoord, TileProvider,
+};
 use crate::engine::sync::{
     self, ConflictInfo, ConflictResolutionStrategy, DeviceSyncState,
 };
@@ -1369,5 +1373,648 @@ pub extern "C" fn stride_location_source_label(request_json: *const c_char) -> *
 
         let label = route_format::location_source_label(req.source);
         ok_json(&json!({ "label": label }))
+    })
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// §5 Maps and location services
+// ────────────────────────────────────────────────────────────────────────────
+
+/// Determines the tile provider for a given map view type.
+///
+/// `request_json` shape: `{"view": "standard"}`.
+/// Returns `{"provider": "open_street_map"}`.
+#[no_mangle]
+pub extern "C" fn stride_provider_for_view(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            view: MapViewType,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let provider = maps::provider_for_view(req.view);
+        ok_json(&json!({ "provider": provider }))
+    })
+}
+
+/// Returns the attribution text for a tile provider.
+///
+/// `request_json` shape: `{"provider": "open_street_map"}`.
+/// Returns `{"attribution": "© OpenStreetMap contributors"}`.
+#[no_mangle]
+pub extern "C" fn stride_attribution_for_provider(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            provider: TileProvider,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let attribution = maps::attribution_for_provider(req.provider);
+        ok_json(&json!({ "attribution": attribution }))
+    })
+}
+
+/// Returns the attribution text for a map view type (convenience
+/// wrapper that resolves the view → provider → attribution chain).
+///
+/// `request_json` shape: `{"view": "standard"}`.
+/// Returns `{"attribution": "© OpenStreetMap contributors"}`.
+#[no_mangle]
+pub extern "C" fn stride_attribution_for_view(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            view: MapViewType,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let attribution = maps::attribution_for_view(req.view);
+        ok_json(&json!({ "attribution": attribution }))
+    })
+}
+
+/// Returns the tile URL template for a provider.
+///
+/// `request_json` shape: `{"provider": "open_street_map"}`.
+/// Returns `{"url_template": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"}`.
+#[no_mangle]
+pub extern "C" fn stride_tile_url_template(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            provider: TileProvider,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let template = maps::tile_url_template(req.provider);
+        ok_json(&json!({ "url_template": template }))
+    })
+}
+
+/// Classifies a GPS accuracy value (in meters) into a quality level.
+///
+/// `request_json` shape: `{"accuracy_meters": 4.5}` or `{"accuracy_meters": null}`.
+/// Returns `{"level": "excellent"}`.
+#[no_mangle]
+pub extern "C" fn stride_classify_gps_accuracy(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            accuracy_meters: Option<f64>,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let level = maps::classify_gps_accuracy(req.accuracy_meters);
+        ok_json(&json!({ "level": level }))
+    })
+}
+
+/// Returns the human-readable description for a GPS accuracy level.
+///
+/// `request_json` shape: `{"level": "good"}`.
+/// Returns `{"description": "Good GPS (5–10 m)"}`.
+#[no_mangle]
+pub extern "C" fn stride_gps_accuracy_description(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            level: GpsAccuracyLevel,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let description = maps::gps_accuracy_description(req.level);
+        ok_json(&json!({ "description": description }))
+    })
+}
+
+/// Returns the hex color for the GPS accuracy indicator dot.
+///
+/// `request_json` shape: `{"level": "excellent"}`.
+/// Returns `{"color": "#4CAF50"}`.
+#[no_mangle]
+pub extern "C" fn stride_gps_accuracy_color(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            level: GpsAccuracyLevel,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let color = maps::gps_accuracy_color(req.level);
+        ok_json(&json!({ "color": color }))
+    })
+}
+
+/// Converts a (lat, lon) pair to a tile coordinate at a given zoom.
+///
+/// `request_json` shape: `{"lat": 51.5, "lon": -0.1, "zoom": 15}`.
+/// Returns `{"tile": {"z": 15, "x": 16384, "y": 10904}}` or
+/// `{"tile": null}` if out of range.
+#[no_mangle]
+pub extern "C" fn stride_lat_lon_to_tile(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            lat: f64,
+            lon: f64,
+            zoom: u8,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let tile = maps::lat_lon_to_tile(req.lat, req.lon, req.zoom);
+        ok_json(&json!({ "tile": tile }))
+    })
+}
+
+/// Counts the total number of tiles needed to cover a bounding box
+/// across a range of zoom levels. Used to estimate offline download
+/// size before starting a download.
+///
+/// `request_json` shape: `{"min_lat": 51.4, "min_lon": -0.2,
+/// "max_lat": 51.6, "max_lon": 0.0, "min_zoom": 10, "max_zoom": 16}`.
+/// Returns `{"tile_count": 1234}`.
+#[no_mangle]
+pub extern "C" fn stride_count_tiles_in_region(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            min_lat: f64,
+            min_lon: f64,
+            max_lat: f64,
+            max_lon: f64,
+            min_zoom: u8,
+            max_zoom: u8,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let count = maps::count_tiles_in_region(
+            req.min_lat, req.min_lon, req.max_lat, req.max_lon,
+            req.min_zoom, req.max_zoom,
+        );
+        ok_json(&json!({ "tile_count": count }))
+    })
+}
+
+/// Builds an offline region manifest from the user's download request.
+/// Computes tile count and estimated size.
+///
+/// `request_json` shape: `{"region_id": "uuid", "name": "Home",
+/// "min_lat": ..., "min_lon": ..., "max_lat": ..., "max_lon": ...,
+/// "min_zoom": 10, "max_zoom": 16, "provider": "open_street_map",
+/// "now_ms": 1700000000000}`.
+/// Returns the full `OfflineRegion` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_build_offline_region(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            region_id: String,
+            name: String,
+            min_lat: f64,
+            min_lon: f64,
+            max_lat: f64,
+            max_lon: f64,
+            min_zoom: u8,
+            max_zoom: u8,
+            provider: TileProvider,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let region = maps::build_offline_region(
+            &req.region_id, &req.name,
+            req.min_lat, req.min_lon, req.max_lat, req.max_lon,
+            req.min_zoom, req.max_zoom, req.provider, req.now_ms,
+        );
+        ok_json(&region)
+    })
+}
+
+/// Checks whether the device has enough free storage to download a
+/// new offline region.
+///
+/// `request_json` shape: `{"new_region_size_bytes": 50000000,
+/// "current_total_cache_bytes": 200000000, "device_free_bytes": 1000000000}`.
+/// Returns `{"ok": true}` or `{"ok": false, "error": "Not enough..."}`.
+#[no_mangle]
+pub extern "C" fn stride_check_storage_availability(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            new_region_size_bytes: u64,
+            current_total_cache_bytes: u64,
+            device_free_bytes: u64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match maps::check_storage_availability(
+            req.new_region_size_bytes,
+            req.current_total_cache_bytes,
+            req.device_free_bytes,
+        ) {
+            Ok(()) => ok_json(&json!({ "available": true })),
+            Err(msg) => ok_json(&json!({ "available": false, "error": msg })),
+        }
+    })
+}
+
+/// Checks whether the user can save a new offline region (count limit).
+///
+/// `request_json` shape: `{"current_region_count": 15}`.
+/// Returns `{"can_add": true}`.
+#[no_mangle]
+pub extern "C" fn stride_can_add_region(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_region_count: usize,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let can_add = maps::can_add_region(req.current_region_count);
+        ok_json(&json!({ "can_add": can_add }))
+    })
+}
+
+/// Selects the LRU eviction candidate from existing offline regions.
+///
+/// `request_json` shape: `{"regions": [...], "bytes_needed": 50000000}`.
+/// Returns `{"evict_index": 2}` or `{"evict_index": null}`.
+#[no_mangle]
+pub extern "C" fn stride_select_eviction_candidate(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            regions: Vec<OfflineRegion>,
+            bytes_needed: u64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let index = maps::select_eviction_candidate(&req.regions, req.bytes_needed);
+        ok_json(&json!({ "evict_index": index }))
+    })
+}
+
+/// Checks whether a downloaded region is stale (not accessed in 90 days).
+///
+/// `request_json` shape: `{"region": {...}, "now_ms": 1700000000000}`.
+/// Returns `{"is_stale": true}`.
+#[no_mangle]
+pub extern "C" fn stride_is_region_stale(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            region: OfflineRegion,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let stale = maps::is_region_stale(&req.region, req.now_ms);
+        ok_json(&json!({ "is_stale": stale }))
+    })
+}
+
+/// Updates a region's last_accessed_at timestamp (for LRU tracking).
+///
+/// `request_json` shape: `{"region": {...}, "now_ms": 1700000000000}`.
+/// Returns the updated `OfflineRegion` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_touch_region(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            region: OfflineRegion,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let touched = maps::touch_region(req.region, req.now_ms);
+        ok_json(&touched)
+    })
+}
+
+/// Selects the Douglas-Peucker simplification epsilon for a zoom level.
+///
+/// `request_json` shape: `{"zoom": 15}`.
+/// Returns `{"epsilon": 0.00003}`.
+#[no_mangle]
+pub extern "C" fn stride_simplification_epsilon_for_zoom(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            zoom: u8,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let epsilon = maps::simplification_epsilon_for_zoom(req.zoom);
+        ok_json(&json!({ "epsilon": epsilon }))
+    })
+}
+
+/// Whether the current zoom is high enough to show full-resolution route.
+///
+/// `request_json` shape: `{"zoom": 15}`.
+/// Returns `{"show_full_resolution": true}`.
+#[no_mangle]
+pub extern "C" fn stride_should_show_full_resolution_route(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            zoom: u8,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let show = maps::should_show_full_resolution_route(req.zoom);
+        ok_json(&json!({ "show_full_resolution": show }))
+    })
+}
+
+/// Whether the recenter button should be visible.
+///
+/// `request_json` shape: `{"distance_from_center_meters": 75.0}`.
+/// Returns `{"show_recenter": true}`.
+#[no_mangle]
+pub extern "C" fn stride_should_show_recenter_button(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            distance_from_center_meters: f64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let show = maps::should_show_recenter_button(req.distance_from_center_meters);
+        ok_json(&json!({ "show_recenter": show }))
+    })
+}
+
+/// Whether the map should rotate with the user's heading (compass mode).
+///
+/// `request_json` shape: `{"speed_mps": 2.0, "is_heading_valid": true}`.
+/// Returns `{"rotate_with_heading": true}`.
+#[no_mangle]
+pub extern "C" fn stride_should_rotate_with_heading(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            speed_mps: f64,
+            is_heading_valid: bool,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let rotate = maps::should_rotate_with_heading(req.speed_mps, req.is_heading_valid);
+        ok_json(&json!({ "rotate_with_heading": rotate }))
+    })
+}
+
+/// Validates a saved route before persisting it.
+///
+/// `request_json` shape: the full `SavedRoute` JSON.
+/// Returns `{"valid": true}` or `{"valid": false, "error": "..."}`.
+#[no_mangle]
+pub extern "C" fn stride_validate_saved_route(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let route: SavedRoute = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match maps::validate_saved_route(&route) {
+            Ok(()) => ok_json(&json!({ "valid": true })),
+            Err(msg) => ok_json(&json!({ "valid": false, "error": msg })),
+        }
+    })
+}
+
+/// Builds the cache key for a tile in the on-device tile cache.
+///
+/// `request_json` shape: `{"provider": "open_street_map",
+/// "tile": {"z": 15, "x": 16384, "y": 10904}}`.
+/// Returns `{"cache_key": "tiles/osm/15/16384/10904"}`.
+#[no_mangle]
+pub extern "C" fn stride_tile_cache_key(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            provider: TileProvider,
+            tile: TileCoord,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let key = maps::tile_cache_key(req.provider, req.tile);
+        ok_json(&json!({ "cache_key": key }))
+    })
+}
+
+/// Returns the short filesystem slug for a tile provider.
+///
+/// `request_json` shape: `{"provider": "open_street_map"}`.
+/// Returns `{"slug": "osm"}`.
+#[no_mangle]
+pub extern "C" fn stride_tile_provider_slug(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            provider: TileProvider,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let slug = maps::tile_provider_slug(req.provider);
+        ok_json(&json!({ "slug": slug }))
     })
 }

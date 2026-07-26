@@ -15,6 +15,7 @@ pub mod distance;
 pub mod elevation;
 pub mod gps_filter;
 pub mod gps_quality;
+pub mod maps;
 pub mod heart_rate;
 pub mod movement;
 pub mod pace;

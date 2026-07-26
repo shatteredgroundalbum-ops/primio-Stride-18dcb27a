@@ -1152,3 +1152,240 @@ class StrideRouteSummaryValidation {
       : valid = j['valid'] as bool,
         error = j['error'] as String?;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §5 Maps and location services
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Which tile layer the user is currently viewing.
+enum StrideMapViewType {
+  standard,
+  satellite,
+  hybrid,
+  terrain;
+
+  static StrideMapViewType fromJson(String s) {
+    switch (s) {
+      case 'standard':
+        return StrideMapViewType.standard;
+      case 'satellite':
+        return StrideMapViewType.satellite;
+      case 'hybrid':
+        return StrideMapViewType.hybrid;
+      case 'terrain':
+        return StrideMapViewType.terrain;
+      default:
+        return StrideMapViewType.standard;
+    }
+  }
+
+  String toJson() => name;
+}
+
+/// Which tile provider supplies tiles for a map view.
+enum StrideTileProvider {
+  openStreetMap,
+  satelliteProvider,
+  esri,
+  custom;
+
+  static StrideTileProvider fromJson(String s) {
+    switch (s) {
+      case 'open_street_map':
+        return StrideTileProvider.openStreetMap;
+      case 'satellite_provider':
+        return StrideTileProvider.satelliteProvider;
+      case 'esri':
+        return StrideTileProvider.esri;
+      case 'custom':
+        return StrideTileProvider.custom;
+      default:
+        return StrideTileProvider.openStreetMap;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideTileProvider.openStreetMap:
+        return 'open_street_map';
+      case StrideTileProvider.satelliteProvider:
+        return 'satellite_provider';
+      case StrideTileProvider.esri:
+        return 'esri';
+      case StrideTileProvider.custom:
+        return 'custom';
+    }
+  }
+}
+
+/// GPS accuracy quality level for the accuracy indicator.
+enum StrideGpsAccuracyLevel {
+  excellent,
+  good,
+  fair,
+  poor,
+  unavailable;
+
+  static StrideGpsAccuracyLevel fromJson(String s) {
+    switch (s) {
+      case 'excellent':
+        return StrideGpsAccuracyLevel.excellent;
+      case 'good':
+        return StrideGpsAccuracyLevel.good;
+      case 'fair':
+        return StrideGpsAccuracyLevel.fair;
+      case 'poor':
+        return StrideGpsAccuracyLevel.poor;
+      case 'unavailable':
+        return StrideGpsAccuracyLevel.unavailable;
+      default:
+        return StrideGpsAccuracyLevel.unavailable;
+    }
+  }
+
+  String toJson() => name;
+}
+
+/// A tile coordinate (z, x, y) in the slippy map XYZ addressing scheme.
+class StrideTileCoord {
+  final int z;
+  final int x;
+  final int y;
+
+  StrideTileCoord({required this.z, required this.x, required this.y});
+
+  StrideTileCoord.fromJson(Map<String, dynamic> j)
+      : z = j['z'] as int,
+        x = j['x'] as int,
+        y = j['y'] as int;
+
+  Map<String, dynamic> toJson() => {'z': z, 'x': x, 'y': y};
+}
+
+/// A saved offline region manifest.
+class StrideOfflineRegion {
+  final String regionId;
+  final String name;
+  final double minLat;
+  final double minLon;
+  final double maxLat;
+  final double maxLon;
+  final int minZoom;
+  final int maxZoom;
+  final int tileCount;
+  final int estimatedSizeBytes;
+  final StrideTileProvider provider;
+  final int downloadedAt;
+  final int lastAccessedAt;
+
+  StrideOfflineRegion({
+    required this.regionId,
+    required this.name,
+    required this.minLat,
+    required this.minLon,
+    required this.maxLat,
+    required this.maxLon,
+    required this.minZoom,
+    required this.maxZoom,
+    required this.tileCount,
+    required this.estimatedSizeBytes,
+    required this.provider,
+    required this.downloadedAt,
+    required this.lastAccessedAt,
+  });
+
+  StrideOfflineRegion.fromJson(Map<String, dynamic> j)
+      : regionId = j['region_id'] as String,
+        name = j['name'] as String,
+        minLat = (j['min_lat'] as num).toDouble(),
+        minLon = (j['min_lon'] as num).toDouble(),
+        maxLat = (j['max_lat'] as num).toDouble(),
+        maxLon = (j['max_lon'] as num).toDouble(),
+        minZoom = j['min_zoom'] as int,
+        maxZoom = j['max_zoom'] as int,
+        tileCount = j['tile_count'] as int,
+        estimatedSizeBytes = j['estimated_size_bytes'] as int,
+        provider = StrideTileProvider.fromJson(j['provider'] as String),
+        downloadedAt = j['downloaded_at'] as int,
+        lastAccessedAt = j['last_accessed_at'] as int;
+
+  Map<String, dynamic> toJson() => {
+        'region_id': regionId,
+        'name': name,
+        'min_lat': minLat,
+        'min_lon': minLon,
+        'max_lat': maxLat,
+        'max_lon': maxLon,
+        'min_zoom': minZoom,
+        'max_zoom': maxZoom,
+        'tile_count': tileCount,
+        'estimated_size_bytes': estimatedSizeBytes,
+        'provider': provider.toJson(),
+        'downloaded_at': downloadedAt,
+        'last_accessed_at': lastAccessedAt,
+      };
+}
+
+/// A saved route the user has bookmarked for future reference.
+class StrideSavedRoute {
+  final String routeId;
+  final String name;
+  final String userId;
+  final String encodedPolyline;
+  final double startLat;
+  final double startLon;
+  final double distanceMeters;
+  final int savedAt;
+
+  StrideSavedRoute({
+    required this.routeId,
+    required this.name,
+    required this.userId,
+    required this.encodedPolyline,
+    required this.startLat,
+    required this.startLon,
+    required this.distanceMeters,
+    required this.savedAt,
+  });
+
+  StrideSavedRoute.fromJson(Map<String, dynamic> j)
+      : routeId = j['route_id'] as String,
+        name = j['name'] as String,
+        userId = j['user_id'] as String,
+        encodedPolyline = j['encoded_polyline'] as String,
+        startLat = (j['start_lat'] as num).toDouble(),
+        startLon = (j['start_lon'] as num).toDouble(),
+        distanceMeters = (j['distance_meters'] as num).toDouble(),
+        savedAt = j['saved_at'] as int;
+
+  Map<String, dynamic> toJson() => {
+        'route_id': routeId,
+        'name': name,
+        'user_id': userId,
+        'encoded_polyline': encodedPolyline,
+        'start_lat': startLat,
+        'start_lon': startLon,
+        'distance_meters': distanceMeters,
+        'saved_at': savedAt,
+      };
+}
+
+/// Result of validating a saved route.
+class StrideSavedRouteValidation {
+  final bool valid;
+  final String? error;
+
+  StrideSavedRouteValidation.fromJson(Map<String, dynamic> j)
+      : valid = j['valid'] as bool,
+        error = j['error'] as String?;
+}
+
+/// Result of a storage-availability check for offline download.
+class StrideStorageAvailabilityResult {
+  final bool available;
+  final String? error;
+
+  StrideStorageAvailabilityResult.fromJson(Map<String, dynamic> j)
+      : available = j['available'] as bool,
+        error = j['error'] as String?;
+}

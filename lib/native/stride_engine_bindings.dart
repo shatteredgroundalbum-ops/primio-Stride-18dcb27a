@@ -168,6 +168,72 @@ typedef _StrideDominantLocationSourceDart = Pointer<Utf8> Function(Pointer<Utf8>
 typedef _StrideLocationSourceLabelNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideLocationSourceLabelDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+typedef _StrideProviderForViewNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideProviderForViewDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideAttributionForProviderNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideAttributionForProviderDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideAttributionForViewNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideAttributionForViewDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTileUrlTemplateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTileUrlTemplateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideClassifyGpsAccuracyNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideClassifyGpsAccuracyDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideGpsAccuracyDescriptionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideGpsAccuracyDescriptionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideGpsAccuracyColorNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideGpsAccuracyColorDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideLatLonToTileNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideLatLonToTileDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCountTilesInRegionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCountTilesInRegionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBuildOfflineRegionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBuildOfflineRegionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCheckStorageAvailabilityNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCheckStorageAvailabilityDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCanAddRegionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCanAddRegionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideSelectEvictionCandidateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSelectEvictionCandidateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideIsRegionStaleNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideIsRegionStaleDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTouchRegionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTouchRegionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideSimplificationEpsilonForZoomNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideSimplificationEpsilonForZoomDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideShouldShowFullResolutionRouteNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideShouldShowFullResolutionRouteDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideShouldShowRecenterButtonNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideShouldShowRecenterButtonDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideShouldRotateWithHeadingNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideShouldRotateWithHeadingDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideValidateSavedRouteNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideValidateSavedRouteDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTileCacheKeyNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTileCacheKeyDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTileProviderSlugNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTileProviderSlugDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -273,6 +339,50 @@ class StrideEngineBindings {
         _StrideDominantLocationSourceDart>('stride_dominant_location_source');
     _locationSourceLabel = _lib.lookupFunction<_StrideLocationSourceLabelNative,
         _StrideLocationSourceLabelDart>('stride_location_source_label');
+    _providerForView = _lib.lookupFunction<_StrideProviderForViewNative,
+        _StrideProviderForViewDart>('stride_provider_for_view');
+    _attributionForProvider = _lib.lookupFunction<_StrideAttributionForProviderNative,
+        _StrideAttributionForProviderDart>('stride_attribution_for_provider');
+    _attributionForView = _lib.lookupFunction<_StrideAttributionForViewNative,
+        _StrideAttributionForViewDart>('stride_attribution_for_view');
+    _tileUrlTemplate = _lib.lookupFunction<_StrideTileUrlTemplateNative,
+        _StrideTileUrlTemplateDart>('stride_tile_url_template');
+    _classifyGpsAccuracy = _lib.lookupFunction<_StrideClassifyGpsAccuracyNative,
+        _StrideClassifyGpsAccuracyDart>('stride_classify_gps_accuracy');
+    _gpsAccuracyDescription = _lib.lookupFunction<_StrideGpsAccuracyDescriptionNative,
+        _StrideGpsAccuracyDescriptionDart>('stride_gps_accuracy_description');
+    _gpsAccuracyColor = _lib.lookupFunction<_StrideGpsAccuracyColorNative,
+        _StrideGpsAccuracyColorDart>('stride_gps_accuracy_color');
+    _latLonToTile = _lib.lookupFunction<_StrideLatLonToTileNative,
+        _StrideLatLonToTileDart>('stride_lat_lon_to_tile');
+    _countTilesInRegion = _lib.lookupFunction<_StrideCountTilesInRegionNative,
+        _StrideCountTilesInRegionDart>('stride_count_tiles_in_region');
+    _buildOfflineRegion = _lib.lookupFunction<_StrideBuildOfflineRegionNative,
+        _StrideBuildOfflineRegionDart>('stride_build_offline_region');
+    _checkStorageAvailability = _lib.lookupFunction<_StrideCheckStorageAvailabilityNative,
+        _StrideCheckStorageAvailabilityDart>('stride_check_storage_availability');
+    _canAddRegion = _lib.lookupFunction<_StrideCanAddRegionNative,
+        _StrideCanAddRegionDart>('stride_can_add_region');
+    _selectEvictionCandidate = _lib.lookupFunction<_StrideSelectEvictionCandidateNative,
+        _StrideSelectEvictionCandidateDart>('stride_select_eviction_candidate');
+    _isRegionStale = _lib.lookupFunction<_StrideIsRegionStaleNative,
+        _StrideIsRegionStaleDart>('stride_is_region_stale');
+    _touchRegion = _lib.lookupFunction<_StrideTouchRegionNative,
+        _StrideTouchRegionDart>('stride_touch_region');
+    _simplificationEpsilonForZoom = _lib.lookupFunction<_StrideSimplificationEpsilonForZoomNative,
+        _StrideSimplificationEpsilonForZoomDart>('stride_simplification_epsilon_for_zoom');
+    _shouldShowFullResolutionRoute = _lib.lookupFunction<_StrideShouldShowFullResolutionRouteNative,
+        _StrideShouldShowFullResolutionRouteDart>('stride_should_show_full_resolution_route');
+    _shouldShowRecenterButton = _lib.lookupFunction<_StrideShouldShowRecenterButtonNative,
+        _StrideShouldShowRecenterButtonDart>('stride_should_show_recenter_button');
+    _shouldRotateWithHeading = _lib.lookupFunction<_StrideShouldRotateWithHeadingNative,
+        _StrideShouldRotateWithHeadingDart>('stride_should_rotate_with_heading');
+    _validateSavedRoute = _lib.lookupFunction<_StrideValidateSavedRouteNative,
+        _StrideValidateSavedRouteDart>('stride_validate_saved_route');
+    _tileCacheKey = _lib.lookupFunction<_StrideTileCacheKeyNative,
+        _StrideTileCacheKeyDart>('stride_tile_cache_key');
+    _tileProviderSlug = _lib.lookupFunction<_StrideTileProviderSlugNative,
+        _StrideTileProviderSlugDart>('stride_tile_provider_slug');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -331,6 +441,28 @@ class StrideEngineBindings {
   late final _StrideValidateRouteSummaryDart _validateRouteSummary;
   late final _StrideDominantLocationSourceDart _dominantLocationSource;
   late final _StrideLocationSourceLabelDart _locationSourceLabel;
+  late final _StrideProviderForViewDart _providerForView;
+  late final _StrideAttributionForProviderDart _attributionForProvider;
+  late final _StrideAttributionForViewDart _attributionForView;
+  late final _StrideTileUrlTemplateDart _tileUrlTemplate;
+  late final _StrideClassifyGpsAccuracyDart _classifyGpsAccuracy;
+  late final _StrideGpsAccuracyDescriptionDart _gpsAccuracyDescription;
+  late final _StrideGpsAccuracyColorDart _gpsAccuracyColor;
+  late final _StrideLatLonToTileDart _latLonToTile;
+  late final _StrideCountTilesInRegionDart _countTilesInRegion;
+  late final _StrideBuildOfflineRegionDart _buildOfflineRegion;
+  late final _StrideCheckStorageAvailabilityDart _checkStorageAvailability;
+  late final _StrideCanAddRegionDart _canAddRegion;
+  late final _StrideSelectEvictionCandidateDart _selectEvictionCandidate;
+  late final _StrideIsRegionStaleDart _isRegionStale;
+  late final _StrideTouchRegionDart _touchRegion;
+  late final _StrideSimplificationEpsilonForZoomDart _simplificationEpsilonForZoom;
+  late final _StrideShouldShowFullResolutionRouteDart _shouldShowFullResolutionRoute;
+  late final _StrideShouldShowRecenterButtonDart _shouldShowRecenterButton;
+  late final _StrideShouldRotateWithHeadingDart _shouldRotateWithHeading;
+  late final _StrideValidateSavedRouteDart _validateSavedRoute;
+  late final _StrideTileCacheKeyDart _tileCacheKey;
+  late final _StrideTileProviderSlugDart _tileProviderSlug;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -792,6 +924,230 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_locationSourceLabel(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // §5 Maps and location services
+  // ─────────────────────────────────────────────────────────────────────
+
+  /// Determines the tile provider for a given map view type.
+  Map<String, dynamic> providerForView(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_providerForView(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the attribution text for a tile provider.
+  Map<String, dynamic> attributionForProvider(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_attributionForProvider(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the attribution text for a map view type.
+  Map<String, dynamic> attributionForView(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_attributionForView(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the tile URL template for a provider.
+  Map<String, dynamic> tileUrlTemplate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_tileUrlTemplate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Classifies a GPS accuracy value into a quality level.
+  Map<String, dynamic> classifyGpsAccuracy(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_classifyGpsAccuracy(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the description for a GPS accuracy level.
+  Map<String, dynamic> gpsAccuracyDescription(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_gpsAccuracyDescription(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the hex color for a GPS accuracy level.
+  Map<String, dynamic> gpsAccuracyColor(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_gpsAccuracyColor(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Converts (lat, lon) to a tile coordinate at a zoom level.
+  Map<String, dynamic> latLonToTile(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_latLonToTile(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Counts tiles needed to cover a bounding box across zoom levels.
+  Map<String, dynamic> countTilesInRegion(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_countTilesInRegion(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Builds an offline region manifest from download parameters.
+  Map<String, dynamic> buildOfflineRegion(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_buildOfflineRegion(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Checks whether the device has enough free storage for a new region.
+  Map<String, dynamic> checkStorageAvailability(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_checkStorageAvailability(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Checks whether the user can save a new offline region.
+  Map<String, dynamic> canAddRegion(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_canAddRegion(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Selects the LRU eviction candidate from existing regions.
+  Map<String, dynamic> selectEvictionCandidate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_selectEvictionCandidate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Checks whether a downloaded region is stale.
+  Map<String, dynamic> isRegionStale(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_isRegionStale(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Updates a region's last_accessed_at timestamp.
+  Map<String, dynamic> touchRegion(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_touchRegion(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Selects the simplification epsilon for a zoom level.
+  Map<String, dynamic> simplificationEpsilonForZoom(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_simplificationEpsilonForZoom(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether to show full-resolution route at a zoom level.
+  Map<String, dynamic> shouldShowFullResolutionRoute(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_shouldShowFullResolutionRoute(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether the recenter button should be visible.
+  Map<String, dynamic> shouldShowRecenterButton(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_shouldShowRecenterButton(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether the map should rotate with the user's heading.
+  Map<String, dynamic> shouldRotateWithHeading(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_shouldRotateWithHeading(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Validates a saved route before persisting.
+  Map<String, dynamic> validateSavedRoute(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_validateSavedRoute(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Builds the cache key for a tile.
+  Map<String, dynamic> tileCacheKey(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_tileCacheKey(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the short slug for a tile provider.
+  Map<String, dynamic> tileProviderSlug(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_tileProviderSlug(ptr));
     } finally {
       malloc.free(ptr);
     }
