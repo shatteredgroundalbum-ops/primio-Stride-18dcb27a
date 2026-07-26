@@ -623,3 +623,152 @@ class StrideRecoveryDecision {
             _recoveryOptionFromJson(j['recommended_option'] as String),
         reason = j['reason'] as String;
 }
+
+// ─── Cloud synchronization models (spec section 3) ───────────────────
+// Mirrors the types in `engine/sync.rs`. These are used by
+// [StrideEngineClient]'s sync helper methods.
+
+/// What kind of sync operation is being performed.
+enum StrideSyncOperation {
+  uploadSummary,
+  uploadRoute,
+  deleteWorkout,
+  downloadUpdates,
+}
+
+/// The outcome of a sync attempt for a single item.
+enum StrideSyncAttemptResult {
+  success,
+  retryableFailure,
+  permanentFailure,
+  conflict,
+}
+
+String _syncAttemptResultToJson(StrideSyncAttemptResult r) {
+  switch (r) {
+    case StrideSyncAttemptResult.success:
+      return 'success';
+    case StrideSyncAttemptResult.retryableFailure:
+      return 'retryable_failure';
+    case StrideSyncAttemptResult.permanentFailure:
+      return 'permanent_failure';
+    case StrideSyncAttemptResult.conflict:
+      return 'conflict';
+  }
+}
+
+/// Strategy for resolving a sync conflict.
+enum StrideConflictResolutionStrategy {
+  lastWriteWins,
+  serverAuthoritative,
+  localWins,
+  manualMerge,
+}
+
+String _conflictStrategyToJson(StrideConflictResolutionStrategy s) {
+  switch (s) {
+    case StrideConflictResolutionStrategy.lastWriteWins:
+      return 'last_write_wins';
+    case StrideConflictResolutionStrategy.serverAuthoritative:
+      return 'server_authoritative';
+    case StrideConflictResolutionStrategy.localWins:
+      return 'local_wins';
+    case StrideConflictResolutionStrategy.manualMerge:
+      return 'manual_merge';
+  }
+}
+
+/// The decision returned by conflict resolution.
+enum StrideConflictDecision {
+  keepLocal,
+  keepCloud,
+  noConflict,
+  requireManualMerge,
+}
+
+StrideConflictDecision _conflictDecisionFromJson(String raw) {
+  switch (raw) {
+    case 'keep_local':
+      return StrideConflictDecision.keepLocal;
+    case 'keep_cloud':
+      return StrideConflictDecision.keepCloud;
+    case 'no_conflict':
+      return StrideConflictDecision.noConflict;
+    case 'require_manual_merge':
+      return StrideConflictDecision.requireManualMerge;
+    default:
+      throw ArgumentError('Unknown conflict decision: $raw');
+  }
+}
+
+/// Whether to insert, update, or skip a workout upsert.
+enum StrideUpsertDecision {
+  insert,
+  update,
+  skip,
+}
+
+StrideUpsertDecision _upsertDecisionFromJson(String raw) {
+  switch (raw) {
+    case 'insert':
+      return StrideUpsertDecision.insert;
+    case 'update':
+      return StrideUpsertDecision.update;
+    case 'skip':
+      return StrideUpsertDecision.skip;
+    default:
+      throw ArgumentError('Unknown upsert decision: $raw');
+  }
+}
+
+/// What action the current device should take for a workout in
+/// device-to-device sync.
+enum StrideDeviceSyncAction {
+  upload,
+  download,
+  noAction,
+}
+
+StrideDeviceSyncAction _deviceSyncActionFromJson(String raw) {
+  switch (raw) {
+    case 'upload':
+      return StrideDeviceSyncAction.upload;
+    case 'download':
+      return StrideDeviceSyncAction.download;
+    case 'no_action':
+      return StrideDeviceSyncAction.noAction;
+    default:
+      throw ArgumentError('Unknown device sync action: $raw');
+  }
+}
+
+/// State of a deletion tombstone in the pending_deletions queue.
+enum StrideTombstoneState {
+  pending,
+  deleting,
+  synced,
+  failed,
+}
+
+String _tombstoneStateToJson(StrideTombstoneState s) {
+  switch (s) {
+    case StrideTombstoneState.pending:
+      return 'pending';
+    case StrideTombstoneState.deleting:
+      return 'deleting';
+    case StrideTombstoneState.synced:
+      return 'synced';
+    case StrideTombstoneState.failed:
+      return 'failed';
+  }
+}
+
+/// Result of `stride_decide_sync_retry`: whether to retry and the delay.
+class StrideSyncRetryDecision {
+  final bool shouldRetry;
+  final int? delayMs;
+
+  StrideSyncRetryDecision.fromJson(Map<String, dynamic> j)
+      : shouldRetry = j['retry'] as bool,
+        delayMs = j['delay_ms'] as int?;
+}

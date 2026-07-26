@@ -25,6 +25,7 @@ pub mod route;
 pub mod speed;
 pub mod splits;
 pub mod steps;
+pub mod sync;
 pub mod timekeeping;
 pub mod units;
 pub mod validation;

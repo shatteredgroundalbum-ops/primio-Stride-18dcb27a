@@ -449,4 +449,133 @@ class StrideEngineClient {
         return 'pace_sec_per_mile_to_sec_per_km';
     }
   }
+
+  // ─── Cloud synchronization engine (spec section 3) ───────────────
+  // All static — no session handle required.
+
+  /// Computes the retry delay (ms) for a sync attempt using exponential
+  /// backoff with jitter. Returns the delay in milliseconds.
+  static int computeSyncBackoff({required int attempt, int jitterSeed = 0}) {
+    final env = _bindings.computeSyncBackoff({
+      'attempt': attempt,
+      'jitter_seed': jitterSeed,
+    });
+    return unwrapEnvelope(env)['delay_ms'] as int;
+  }
+
+  /// Decides whether a failed sync attempt should be retried, and if so,
+  /// after how long. Returns a [StrideSyncRetryDecision].
+  static StrideSyncRetryDecision decideSyncRetry({
+    required StrideSyncAttemptResult result,
+    required int currentRetryCount,
+    int jitterSeed = 0,
+  }) {
+    final env = _bindings.decideSyncRetry({
+      'result': _syncAttemptResultToJson(result),
+      'current_retry_count': currentRetryCount,
+      'jitter_seed': jitterSeed,
+    });
+    return StrideSyncRetryDecision.fromJson(
+        Map<String, dynamic>.from(unwrapEnvelope(env) as Map));
+  }
+
+  /// Resolves a sync conflict between local and cloud versions.
+  /// Returns a [StrideConflictDecision].
+  static StrideConflictDecision resolveSyncConflict({
+    required String workoutId,
+    required int localUpdatedAt,
+    required int cloudUpdatedAt,
+    String? cloudDeviceId,
+    required String localDeviceId,
+    StrideConflictResolutionStrategy strategy =
+        StrideConflictResolutionStrategy.lastWriteWins,
+  }) {
+    final env = _bindings.resolveSyncConflict({
+      'workout_id': workoutId,
+      'local_updated_at': localUpdatedAt,
+      'cloud_updated_at': cloudUpdatedAt,
+      if (cloudDeviceId != null) 'cloud_device_id': cloudDeviceId,
+      'local_device_id': localDeviceId,
+      'strategy': _conflictStrategyToJson(strategy),
+    });
+    return _conflictDecisionFromJson(unwrapEnvelope(env)['decision'] as String);
+  }
+
+  /// Checks whether a local workout is a duplicate of an existing cloud
+  /// workout. Returns true if the workout should be skipped (already
+  /// synced with identical content).
+  static bool detectSyncDuplicate({
+    required String localWorkoutId,
+    required int localUpdatedAt,
+    String? cloudWorkoutId,
+    int? cloudUpdatedAt,
+  }) {
+    final env = _bindings.detectSyncDuplicate({
+      'local_workout_id': localWorkoutId,
+      'local_updated_at': localUpdatedAt,
+      if (cloudWorkoutId != null) 'cloud_workout_id': cloudWorkoutId,
+      if (cloudUpdatedAt != null) 'cloud_updated_at': cloudUpdatedAt,
+    });
+    return unwrapEnvelope(env)['is_duplicate'] as bool;
+  }
+
+  /// Decides whether to insert, update, or skip a workout upsert.
+  /// Returns a [StrideUpsertDecision].
+  static StrideUpsertDecision decideSyncUpsert({
+    required String localWorkoutId,
+    required int localUpdatedAt,
+    String? cloudWorkoutId,
+    int? cloudUpdatedAt,
+  }) {
+    final env = _bindings.decideSyncUpsert({
+      'local_workout_id': localWorkoutId,
+      'local_updated_at': localUpdatedAt,
+      if (cloudWorkoutId != null) 'cloud_workout_id': cloudWorkoutId,
+      if (cloudUpdatedAt != null) 'cloud_updated_at': cloudUpdatedAt,
+    });
+    return _upsertDecisionFromJson(unwrapEnvelope(env)['decision'] as String);
+  }
+
+  /// Decides what action the current device should take for a workout in
+  /// device-to-device sync. Returns a [StrideDeviceSyncAction].
+  static StrideDeviceSyncAction decideDeviceSync({
+    required String recordingDeviceId,
+    required String currentDeviceId,
+    required bool isUploaded,
+    required bool isDownloaded,
+  }) {
+    final env = _bindings.decideDeviceSync({
+      'recording_device_id': recordingDeviceId,
+      'current_device_id': currentDeviceId,
+      'is_uploaded': isUploaded,
+      'is_downloaded': isDownloaded,
+    });
+    return _deviceSyncActionFromJson(unwrapEnvelope(env)['action'] as String);
+  }
+
+  /// Decides whether a deletion tombstone should be retried.
+  static bool tombstoneShouldRetry({
+    required StrideTombstoneState state,
+    required int retryCount,
+  }) {
+    final env = _bindings.tombstoneShouldRetry({
+      'state': _tombstoneStateToJson(state),
+      'retry_count': retryCount,
+    });
+    return unwrapEnvelope(env)['should_retry'] as bool;
+  }
+
+  /// Decides whether a synced tombstone is old enough to be GC'd.
+  static bool tombstoneShouldGc({
+    required StrideTombstoneState state,
+    required int syncedAt,
+    required int nowMs,
+  }) {
+    final env = _bindings.tombstoneShouldGc({
+      'state': _tombstoneStateToJson(state),
+      'synced_at': syncedAt,
+      'now_ms': nowMs,
+    });
+    return unwrapEnvelope(env)['should_gc'] as bool;
+  }
 }

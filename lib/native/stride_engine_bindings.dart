@@ -112,6 +112,31 @@ typedef _StrideDetectAchievementsNative = Pointer<Utf8> Function(
     Pointer<Utf8>);
 typedef _StrideDetectAchievementsDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// Cloud synchronization engine (spec section 3) — stateless decision logic.
+typedef _StrideComputeSyncBackoffNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideComputeSyncBackoffDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideDecideSyncRetryNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDecideSyncRetryDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideResolveSyncConflictNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideResolveSyncConflictDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideDetectSyncDuplicateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDetectSyncDuplicateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideDecideSyncUpsertNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDecideSyncUpsertDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideDecideDeviceSyncNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDecideDeviceSyncDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTombstoneShouldRetryNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTombstoneShouldRetryDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideTombstoneShouldGcNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideTombstoneShouldGcDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -181,6 +206,22 @@ class StrideEngineBindings {
         _StrideFormatPaceDart>('stride_format_pace');
     _detectAchievements = _lib.lookupFunction<_StrideDetectAchievementsNative,
         _StrideDetectAchievementsDart>('stride_detect_achievements');
+    _computeSyncBackoff = _lib.lookupFunction<_StrideComputeSyncBackoffNative,
+        _StrideComputeSyncBackoffDart>('stride_compute_sync_backoff');
+    _decideSyncRetry = _lib.lookupFunction<_StrideDecideSyncRetryNative,
+        _StrideDecideSyncRetryDart>('stride_decide_sync_retry');
+    _resolveSyncConflict = _lib.lookupFunction<_StrideResolveSyncConflictNative,
+        _StrideResolveSyncConflictDart>('stride_resolve_sync_conflict');
+    _detectSyncDuplicate = _lib.lookupFunction<_StrideDetectSyncDuplicateNative,
+        _StrideDetectSyncDuplicateDart>('stride_detect_sync_duplicate');
+    _decideSyncUpsert = _lib.lookupFunction<_StrideDecideSyncUpsertNative,
+        _StrideDecideSyncUpsertDart>('stride_decide_sync_upsert');
+    _decideDeviceSync = _lib.lookupFunction<_StrideDecideDeviceSyncNative,
+        _StrideDecideDeviceSyncDart>('stride_decide_device_sync');
+    _tombstoneShouldRetry = _lib.lookupFunction<_StrideTombstoneShouldRetryNative,
+        _StrideTombstoneShouldRetryDart>('stride_tombstone_should_retry');
+    _tombstoneShouldGc = _lib.lookupFunction<_StrideTombstoneShouldGcNative,
+        _StrideTombstoneShouldGcDart>('stride_tombstone_should_gc');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -221,6 +262,14 @@ class StrideEngineBindings {
   late final _StrideConvertUnitDart _convertUnit;
   late final _StrideFormatPaceDart _formatPace;
   late final _StrideDetectAchievementsDart _detectAchievements;
+  late final _StrideComputeSyncBackoffDart _computeSyncBackoff;
+  late final _StrideDecideSyncRetryDart _decideSyncRetry;
+  late final _StrideResolveSyncConflictDart _resolveSyncConflict;
+  late final _StrideDetectSyncDuplicateDart _detectSyncDuplicate;
+  late final _StrideDecideSyncUpsertDart _decideSyncUpsert;
+  late final _StrideDecideDeviceSyncDart _decideDeviceSync;
+  late final _StrideTombstoneShouldRetryDart _tombstoneShouldRetry;
+  late final _StrideTombstoneShouldGcDart _tombstoneShouldGc;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -447,6 +496,112 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_detectAchievements(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // ─── Cloud synchronization engine (spec section 3) ───────────────
+
+  /// Computes the retry delay (ms) for a sync attempt using exponential
+  /// backoff with jitter. `request`: `{"attempt": 2, "jitter_seed": 42}`.
+  /// Returns `{"delay_ms": 4000}`.
+  Map<String, dynamic> computeSyncBackoff(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_computeSyncBackoff(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides whether a failed sync attempt should be retried, and if so,
+  /// after how long.
+  /// `request`: `{"result": "retryable_failure", "current_retry_count": 2,
+  /// "jitter_seed": 42}`.
+  /// Returns `{"retry": true, "delay_ms": 4000}` or `{"retry": false}`.
+  Map<String, dynamic> decideSyncRetry(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_decideSyncRetry(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Resolves a sync conflict between local and cloud versions.
+  /// `request`: `{"workout_id": "w1", "local_updated_at": 2000,
+  /// "cloud_updated_at": 1000, "cloud_device_id": "device-b",
+  /// "local_device_id": "device-a", "strategy": "last_write_wins"}`.
+  /// Returns `{"decision": "keep_local"}`.
+  Map<String, dynamic> resolveSyncConflict(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_resolveSyncConflict(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Checks whether a local workout is a duplicate of an existing cloud
+  /// workout. `request`: `{"local_workout_id": "w1",
+  /// "local_updated_at": 1000, "cloud_workout_id": "w1",
+  /// "cloud_updated_at": 1000}`.
+  /// Returns `{"is_duplicate": true}`.
+  Map<String, dynamic> detectSyncDuplicate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_detectSyncDuplicate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides whether to insert, update, or skip a workout upsert.
+  /// Same request shape as `detectSyncDuplicate`.
+  /// Returns `{"decision": "insert"}`.
+  Map<String, dynamic> decideSyncUpsert(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_decideSyncUpsert(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides what action the current device should take for a workout in
+  /// device-to-device sync. `request`: `{"recording_device_id": "device-a",
+  /// "current_device_id": "device-a", "is_uploaded": false,
+  /// "is_downloaded": false}`.
+  /// Returns `{"action": "upload"}`.
+  Map<String, dynamic> decideDeviceSync(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_decideDeviceSync(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides whether a deletion tombstone should be retried.
+  /// `request`: `{"state": "failed", "retry_count": 3}`.
+  /// Returns `{"should_retry": true}`.
+  Map<String, dynamic> tombstoneShouldRetry(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_tombstoneShouldRetry(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides whether a synced tombstone is old enough to be GC'd.
+  /// `request`: `{"state": "synced", "synced_at": 1000, "now_ms": 999999}`.
+  /// Returns `{"should_gc": true}`.
+  Map<String, dynamic> tombstoneShouldGc(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_tombstoneShouldGc(ptr));
     } finally {
       malloc.free(ptr);
     }

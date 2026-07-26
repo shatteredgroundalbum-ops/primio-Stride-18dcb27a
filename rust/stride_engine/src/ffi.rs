@@ -40,6 +40,9 @@ use crate::engine::battery::{self, BatteryContext, WorkoutActivityLevel};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::permissions::{self, PermissionContext, PermissionState};
 use crate::engine::personal_records::{self, PriorBests};
+use crate::engine::sync::{
+    self, ConflictInfo, ConflictResolutionStrategy, DeviceSyncState,
+};
 use crate::engine::units::{self, ConversionKind, DistanceUnit};
 use crate::engine::validation::{self, ValidationInput};
 use crate::models::{
@@ -772,5 +775,284 @@ pub extern "C" fn stride_detect_achievements(request_json: *const c_char) -> *mu
             req.new_pace_record_set,
         );
         ok_json(&events)
+    })
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Cloud synchronization engine (spec section 3)
+// ──────────────────────────────────────────────────────────────────────
+
+/// Computes the retry delay (in milliseconds) for a sync attempt using
+/// exponential backoff with jitter.
+///
+/// `request_json` shape: `{"attempt": 2, "jitter_seed": 12345}`.
+/// Returns `{"delay_ms": 4000}`.
+#[no_mangle]
+pub extern "C" fn stride_compute_sync_backoff(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            attempt: u32,
+            #[serde(default)]
+            jitter_seed: u64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let delay_ms = sync::compute_backoff_delay(req.attempt, req.jitter_seed);
+        ok_json(&json!({ "delay_ms": delay_ms }))
+    })
+}
+
+/// Decides whether a failed sync attempt should be retried, and if so,
+/// after how long.
+///
+/// `request_json` shape:
+/// `{"result": "retryable_failure", "current_retry_count": 2, "jitter_seed": 42}`.
+/// Returns `{"retry": true, "delay_ms": 4000}` or `{"retry": false}`.
+#[no_mangle]
+pub extern "C" fn stride_decide_sync_retry(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            result: sync::SyncAttemptResult,
+            current_retry_count: u32,
+            #[serde(default)]
+            jitter_seed: u64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match sync::decide_retry(req.result, req.current_retry_count, req.jitter_seed) {
+            Some(delay_ms) => ok_json(&json!({ "retry": true, "delay_ms": delay_ms })),
+            None => ok_json(&json!({ "retry": false })),
+        }
+    })
+}
+
+/// Resolves a sync conflict between local and cloud versions.
+///
+/// `request_json` shape:
+/// ```json
+/// { "workout_id": "w1",
+///   "local_updated_at": 2000,
+///   "cloud_updated_at": 1000,
+///   "cloud_device_id": "device-b",
+///   "local_device_id": "device-a",
+///   "strategy": "last_write_wins" }
+/// ```
+/// Returns `{"decision": "keep_local"}`.
+#[no_mangle]
+pub extern "C" fn stride_resolve_sync_conflict(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            #[serde(flatten)]
+            info: ConflictInfo,
+            #[serde(default = "default_conflict_strategy")]
+            strategy: ConflictResolutionStrategy,
+        }
+
+        fn default_conflict_strategy() -> ConflictResolutionStrategy {
+            ConflictResolutionStrategy::LastWriteWins
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision = sync::resolve_conflict(&req.info, req.strategy);
+        ok_json(&json!({ "decision": decision }))
+    })
+}
+
+/// Checks whether a local workout is a duplicate of an existing cloud
+/// workout.
+///
+/// `request_json` shape:
+/// ```json
+/// { "local_workout_id": "w1",
+///   "local_updated_at": 1000,
+///   "cloud_workout_id": "w1",
+///   "cloud_updated_at": 1000 }
+/// ```
+/// Returns `{"is_duplicate": true}`.
+#[no_mangle]
+pub extern "C" fn stride_detect_sync_duplicate(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            local_workout_id: String,
+            local_updated_at: i64,
+            cloud_workout_id: Option<String>,
+            cloud_updated_at: Option<i64>,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let is_dup = sync::is_duplicate(
+            &req.local_workout_id,
+            req.local_updated_at,
+            req.cloud_workout_id.as_deref(),
+            req.cloud_updated_at,
+        );
+        ok_json(&json!({ "is_duplicate": is_dup }))
+    })
+}
+
+/// Decides whether to insert, update, or skip a workout upsert.
+///
+/// `request_json` shape (same as detect_sync_duplicate).
+/// Returns `{"decision": "insert"}`.
+#[no_mangle]
+pub extern "C" fn stride_decide_sync_upsert(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            local_workout_id: String,
+            local_updated_at: i64,
+            cloud_workout_id: Option<String>,
+            cloud_updated_at: Option<i64>,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision = sync::decide_upsert(
+            &req.local_workout_id,
+            req.local_updated_at,
+            req.cloud_workout_id.as_deref(),
+            req.cloud_updated_at,
+        );
+        ok_json(&json!({ "decision": decision }))
+    })
+}
+
+/// Decides what action the current device should take for a workout in
+/// device-to-device sync.
+///
+/// `request_json` shape:
+/// ```json
+/// { "recording_device_id": "device-a",
+///   "current_device_id": "device-a",
+///   "is_uploaded": false,
+///   "is_downloaded": false }
+/// ```
+/// Returns `{"action": "upload"}`.
+#[no_mangle]
+pub extern "C" fn stride_decide_device_sync(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            #[serde(flatten)]
+            state: DeviceSyncState,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let action = sync::decide_device_sync_action(&req.state);
+        ok_json(&json!({ "action": action }))
+    })
+}
+
+/// Decides whether a deletion tombstone should be retried.
+///
+/// `request_json` shape: `{"state": "failed", "retry_count": 3}`.
+/// Returns `{"should_retry": true}`.
+#[no_mangle]
+pub extern "C" fn stride_tombstone_should_retry(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            state: sync::TombstoneState,
+            retry_count: u32,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let should = sync::tombstone_should_retry(req.state, req.retry_count);
+        ok_json(&json!({ "should_retry": should }))
+    })
+}
+
+/// Decides whether a synced tombstone is old enough to be garbage-collected.
+///
+/// `request_json` shape: `{"state": "synced", "synced_at": 1000, "now_ms": 999999}`.
+/// Returns `{"should_gc": true}`.
+#[no_mangle]
+pub extern "C" fn stride_tombstone_should_gc(request_json: *const c_char) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            state: sync::TombstoneState,
+            synced_at: i64,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let should = sync::tombstone_should_gc(req.state, req.synced_at, req.now_ms);
+        ok_json(&json!({ "should_gc": should }))
     })
 }
