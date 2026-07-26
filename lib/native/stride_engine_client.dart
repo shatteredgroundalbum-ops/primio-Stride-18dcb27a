@@ -1704,4 +1704,35 @@ class StrideEngineClient {
     return StrideRequestModerationResult.fromJson(
         unwrapEnvelope(env) as Map<String, dynamic>);
   }
+
+  // ─── §9 — Calorie/fitness calculations ─────────────────────────────
+
+  /// Produces a full calorie estimate (with method, version, labels, and
+  /// source-priority) for the given inputs, following the documented
+  /// source-priority chain: wearable > heart_rate > met > distance_weight.
+  static StrideCalorieEstimateResult calorieEstimate({
+    required StrideCalorieInputs inputs,
+  }) {
+    final env = _bindings.calorieEstimate(inputs.toJson());
+    return StrideCalorieEstimateResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Validates and clamps a calorie value to a plausible range (0–10,000
+  /// kcal), returning the clamped value along with whether it was modified.
+  static StrideCalorieClampResult calorieClamp({
+    required double kcal,
+  }) {
+    final env = _bindings.calorieClamp({'kcal': kcal});
+    return StrideCalorieClampResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the source-priority order for calorie estimation methods, as a
+  /// list of (method, rank, label) entries. Documents the fallback chain.
+  static List<Map<String, dynamic>> calorieSourcePriority() {
+    final env = _bindings.calorieSourcePriority();
+    final data = unwrapEnvelope(env);
+    return (data as List).cast<Map<String, dynamic>>();
+  }
 }

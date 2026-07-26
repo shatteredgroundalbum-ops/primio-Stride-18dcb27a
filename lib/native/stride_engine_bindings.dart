@@ -444,6 +444,17 @@ typedef _StrideCoachingPlanRecommendProgressionDart = Pointer<Utf8> Function(Poi
 typedef _StrideCoachingPlanModerateRequestNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideCoachingPlanModerateRequestDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// ─── §9 — Calorie/fitness calculations ───
+
+typedef _StrideCalorieEstimateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCalorieEstimateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCalorieClampNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCalorieClampDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCalorieSourcePriorityNative = Pointer<Utf8> Function();
+typedef _StrideCalorieSourcePriorityDart = Pointer<Utf8> Function();
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -718,6 +729,12 @@ class StrideEngineBindings {
         _StrideCoachingPlanRecommendProgressionDart>('stride_coaching_plan_recommend_progression');
     _CoachingPlanModerateRequest = _lib.lookupFunction<_StrideCoachingPlanModerateRequestNative,
         _StrideCoachingPlanModerateRequestDart>('stride_coaching_plan_moderate_request');
+    _CalorieEstimate = _lib.lookupFunction<_StrideCalorieEstimateNative,
+        _StrideCalorieEstimateDart>('stride_calorie_estimate');
+    _CalorieClamp = _lib.lookupFunction<_StrideCalorieClampNative,
+        _StrideCalorieClampDart>('stride_calorie_clamp');
+    _CalorieSourcePriority = _lib.lookupFunction<_StrideCalorieSourcePriorityNative,
+        _StrideCalorieSourcePriorityDart>('stride_calorie_source_priority');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -861,6 +878,9 @@ class StrideEngineBindings {
   late final _StrideCoachingPlanAdjustPlanDart _CoachingPlanAdjustPlan;
   late final _StrideCoachingPlanRecommendProgressionDart _CoachingPlanRecommendProgression;
   late final _StrideCoachingPlanModerateRequestDart _CoachingPlanModerateRequest;
+  late final _StrideCalorieEstimateDart _CalorieEstimate;
+  late final _StrideCalorieClampDart _CalorieClamp;
+  late final _StrideCalorieSourcePriorityDart _CalorieSourcePriority;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2192,6 +2212,33 @@ class StrideEngineBindings {
     } finally {
       malloc.free(ptr);
     }
+  }
+
+  // ─── §9 — Calorie/fitness calculations ───
+
+  /// calorieEstimate — §9 calorie — full calorie estimate with method, version, labels, source priority.
+  Map<String, dynamic> calorieEstimate(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CalorieEstimate(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// calorieClamp — §9 calorie — validate & clamp a calorie value to a plausible range.
+  Map<String, dynamic> calorieClamp(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_CalorieClamp(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// calorieSourcePriority — §9 calorie — source-priority order of estimation methods (no input args).
+  Map<String, dynamic> calorieSourcePriority() {
+    return _consume(_CalorieSourcePriority());
   }
 
 }

@@ -43,6 +43,7 @@ use crate::engine::account::{
     UserDataCategory,
 };
 use crate::engine::battery::{self, BatteryContext, WorkoutActivityLevel};
+use crate::engine::calories::{self, CalorieEstimate, CalorieEstimateResult, CalorieInputs};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::coaching_plan::{
     self, AiAvailability, AiOperation, DayPlan, EscalationReason,
@@ -3604,5 +3605,99 @@ pub extern "C" fn stride_coaching_plan_moderate_request(
 
         let result = coaching_plan::moderate_request(&req.request);
         ok_json(&result)
+    })
+}
+
+// ─── §9 — Calorie/fitness calculations ─────────────────────────────
+
+/// Produces a full calorie estimate (with method, version, labels, and
+/// source-priority) for the given inputs, following the documented
+/// source-priority chain: wearable > heart_rate > met > distance_weight.
+/// The result always includes the calculation version and a display
+/// label, per spec section 9.
+#[no_mangle]
+pub extern "C" fn stride_calorie_estimate(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let inputs: CalorieInputs = match serde_json::from_str(&raw) {
+            Ok(i) => i,
+            Err(e) => return err_json(format!("invalid_calorie_inputs: {e}")),
+        };
+
+        let result: CalorieEstimateResult = calories::estimate_with_details(&inputs);
+        ok_json(&result)
+    })
+}
+
+/// Validates and clamps a calorie value to a plausible range (0–10,000
+/// kcal), returning the clamped value along with whether it was modified
+/// from the original input.
+#[no_mangle]
+pub extern "C" fn stride_calorie_clamp(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            kcal: f64,
+        }
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let clamped = calories::clamp_to_plausible(req.kcal);
+        let was_modified = (clamped - req.kcal).abs() > f64::EPSILON
+            || !req.kcal.is_finite();
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            original: f64,
+            clamped: f64,
+            was_modified: bool,
+            is_plausible: bool,
+        }
+        let resp = Resp {
+            original: if req.kcal.is_finite() { req.kcal } else { 0.0 },
+            clamped,
+            was_modified,
+            is_plausible: calories::is_plausible_kcal(clamped),
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Returns the source-priority order for calorie estimation methods, as a
+/// list of (method_str, rank) pairs. This documents the fallback chain
+/// for the UI and debugging.
+#[no_mangle]
+pub extern "C" fn stride_calorie_source_priority() -> *mut c_char {
+    guarded(move || {
+        #[derive(serde::Serialize)]
+        struct Entry {
+            method: String,
+            rank: u8,
+            label: String,
+        }
+        let entries: Vec<Entry> = calories::source_priority_order()
+            .into_iter()
+            .map(|(m, r)| Entry {
+                method: m.as_str().to_string(),
+                rank: r,
+                label: m.label().to_string(),
+            })
+            .collect();
+        ok_json(&entries)
     })
 }

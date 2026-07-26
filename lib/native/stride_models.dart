@@ -3014,3 +3014,177 @@ class StrideRequestModerationResult {
         refusalMessage = j['refusal_message'] as String?,
         flagReason = j['flag_reason'] as String?;
 }
+
+// ─── §9 — Calorie/fitness calculations ─────────────────────────────
+
+/// The version of the calorie calculation engine that produced a given
+/// estimate, surfaced on every `CalorieEstimate` so the UI and cloud
+/// can display the calculation version alongside the value.
+enum StrideCalorieVersion {
+  v1,
+  v2;
+
+  String get label => switch (this) {
+    StrideCalorieVersion.v1 => 'Calorie estimate v1 (MET/HR/wearable)',
+    StrideCalorieVersion.v2 => 'Calorie estimate v2 (grade-adjusted)',
+  };
+
+  static StrideCalorieVersion get current => StrideCalorieVersion.v2;
+
+  static StrideCalorieVersion fromJson(String s) => switch (s) {
+    'v1' => StrideCalorieVersion.v1,
+    'v2' => StrideCalorieVersion.v2,
+    _ => StrideCalorieVersion.v2,
+  };
+
+  String toJson() => switch (this) {
+    StrideCalorieVersion.v1 => 'v1',
+    StrideCalorieVersion.v2 => 'v2',
+  };
+}
+
+/// The method used to produce a calorie estimate, following a strict
+/// source-priority order: wearable > heart_rate > met > distance_weight.
+enum StrideCalorieMethod {
+  wearable,
+  heartRate,
+  met,
+  distanceWeight;
+
+  String get asStr => switch (this) {
+    StrideCalorieMethod.wearable => 'wearable',
+    StrideCalorieMethod.heartRate => 'heart_rate',
+    StrideCalorieMethod.met => 'met',
+    StrideCalorieMethod.distanceWeight => 'distance_weight',
+  };
+
+  String get label => switch (this) {
+    StrideCalorieMethod.wearable => 'Wearable (device-reported)',
+    StrideCalorieMethod.heartRate => 'Heart-rate based (Keytel et al.)',
+    StrideCalorieMethod.met => 'MET-based (activity compendium)',
+    StrideCalorieMethod.distanceWeight => 'Distance & weight (rough estimate)',
+  };
+
+  int get priorityRank => switch (this) {
+    StrideCalorieMethod.wearable => 1,
+    StrideCalorieMethod.heartRate => 2,
+    StrideCalorieMethod.met => 3,
+    StrideCalorieMethod.distanceWeight => 4,
+  };
+
+  static StrideCalorieMethod fromJson(String s) => switch (s) {
+    'wearable' => StrideCalorieMethod.wearable,
+    'heart_rate' => StrideCalorieMethod.heartRate,
+    'met' => StrideCalorieMethod.met,
+    'distance_weight' => StrideCalorieMethod.distanceWeight,
+    _ => StrideCalorieMethod.met,
+  };
+
+  String toJson() => asStr;
+}
+
+/// Inputs for a calorie estimate, following the source-priority chain:
+/// wearable > heart_rate > met > distance_weight.
+class StrideCalorieInputs {
+  final double? wearableKcal;
+  final double? weightKg;
+  final int durationMs;
+  final double distanceMeters;
+  final double averageSpeedMps;
+  final double? averageHeartRateBpm;
+  final int? ageYears;
+  final bool? isMale;
+  final String activityType;
+  final double elevationGainMeters;
+
+  StrideCalorieInputs({
+    this.wearableKcal,
+    this.weightKg,
+    required this.durationMs,
+    required this.distanceMeters,
+    required this.averageSpeedMps,
+    this.averageHeartRateBpm,
+    this.ageYears,
+    this.isMale,
+    this.activityType = 'walk',
+    this.elevationGainMeters = 0.0,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'wearable_kcal': wearableKcal,
+    'weight_kg': weightKg,
+    'duration_ms': durationMs,
+    'distance_meters': distanceMeters,
+    'average_speed_mps': averageSpeedMps,
+    'average_heart_rate_bpm': averageHeartRateBpm,
+    'age_years': ageYears,
+    'is_male': isMale,
+    'activity_type': activityType,
+    'elevation_gain_meters': elevationGainMeters,
+  };
+}
+
+/// A calorie estimate with the method and version that produced it.
+class StrideCalorieEstimate {
+  final double kcal;
+  final StrideCalorieMethod method;
+  final StrideCalorieVersion version;
+
+  StrideCalorieEstimate({
+    required this.kcal,
+    required this.method,
+    required this.version,
+  });
+
+  StrideCalorieEstimate.fromJson(Map<String, dynamic> j)
+      : kcal = (j['kcal'] as num).toDouble(),
+        method = StrideCalorieMethod.fromJson(j['method'] as String),
+        version = StrideCalorieVersion.fromJson(j['version'] as String);
+
+  Map<String, dynamic> toJson() => {
+    'kcal': kcal,
+    'method': method.toJson(),
+    'version': version.toJson(),
+  };
+}
+
+/// A full calorie estimate result with display labels, version, and
+/// source-priority information, suitable for the UI layer.
+class StrideCalorieEstimateResult {
+  final double kcal;
+  final StrideCalorieMethod method;
+  final StrideCalorieVersion version;
+  final String methodStr;
+  final String versionStr;
+  final String methodLabel;
+  final String versionLabel;
+  final String displayLabel;
+  final int sourcePriority;
+  final bool isEstimate;
+
+  StrideCalorieEstimateResult.fromJson(Map<String, dynamic> j)
+      : kcal = (j['kcal'] as num).toDouble(),
+        method = StrideCalorieMethod.fromJson(j['method'] as String),
+        version = StrideCalorieVersion.fromJson(j['version'] as String),
+        methodStr = j['method_str'] as String,
+        versionStr = j['version_str'] as String,
+        methodLabel = j['method_label'] as String,
+        versionLabel = j['version_label'] as String,
+        displayLabel = j['display_label'] as String,
+        sourcePriority = j['source_priority'] as int,
+        isEstimate = j['is_estimate'] as bool;
+}
+
+/// The result of clamping a calorie value to a plausible range.
+class StrideCalorieClampResult {
+  final double original;
+  final double clamped;
+  final bool wasModified;
+  final bool isPlausible;
+
+  StrideCalorieClampResult.fromJson(Map<String, dynamic> j)
+      : original = (j['original'] as num).toDouble(),
+        clamped = (j['clamped'] as num).toDouble(),
+        wasModified = j['was_modified'] as bool,
+        isPlausible = j['is_plausible'] as bool;
+}
