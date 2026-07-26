@@ -70,6 +70,11 @@ use crate::engine::sync::{
 };
 use crate::engine::units::{self, ConversionKind, DistanceUnit};
 use crate::engine::validation::{self, ValidationInput};
+use crate::engine::wearable::{
+    self, FallbackDecision, HealthConnectConsentState, MetricType,
+    SourceAvailability, SourceRevocationRecord, WearableConnectionState,
+    WearableDeviceInfo, WearableStatus, WearableSyncConfig, WearableSyncStatus,
+};
 use crate::models::{
     ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
     WorkoutSummary,
@@ -3699,5 +3704,204 @@ pub extern "C" fn stride_calorie_source_priority() -> *mut c_char {
             })
             .collect();
         ok_json(&entries)
+    })
+}
+
+// ─── §10 — Wearable / Health Connect ──────────────────────────────
+
+/// Decides the appropriate operating mode (phone-only, watch, or Health
+/// Connect) given the current source availability. Returns a full
+/// `FallbackDecision` with which sources to use for steps, distance, and
+/// heart rate, plus a human-readable message.
+#[no_mangle]
+pub extern "C" fn stride_wearable_decide_fallback(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        let availability: SourceAvailability = match serde_json::from_str(&raw) {
+            Ok(a) => a,
+            Err(e) => return err_json(format!("invalid_source_availability: {e}")),
+        };
+
+        let decision: FallbackDecision = wearable::decide_fallback(&availability);
+        ok_json(&decision)
+    })
+}
+
+/// Builds a full wearable status snapshot, combining the connection
+/// state, consent state, sync status, fallback decision, revocation
+/// log, and device info into a single `WearableStatus` for the UI.
+#[no_mangle]
+pub extern "C" fn stride_wearable_build_status(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            availability: SourceAvailability,
+            consent_state: HealthConnectConsentState,
+            last_sync_ms: Option<i64>,
+            now_ms: i64,
+            sync_config: WearableSyncConfig,
+            revocations: Vec<SourceRevocationRecord>,
+            device: Option<WearableDeviceInfo>,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let status: WearableStatus = wearable::build_status(
+            &req.availability,
+            req.consent_state,
+            req.last_sync_ms,
+            req.now_ms,
+            &req.sync_config,
+            &req.revocations,
+            req.device,
+        );
+        ok_json(&status)
+    })
+}
+
+/// Evaluates the current sync status of a wearable, given the
+/// connection state, the time of the last successful sync, and the
+/// current time. Returns the `WearableSyncStatus`.
+#[no_mangle]
+pub extern "C" fn stride_wearable_sync_status(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            connection_state: WearableConnectionState,
+            last_sync_ms: Option<i64>,
+            now_ms: i64,
+            stale_threshold_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let config = WearableSyncConfig {
+            stale_threshold_ms: req.stale_threshold_ms,
+        };
+        let status: WearableSyncStatus = wearable::evaluate_sync_status(
+            req.connection_state,
+            req.last_sync_ms,
+            req.now_ms,
+            &config,
+        );
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            sync_status: WearableSyncStatus,
+            label: String,
+            is_current: bool,
+        }
+        let resp = Resp {
+            is_current: status.is_current(),
+            label: status.label().to_string(),
+            sync_status: status,
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Decides which source wins when the same metric arrives from two
+/// sources at approximately the same time (duplicate-record
+/// prevention). Returns the winning `SensorSource`.
+#[no_mangle]
+pub extern "C" fn stride_wearable_deduplicate_source(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            source_a: crate::models::SensorSource,
+            source_b: crate::models::SensorSource,
+            metric: MetricType,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let winner = wearable::deduplicate_source(req.source_a, req.source_b, req.metric);
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            winner: crate::models::SensorSource,
+            winner_priority: u8,
+        }
+        let resp = Resp {
+            winner_priority: winner.priority(),
+            winner,
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Processes a Health Connect consent request result, transitioning
+/// the consent state. Returns the new `HealthConnectConsentState`.
+#[no_mangle]
+pub extern "C" fn stride_wearable_consent_result(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_state: HealthConnectConsentState,
+            granted: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let new_state = req.current_state.on_request_result(req.granted);
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            consent_state: HealthConnectConsentState,
+            label: String,
+            can_read: bool,
+        }
+        let resp = Resp {
+            can_read: new_state.can_read(),
+            label: new_state.label().to_string(),
+            consent_state: new_state,
+        };
+        ok_json(&resp)
     })
 }

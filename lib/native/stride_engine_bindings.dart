@@ -455,6 +455,23 @@ typedef _StrideCalorieClampDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideCalorieSourcePriorityNative = Pointer<Utf8> Function();
 typedef _StrideCalorieSourcePriorityDart = Pointer<Utf8> Function();
 
+// ─── §10 — Wearable / Health Connect ───
+
+typedef _StrideWearableDecideFallbackNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideWearableDecideFallbackDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideWearableBuildStatusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideWearableBuildStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideWearableSyncStatusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideWearableSyncStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideWearableDeduplicateSourceNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideWearableDeduplicateSourceDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideWearableConsentResultNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideWearableConsentResultDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -735,6 +752,16 @@ class StrideEngineBindings {
         _StrideCalorieClampDart>('stride_calorie_clamp');
     _CalorieSourcePriority = _lib.lookupFunction<_StrideCalorieSourcePriorityNative,
         _StrideCalorieSourcePriorityDart>('stride_calorie_source_priority');
+    _WearableDecideFallback = _lib.lookupFunction<_StrideWearableDecideFallbackNative,
+        _StrideWearableDecideFallbackDart>('stride_wearable_decide_fallback');
+    _WearableBuildStatus = _lib.lookupFunction<_StrideWearableBuildStatusNative,
+        _StrideWearableBuildStatusDart>('stride_wearable_build_status');
+    _WearableSyncStatus = _lib.lookupFunction<_StrideWearableSyncStatusNative,
+        _StrideWearableSyncStatusDart>('stride_wearable_sync_status');
+    _WearableDeduplicateSource = _lib.lookupFunction<_StrideWearableDeduplicateSourceNative,
+        _StrideWearableDeduplicateSourceDart>('stride_wearable_deduplicate_source');
+    _WearableConsentResult = _lib.lookupFunction<_StrideWearableConsentResultNative,
+        _StrideWearableConsentResultDart>('stride_wearable_consent_result');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -881,6 +908,11 @@ class StrideEngineBindings {
   late final _StrideCalorieEstimateDart _CalorieEstimate;
   late final _StrideCalorieClampDart _CalorieClamp;
   late final _StrideCalorieSourcePriorityDart _CalorieSourcePriority;
+  late final _StrideWearableDecideFallbackDart _WearableDecideFallback;
+  late final _StrideWearableBuildStatusDart _WearableBuildStatus;
+  late final _StrideWearableSyncStatusDart _WearableSyncStatus;
+  late final _StrideWearableDeduplicateSourceDart _WearableDeduplicateSource;
+  late final _StrideWearableConsentResultDart _WearableConsentResult;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2239,6 +2271,58 @@ class StrideEngineBindings {
   /// calorieSourcePriority — §9 calorie — source-priority order of estimation methods (no input args).
   Map<String, dynamic> calorieSourcePriority() {
     return _consume(_CalorieSourcePriority());
+  }
+
+  // ─── §10 — Wearable / Health Connect ───
+
+  /// wearableDecideFallback — §10 wearable — decide operating mode from source availability.
+  Map<String, dynamic> wearableDecideFallback(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_WearableDecideFallback(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// wearableBuildStatus — §10 wearable — full wearable status snapshot.
+  Map<String, dynamic> wearableBuildStatus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_WearableBuildStatus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// wearableSyncStatus — §10 wearable — evaluate sync status from connection state + last sync time.
+  Map<String, dynamic> wearableSyncStatus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_WearableSyncStatus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// wearableDeduplicateSource — §10 wearable — pick the winning source for a duplicate metric.
+  Map<String, dynamic> wearableDeduplicateSource(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_WearableDeduplicateSource(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// wearableConsentResult — §10 wearable — process a Health Connect consent request result.
+  Map<String, dynamic> wearableConsentResult(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_WearableConsentResult(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
   }
 
 }

@@ -34,3 +34,4 @@ pub mod sync;
 pub mod timekeeping;
 pub mod units;
 pub mod validation;
+pub mod wearable;

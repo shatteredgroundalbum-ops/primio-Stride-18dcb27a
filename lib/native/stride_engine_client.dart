@@ -1735,4 +1735,90 @@ class StrideEngineClient {
     final data = unwrapEnvelope(env);
     return (data as List).cast<Map<String, dynamic>>();
   }
+
+  // ─── §10 — Wearable / Health Connect ─────────────────────────────
+
+  /// Decides the appropriate operating mode (phone-only, watch, or Health
+  /// Connect) given the current source availability.
+  static StrideFallbackDecision wearableDecideFallback({
+    required StrideSourceAvailability availability,
+  }) {
+    final env = _bindings.wearableDecideFallback(availability.toJson());
+    return StrideFallbackDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds a full wearable status snapshot, combining the connection
+  /// state, consent state, sync status, fallback decision, revocation
+  /// log, and device info.
+  static StrideWearableStatus wearableBuildStatus({
+    required StrideSourceAvailability availability,
+    required StrideHealthConnectConsentState consentState,
+    required int nowMs,
+    int? lastSyncMs,
+    StrideWearableSyncConfig? syncConfig,
+    List<StrideSourceRevocationRecord> revocations = const [],
+    StrideWearableDeviceInfo? device,
+  }) {
+    final env = _bindings.wearableBuildStatus({
+      'availability': availability.toJson(),
+      'consent_state': consentState.toJson(),
+      'last_sync_ms': lastSyncMs,
+      'now_ms': nowMs,
+      'sync_config': (syncConfig ?? StrideWearableSyncConfig()).toJson(),
+      'revocations': revocations.map((r) => r.toJson()).toList(),
+      'device': device?.toJson(),
+    });
+    return StrideWearableStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Evaluates the current sync status of a wearable, given the
+  /// connection state, the time of the last successful sync, and the
+  /// current time.
+  static StrideWearableSyncStatusResult wearableSyncStatus({
+    required StrideWearableConnectionState connectionState,
+    required int nowMs,
+    int? lastSyncMs,
+    int staleThresholdMs = 300000,
+  }) {
+    final env = _bindings.wearableSyncStatus({
+      'connection_state': connectionState.toJson(),
+      'last_sync_ms': lastSyncMs,
+      'now_ms': nowMs,
+      'stale_threshold_ms': staleThresholdMs,
+    });
+    return StrideWearableSyncStatusResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Decides which source wins when the same metric arrives from two
+  /// sources at approximately the same time (duplicate-record prevention).
+  static StrideDeduplicateSourceResult wearableDeduplicateSource({
+    required StrideSensorSource sourceA,
+    required StrideSensorSource sourceB,
+    required StrideMetricType metric,
+  }) {
+    final env = _bindings.wearableDeduplicateSource({
+      'source_a': sourceA.toJson(),
+      'source_b': sourceB.toJson(),
+      'metric': metric.toJson(),
+    });
+    return StrideDeduplicateSourceResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Processes a Health Connect consent request result, transitioning
+  /// the consent state.
+  static StrideConsentResult wearableConsentResult({
+    required StrideHealthConnectConsentState currentState,
+    required bool granted,
+  }) {
+    final env = _bindings.wearableConsentResult({
+      'current_state': currentState.toJson(),
+      'granted': granted,
+    });
+    return StrideConsentResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }

@@ -3188,3 +3188,453 @@ class StrideCalorieClampResult {
         wasModified = j['was_modified'] as bool,
         isPlausible = j['is_plausible'] as bool;
 }
+
+// ─── §10 — Wearable / Health Connect ─────────────────────────────
+
+/// The connection state of a wearable device or the Health Connect
+/// platform.
+enum StrideWearableConnectionState {
+  disconnected,
+  connected,
+  unreachable,
+  healthConnectActive,
+  revoked,
+  permissionDenied,
+  syncing,
+  error;
+
+  bool get isDataAvailable => switch (this) {
+    StrideWearableConnectionState.connected ||
+    StrideWearableConnectionState.healthConnectActive ||
+    StrideWearableConnectionState.syncing => true,
+    _ => false,
+  };
+
+  bool get isRevoked => switch (this) {
+    StrideWearableConnectionState.revoked ||
+    StrideWearableConnectionState.permissionDenied => true,
+    _ => false,
+  };
+
+  String get label => switch (this) {
+    StrideWearableConnectionState.disconnected => 'No wearable connected',
+    StrideWearableConnectionState.connected => 'Watch connected',
+    StrideWearableConnectionState.unreachable => 'Watch unreachable',
+    StrideWearableConnectionState.healthConnectActive => 'Health Connect active',
+    StrideWearableConnectionState.revoked => 'Health Connect revoked',
+    StrideWearableConnectionState.permissionDenied => 'Health Connect denied',
+    StrideWearableConnectionState.syncing => 'Syncing from watch',
+    StrideWearableConnectionState.error => 'Wearable error',
+  };
+
+  static StrideWearableConnectionState fromJson(String s) => switch (s) {
+    'disconnected' => StrideWearableConnectionState.disconnected,
+    'connected' => StrideWearableConnectionState.connected,
+    'unreachable' => StrideWearableConnectionState.unreachable,
+    'health_connect_active' => StrideWearableConnectionState.healthConnectActive,
+    'revoked' => StrideWearableConnectionState.revoked,
+    'permission_denied' => StrideWearableConnectionState.permissionDenied,
+    'syncing' => StrideWearableConnectionState.syncing,
+    'error' => StrideWearableConnectionState.error,
+    _ => StrideWearableConnectionState.disconnected,
+  };
+
+  String toJson() => switch (this) {
+    StrideWearableConnectionState.disconnected => 'disconnected',
+    StrideWearableConnectionState.connected => 'connected',
+    StrideWearableConnectionState.unreachable => 'unreachable',
+    StrideWearableConnectionState.healthConnectActive => 'health_connect_active',
+    StrideWearableConnectionState.revoked => 'revoked',
+    StrideWearableConnectionState.permissionDenied => 'permission_denied',
+    StrideWearableConnectionState.syncing => 'syncing',
+    StrideWearableConnectionState.error => 'error',
+  };
+}
+
+/// Which data sources are currently available for a given workout.
+class StrideSourceAvailability {
+  final bool watchConnected;
+  final bool healthConnectGranted;
+  final bool phoneGpsAvailable;
+  final bool phoneStepSensorAvailable;
+  final bool phoneHeartRateAvailable;
+
+  StrideSourceAvailability({
+    this.watchConnected = false,
+    this.healthConnectGranted = false,
+    this.phoneGpsAvailable = false,
+    this.phoneStepSensorAvailable = false,
+    this.phoneHeartRateAvailable = false,
+  });
+
+  bool get hasWearable => watchConnected || healthConnectGranted;
+  bool get isPhoneOnly => !hasWearable;
+
+  StrideSourceAvailability.fromJson(Map<String, dynamic> j)
+      : watchConnected = j['watch_connected'] as bool? ?? false,
+        healthConnectGranted = j['health_connect_granted'] as bool? ?? false,
+        phoneGpsAvailable = j['phone_gps_available'] as bool? ?? false,
+        phoneStepSensorAvailable = j['phone_step_sensor_available'] as bool? ?? false,
+        phoneHeartRateAvailable = j['phone_heart_rate_available'] as bool? ?? false;
+
+  Map<String, dynamic> toJson() => {
+    'watch_connected': watchConnected,
+    'health_connect_granted': healthConnectGranted,
+    'phone_gps_available': phoneGpsAvailable,
+    'phone_step_sensor_available': phoneStepSensorAvailable,
+    'phone_heart_rate_available': phoneHeartRateAvailable,
+  };
+}
+
+/// Why a data source was revoked or became unavailable.
+enum StrideRevocationReason {
+  userRevoked,
+  userDenied,
+  watchDisconnected,
+  watchOutOfRange,
+  apiError,
+  systemRevoked;
+
+  bool get isUserInitiated => switch (this) {
+    StrideRevocationReason.userRevoked ||
+    StrideRevocationReason.userDenied => true,
+    _ => false,
+  };
+
+  bool get isRecoverable => switch (this) {
+    StrideRevocationReason.watchOutOfRange ||
+    StrideRevocationReason.apiError => true,
+    _ => false,
+  };
+
+  String get label => switch (this) {
+    StrideRevocationReason.userRevoked => 'User revoked Health Connect permissions',
+    StrideRevocationReason.userDenied => 'User denied permission request',
+    StrideRevocationReason.watchDisconnected => 'Watch disconnected',
+    StrideRevocationReason.watchOutOfRange => 'Watch out of range',
+    StrideRevocationReason.apiError => 'API error',
+    StrideRevocationReason.systemRevoked => 'System revoked permissions',
+  };
+
+  static StrideRevocationReason fromJson(String s) => switch (s) {
+    'user_revoked' => StrideRevocationReason.userRevoked,
+    'user_denied' => StrideRevocationReason.userDenied,
+    'watch_disconnected' => StrideRevocationReason.watchDisconnected,
+    'watch_out_of_range' => StrideRevocationReason.watchOutOfRange,
+    'api_error' => StrideRevocationReason.apiError,
+    'system_revoked' => StrideRevocationReason.systemRevoked,
+    _ => StrideRevocationReason.apiError,
+  };
+
+  String toJson() => switch (this) {
+    StrideRevocationReason.userRevoked => 'user_revoked',
+    StrideRevocationReason.userDenied => 'user_denied',
+    StrideRevocationReason.watchDisconnected => 'watch_disconnected',
+    StrideRevocationReason.watchOutOfRange => 'watch_out_of_range',
+    StrideRevocationReason.apiError => 'api_error',
+    StrideRevocationReason.systemRevoked => 'system_revoked',
+  };
+}
+
+/// The sensor source type (from Rust `SensorSource` enum).
+enum StrideSensorSource {
+  phoneGps,
+  phoneStepSensor,
+  phoneAccelerometer,
+  wearOs,
+  healthConnect,
+  manualEntry,
+  serverCorrected,
+  estimated;
+
+  int get priority => switch (this) {
+    StrideSensorSource.healthConnect => 100,
+    StrideSensorSource.wearOs => 90,
+    StrideSensorSource.phoneStepSensor => 70,
+    StrideSensorSource.phoneGps => 60,
+    StrideSensorSource.phoneAccelerometer => 50,
+    StrideSensorSource.serverCorrected => 40,
+    StrideSensorSource.manualEntry => 30,
+    StrideSensorSource.estimated => 10,
+  };
+
+  static StrideSensorSource fromJson(String s) => switch (s) {
+    'phone_gps' => StrideSensorSource.phoneGps,
+    'phone_step_sensor' => StrideSensorSource.phoneStepSensor,
+    'phone_accelerometer' => StrideSensorSource.phoneAccelerometer,
+    'wear_os' => StrideSensorSource.wearOs,
+    'health_connect' => StrideSensorSource.healthConnect,
+    'manual_entry' => StrideSensorSource.manualEntry,
+    'server_corrected' => StrideSensorSource.serverCorrected,
+    'estimated' => StrideSensorSource.estimated,
+    _ => StrideSensorSource.estimated,
+  };
+
+  String toJson() => switch (this) {
+    StrideSensorSource.phoneGps => 'phone_gps',
+    StrideSensorSource.phoneStepSensor => 'phone_step_sensor',
+    StrideSensorSource.phoneAccelerometer => 'phone_accelerometer',
+    StrideSensorSource.wearOs => 'wear_os',
+    StrideSensorSource.healthConnect => 'health_connect',
+    StrideSensorSource.manualEntry => 'manual_entry',
+    StrideSensorSource.serverCorrected => 'server_corrected',
+    StrideSensorSource.estimated => 'estimated',
+  };
+}
+
+/// The metric type for dedup decisions.
+enum StrideMetricType {
+  heartRate,
+  steps,
+  distance,
+  calories,
+  elevation;
+
+  static StrideMetricType fromJson(String s) => switch (s) {
+    'heart_rate' => StrideMetricType.heartRate,
+    'steps' => StrideMetricType.steps,
+    'distance' => StrideMetricType.distance,
+    'calories' => StrideMetricType.calories,
+    'elevation' => StrideMetricType.elevation,
+    _ => StrideMetricType.heartRate,
+  };
+
+  String toJson() => name;
+}
+
+/// A record of a source revocation.
+class StrideSourceRevocationRecord {
+  final StrideSensorSource source;
+  final int revokedAtMs;
+  final StrideRevocationReason reason;
+  final String message;
+
+  StrideSourceRevocationRecord.fromJson(Map<String, dynamic> j)
+      : source = StrideSensorSource.fromJson(j['source'] as String),
+        revokedAtMs = j['revoked_at_ms'] as int,
+        reason = StrideRevocationReason.fromJson(j['reason'] as String),
+        message = j['message'] as String;
+
+  Map<String, dynamic> toJson() => {
+    'source': source.toJson(),
+    'revoked_at_ms': revokedAtMs,
+    'reason': reason.toJson(),
+    'message': message,
+  };
+}
+
+/// The sync status of wearable data relative to the phone app.
+enum StrideWearableSyncStatus {
+  noWearable,
+  inSync,
+  syncing,
+  stale,
+  syncError,
+  pending;
+
+  bool get isCurrent => switch (this) {
+    StrideWearableSyncStatus.inSync ||
+    StrideWearableSyncStatus.syncing => true,
+    _ => false,
+  };
+
+  String get label => switch (this) {
+    StrideWearableSyncStatus.noWearable => 'No wearable paired',
+    StrideWearableSyncStatus.inSync => 'Wearable in sync',
+    StrideWearableSyncStatus.syncing => 'Syncing from wearable',
+    StrideWearableSyncStatus.stale => 'Wearable data is stale',
+    StrideWearableSyncStatus.syncError => 'Wearable sync error',
+    StrideWearableSyncStatus.pending => 'Wearable sync pending',
+  };
+
+  static StrideWearableSyncStatus fromJson(String s) => switch (s) {
+    'no_wearable' => StrideWearableSyncStatus.noWearable,
+    'in_sync' => StrideWearableSyncStatus.inSync,
+    'syncing' => StrideWearableSyncStatus.syncing,
+    'stale' => StrideWearableSyncStatus.stale,
+    'sync_error' => StrideWearableSyncStatus.syncError,
+    'pending' => StrideWearableSyncStatus.pending,
+    _ => StrideWearableSyncStatus.noWearable,
+  };
+
+  String toJson() => switch (this) {
+    StrideWearableSyncStatus.noWearable => 'no_wearable',
+    StrideWearableSyncStatus.inSync => 'in_sync',
+    StrideWearableSyncStatus.syncing => 'syncing',
+    StrideWearableSyncStatus.stale => 'stale',
+    StrideWearableSyncStatus.syncError => 'sync_error',
+    StrideWearableSyncStatus.pending => 'pending',
+  };
+}
+
+/// Configuration for wearable sync staleness detection.
+class StrideWearableSyncConfig {
+  final int staleThresholdMs;
+
+  StrideWearableSyncConfig({this.staleThresholdMs = 300000});
+
+  StrideWearableSyncConfig.fromJson(Map<String, dynamic> j)
+      : staleThresholdMs = j['stale_threshold_ms'] as int? ?? 300000;
+
+  Map<String, dynamic> toJson() => {
+    'stale_threshold_ms': staleThresholdMs,
+  };
+}
+
+/// The consent state for Health Connect permissions.
+enum StrideHealthConnectConsentState {
+  notRequested,
+  requesting,
+  granted,
+  denied,
+  revoked;
+
+  bool get canRead => this == StrideHealthConnectConsentState.granted;
+
+  bool get shouldReRequest =>
+      this == StrideHealthConnectConsentState.notRequested;
+
+  String get label => switch (this) {
+    StrideHealthConnectConsentState.notRequested => 'Health Connect not yet set up',
+    StrideHealthConnectConsentState.requesting => 'Requesting Health Connect permissions',
+    StrideHealthConnectConsentState.granted => 'Health Connect granted',
+    StrideHealthConnectConsentState.denied => 'Health Connect denied',
+    StrideHealthConnectConsentState.revoked => 'Health Connect revoked',
+  };
+
+  static StrideHealthConnectConsentState fromJson(String s) => switch (s) {
+    'not_requested' => StrideHealthConnectConsentState.notRequested,
+    'requesting' => StrideHealthConnectConsentState.requesting,
+    'granted' => StrideHealthConnectConsentState.granted,
+    'denied' => StrideHealthConnectConsentState.denied,
+    'revoked' => StrideHealthConnectConsentState.revoked,
+    _ => StrideHealthConnectConsentState.notRequested,
+  };
+
+  String toJson() => name;
+}
+
+/// Information about a paired wearable device.
+class StrideWearableDeviceInfo {
+  final String manufacturer;
+  final String model;
+  final String deviceId;
+  final bool supportsHealthConnect;
+  final int? batteryLevel;
+
+  StrideWearableDeviceInfo.fromJson(Map<String, dynamic> j)
+      : manufacturer = j['manufacturer'] as String,
+        model = j['model'] as String,
+        deviceId = j['device_id'] as String,
+        supportsHealthConnect = j['supports_health_connect'] as bool? ?? false,
+        batteryLevel = j['battery_level'] as int?;
+
+  String get displayName => '$manufacturer $model';
+
+  Map<String, dynamic> toJson() => {
+    'manufacturer': manufacturer,
+    'model': model,
+    'device_id': deviceId,
+    'supports_health_connect': supportsHealthConnect,
+    'battery_level': batteryLevel,
+  };
+}
+
+/// The result of evaluating the no-watch fallback: which mode the app
+/// should operate in and what sources to use.
+class StrideFallbackDecision {
+  final StrideWearableConnectionState connectionState;
+  final StrideSourceAvailability availableSources;
+  final StrideSensorSource stepSource;
+  final StrideSensorSource distanceSource;
+  final StrideSensorSource? heartRateSource;
+  final bool isPhoneOnly;
+  final String message;
+
+  StrideFallbackDecision.fromJson(Map<String, dynamic> j)
+      : connectionState = StrideWearableConnectionState.fromJson(
+          j['connection_state'] as String,
+        ),
+        availableSources = StrideSourceAvailability.fromJson(
+          j['available_sources'] as Map<String, dynamic>,
+        ),
+        stepSource = StrideSensorSource.fromJson(j['step_source'] as String),
+        distanceSource = StrideSensorSource.fromJson(j['distance_source'] as String),
+        heartRateSource = j['heart_rate_source'] != null
+            ? StrideSensorSource.fromJson(j['heart_rate_source'] as String)
+            : null,
+        isPhoneOnly = j['is_phone_only'] as bool,
+        message = j['message'] as String;
+}
+
+/// The result of evaluating sync status.
+class StrideWearableSyncStatusResult {
+  final StrideWearableSyncStatus syncStatus;
+  final String label;
+  final bool isCurrent;
+
+  StrideWearableSyncStatusResult.fromJson(Map<String, dynamic> j)
+      : syncStatus = StrideWearableSyncStatus.fromJson(j['sync_status'] as String),
+        label = j['label'] as String,
+        isCurrent = j['is_current'] as bool;
+}
+
+/// The result of deduplicating a source.
+class StrideDeduplicateSourceResult {
+  final StrideSensorSource winner;
+  final int winnerPriority;
+
+  StrideDeduplicateSourceResult.fromJson(Map<String, dynamic> j)
+      : winner = StrideSensorSource.fromJson(j['winner'] as String),
+        winnerPriority = j['winner_priority'] as int;
+}
+
+/// The result of processing a consent request.
+class StrideConsentResult {
+  final StrideHealthConnectConsentState consentState;
+  final String label;
+  final bool canRead;
+
+  StrideConsentResult.fromJson(Map<String, dynamic> j)
+      : consentState = StrideHealthConnectConsentState.fromJson(
+          j['consent_state'] as String,
+        ),
+        label = j['label'] as String,
+        canRead = j['can_read'] as bool;
+}
+
+/// A full wearable status snapshot for the UI.
+class StrideWearableStatus {
+  final StrideWearableConnectionState connectionState;
+  final StrideHealthConnectConsentState consentState;
+  final StrideWearableSyncStatus syncStatus;
+  final StrideSourceAvailability availability;
+  final StrideFallbackDecision fallback;
+  final StrideWearableDeviceInfo? device;
+  final List<StrideSourceRevocationRecord> revocations;
+  final int? lastSyncMs;
+
+  StrideWearableStatus.fromJson(Map<String, dynamic> j)
+      : connectionState = StrideWearableConnectionState.fromJson(
+          j['connection_state'] as String,
+        ),
+        consentState = StrideHealthConnectConsentState.fromJson(
+          j['consent_state'] as String,
+        ),
+        syncStatus = StrideWearableSyncStatus.fromJson(
+          j['sync_status'] as String,
+        ),
+        availability = StrideSourceAvailability.fromJson(
+          j['availability'] as Map<String, dynamic>,
+        ),
+        fallback = StrideFallbackDecision.fromJson(
+          j['fallback'] as Map<String, dynamic>,
+        ),
+        device = j['device'] != null
+            ? StrideWearableDeviceInfo.fromJson(j['device'] as Map<String, dynamic>)
+            : null,
+        revocations = (j['revocations'] as List? ?? [])
+            .map((e) => StrideSourceRevocationRecord.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        lastSyncMs = j['last_sync_ms'] as int?;
+}
