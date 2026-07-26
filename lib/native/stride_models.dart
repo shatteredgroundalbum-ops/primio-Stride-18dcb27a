@@ -1389,3 +1389,503 @@ class StrideStorageAvailabilityResult {
       : available = j['available'] as bool,
         error = j['error'] as String?;
 }
+
+// ===========================================================================
+// §6 — Authentication / account lifecycle models
+// ===========================================================================
+
+/// Which authentication provider the user signed in with.
+enum StrideAuthProvider {
+  emailPassword,
+  google,
+  apple,
+  anonymous;
+
+  static StrideAuthProvider fromJson(String s) {
+    switch (s) {
+      case 'email_password':
+        return StrideAuthProvider.emailPassword;
+      case 'google':
+        return StrideAuthProvider.google;
+      case 'apple':
+        return StrideAuthProvider.apple;
+      case 'anonymous':
+        return StrideAuthProvider.anonymous;
+      default:
+        return StrideAuthProvider.emailPassword;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAuthProvider.emailPassword:
+        return 'email_password';
+      case StrideAuthProvider.google:
+        return 'google';
+      case StrideAuthProvider.apple:
+        return 'apple';
+      case StrideAuthProvider.anonymous:
+        return 'anonymous';
+    }
+  }
+}
+
+/// The state of an authentication session.
+enum StrideSessionState {
+  valid,
+  refreshing,
+  expired,
+  noSession,
+  revoked;
+
+  static StrideSessionState fromJson(String s) {
+    switch (s) {
+      case 'valid':
+        return StrideSessionState.valid;
+      case 'refreshing':
+        return StrideSessionState.refreshing;
+      case 'expired':
+        return StrideSessionState.expired;
+      case 'no_session':
+        return StrideSessionState.noSession;
+      case 'revoked':
+        return StrideSessionState.revoked;
+      default:
+        return StrideSessionState.noSession;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideSessionState.valid:
+        return 'valid';
+      case StrideSessionState.refreshing:
+        return 'refreshing';
+      case StrideSessionState.expired:
+        return 'expired';
+      case StrideSessionState.noSession:
+        return 'no_session';
+      case StrideSessionState.revoked:
+        return 'revoked';
+    }
+  }
+}
+
+/// An action that requires recent reauthentication.
+enum StrideSensitiveAction {
+  changePassword,
+  changeEmail,
+  deleteAccount,
+  linkAuthProvider,
+  deleteAllUserData;
+
+  static StrideSensitiveAction fromJson(String s) {
+    switch (s) {
+      case 'change_password':
+        return StrideSensitiveAction.changePassword;
+      case 'change_email':
+        return StrideSensitiveAction.changeEmail;
+      case 'delete_account':
+        return StrideSensitiveAction.deleteAccount;
+      case 'link_auth_provider':
+        return StrideSensitiveAction.linkAuthProvider;
+      case 'delete_all_user_data':
+        return StrideSensitiveAction.deleteAllUserData;
+      default:
+        return StrideSensitiveAction.changePassword;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideSensitiveAction.changePassword:
+        return 'change_password';
+      case StrideSensitiveAction.changeEmail:
+        return 'change_email';
+      case StrideSensitiveAction.deleteAccount:
+        return 'delete_account';
+      case StrideSensitiveAction.linkAuthProvider:
+        return 'link_auth_provider';
+      case StrideSensitiveAction.deleteAllUserData:
+        return 'delete_all_user_data';
+    }
+  }
+}
+
+/// Whether the user's email is verified.
+enum StrideEmailVerificationState {
+  verified,
+  pending,
+  notSent,
+  notApplicable;
+
+  static StrideEmailVerificationState fromJson(String s) {
+    switch (s) {
+      case 'verified':
+        return StrideEmailVerificationState.verified;
+      case 'pending':
+        return StrideEmailVerificationState.pending;
+      case 'not_sent':
+        return StrideEmailVerificationState.notSent;
+      case 'not_applicable':
+        return StrideEmailVerificationState.notApplicable;
+      default:
+        return StrideEmailVerificationState.notSent;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideEmailVerificationState.verified:
+        return 'verified';
+      case StrideEmailVerificationState.pending:
+        return 'pending';
+      case StrideEmailVerificationState.notSent:
+        return 'not_sent';
+      case StrideEmailVerificationState.notApplicable:
+        return 'not_applicable';
+    }
+  }
+}
+
+/// What action to take regarding email verification.
+enum StrideVerificationAction {
+  verified,
+  sendVerification,
+  waitForResend,
+  notApplicable;
+
+  static StrideVerificationAction fromJson(String s) {
+    switch (s) {
+      case 'verified':
+        return StrideVerificationAction.verified;
+      case 'send_verification':
+        return StrideVerificationAction.sendVerification;
+      case 'wait_for_resend':
+        return StrideVerificationAction.waitForResend;
+      case 'not_applicable':
+        return StrideVerificationAction.notApplicable;
+      default:
+        return StrideVerificationAction.notApplicable;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideVerificationAction.verified:
+        return 'verified';
+      case StrideVerificationAction.sendVerification:
+        return 'send_verification';
+      case StrideVerificationAction.waitForResend:
+        return 'wait_for_resend';
+      case StrideVerificationAction.notApplicable:
+        return 'not_applicable';
+    }
+  }
+}
+
+/// The status of a user account.
+enum StrideAccountStatus {
+  active,
+  adminDisabled,
+  temporarilyLocked,
+  pendingDeletion;
+
+  static StrideAccountStatus fromJson(String s) {
+    switch (s) {
+      case 'active':
+        return StrideAccountStatus.active;
+      case 'admin_disabled':
+        return StrideAccountStatus.adminDisabled;
+      case 'temporarily_locked':
+        return StrideAccountStatus.temporarilyLocked;
+      case 'pending_deletion':
+        return StrideAccountStatus.pendingDeletion;
+      default:
+        return StrideAccountStatus.active;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAccountStatus.active:
+        return 'active';
+      case StrideAccountStatus.adminDisabled:
+        return 'admin_disabled';
+      case StrideAccountStatus.temporarilyLocked:
+        return 'temporarily_locked';
+      case StrideAccountStatus.pendingDeletion:
+        return 'pending_deletion';
+    }
+  }
+}
+
+/// What action to take when a suspicious login is detected.
+enum StrideSuspiciousLoginAction {
+  allow,
+  allowWithNotification,
+  requireVerification,
+  block;
+
+  static StrideSuspiciousLoginAction fromJson(String s) {
+    switch (s) {
+      case 'allow':
+        return StrideSuspiciousLoginAction.allow;
+      case 'allow_with_notification':
+        return StrideSuspiciousLoginAction.allowWithNotification;
+      case 'require_verification':
+        return StrideSuspiciousLoginAction.requireVerification;
+      case 'block':
+        return StrideSuspiciousLoginAction.block;
+      default:
+        return StrideSuspiciousLoginAction.allow;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideSuspiciousLoginAction.allow:
+        return 'allow';
+      case StrideSuspiciousLoginAction.allowWithNotification:
+        return 'allow_with_notification';
+      case StrideSuspiciousLoginAction.requireVerification:
+        return 'require_verification';
+      case StrideSuspiciousLoginAction.block:
+        return 'block';
+    }
+  }
+}
+
+/// A category of user-owned data for account deletion.
+enum StrideUserDataCategory {
+  workouts,
+  routeFiles,
+  stepSamples,
+  heartRateSamples,
+  checkpoints,
+  achievements,
+  personalRecords,
+  syncQueueItems,
+  coachingHistory,
+  userProfile,
+  offlineRegions,
+  savedRoutes,
+  goals;
+
+  static StrideUserDataCategory fromJson(String s) {
+    switch (s) {
+      case 'workouts':
+        return StrideUserDataCategory.workouts;
+      case 'route_files':
+        return StrideUserDataCategory.routeFiles;
+      case 'step_samples':
+        return StrideUserDataCategory.stepSamples;
+      case 'heart_rate_samples':
+        return StrideUserDataCategory.heartRateSamples;
+      case 'checkpoints':
+        return StrideUserDataCategory.checkpoints;
+      case 'achievements':
+        return StrideUserDataCategory.achievements;
+      case 'personal_records':
+        return StrideUserDataCategory.personalRecords;
+      case 'sync_queue_items':
+        return StrideUserDataCategory.syncQueueItems;
+      case 'coaching_history':
+        return StrideUserDataCategory.coachingHistory;
+      case 'user_profile':
+        return StrideUserDataCategory.userProfile;
+      case 'offline_regions':
+        return StrideUserDataCategory.offlineRegions;
+      case 'saved_routes':
+        return StrideUserDataCategory.savedRoutes;
+      case 'goals':
+        return StrideUserDataCategory.goals;
+      default:
+        return StrideUserDataCategory.workouts;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideUserDataCategory.workouts:
+        return 'workouts';
+      case StrideUserDataCategory.routeFiles:
+        return 'route_files';
+      case StrideUserDataCategory.stepSamples:
+        return 'step_samples';
+      case StrideUserDataCategory.heartRateSamples:
+        return 'heart_rate_samples';
+      case StrideUserDataCategory.checkpoints:
+        return 'checkpoints';
+      case StrideUserDataCategory.achievements:
+        return 'achievements';
+      case StrideUserDataCategory.personalRecords:
+        return 'personal_records';
+      case StrideUserDataCategory.syncQueueItems:
+        return 'sync_queue_items';
+      case StrideUserDataCategory.coachingHistory:
+        return 'coaching_history';
+      case StrideUserDataCategory.userProfile:
+        return 'user_profile';
+      case StrideUserDataCategory.offlineRegions:
+        return 'offline_regions';
+      case StrideUserDataCategory.savedRoutes:
+        return 'saved_routes';
+      case StrideUserDataCategory.goals:
+        return 'goals';
+    }
+  }
+}
+
+/// The scope of an account/data deletion.
+enum StrideDeletionScope {
+  authAccountOnly,
+  allUserData,
+  dataOnly;
+
+  static StrideDeletionScope fromJson(String s) {
+    switch (s) {
+      case 'auth_account_only':
+        return StrideDeletionScope.authAccountOnly;
+      case 'all_user_data':
+        return StrideDeletionScope.allUserData;
+      case 'data_only':
+        return StrideDeletionScope.dataOnly;
+      default:
+        return StrideDeletionScope.allUserData;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideDeletionScope.authAccountOnly:
+        return 'auth_account_only';
+      case StrideDeletionScope.allUserData:
+        return 'all_user_data';
+      case StrideDeletionScope.dataOnly:
+        return 'data_only';
+    }
+  }
+}
+
+/// Result of validating a password against the password policy.
+class StridePasswordValidationResult {
+  final bool isValid;
+  final List<String> issues;
+
+  StridePasswordValidationResult.fromJson(Map<String, dynamic> j)
+      : isValid = j['is_valid'] as bool,
+        issues = (j['issues'] as List<dynamic>? ?? [])
+            .map((e) => e as String)
+            .toList();
+}
+
+/// Context describing a login attempt for suspicious-activity analysis.
+class StrideLoginContext {
+  final String userId;
+  final String ipAddress;
+  final double latitude;
+  final double longitude;
+  final int loginAtMs;
+  final String deviceFingerprint;
+  final String userAgent;
+
+  StrideLoginContext({
+    required this.userId,
+    required this.ipAddress,
+    required this.latitude,
+    required this.longitude,
+    required this.loginAtMs,
+    required this.deviceFingerprint,
+    required this.userAgent,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'user_id': userId,
+        'ip_address': ipAddress,
+        'latitude': latitude,
+        'longitude': longitude,
+        'login_at_ms': loginAtMs,
+        'device_fingerprint': deviceFingerprint,
+        'user_agent': userAgent,
+      };
+}
+
+/// The user's known login history for suspicious-activity analysis.
+class StrideLoginHistory {
+  final List<String> knownIpAddresses;
+  final List<String> knownDeviceFingerprints;
+  final List<List<double>> knownLocations;
+  final int lastLoginAtMs;
+  final List<double> lastLoginLocation;
+
+  StrideLoginHistory({
+    required this.knownIpAddresses,
+    required this.knownDeviceFingerprints,
+    required this.knownLocations,
+    required this.lastLoginAtMs,
+    required this.lastLoginLocation,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'known_ip_addresses': knownIpAddresses,
+        'known_device_fingerprints': knownDeviceFingerprints,
+        'known_locations':
+            knownLocations.map((loc) => loc.toList()).toList(),
+        'last_login_at_ms': lastLoginAtMs,
+        'last_login_location': lastLoginLocation,
+      };
+}
+
+/// Result of analyzing a login attempt for suspicious activity.
+class StrideSuspiciousLoginResult {
+  final bool isSuspicious;
+  final List<String> reasons;
+  final StrideSuspiciousLoginAction recommendedAction;
+
+  StrideSuspiciousLoginResult.fromJson(Map<String, dynamic> j)
+      : isSuspicious = j['is_suspicious'] as bool,
+        reasons = (j['reasons'] as List<dynamic>? ?? [])
+            .map((e) => e as String)
+            .toList(),
+        recommendedAction = StrideSuspiciousLoginAction.fromJson(
+            j['recommended_action'] as String);
+}
+
+/// Information about a user-data category for deletion.
+class StrideUserDataCategoryInfo {
+  final StrideUserDataCategory category;
+  final String name;
+  final String storageLocation;
+  final bool isFirestore;
+  final bool isCloudStorage;
+  final bool isLocal;
+  final String pathPrefix;
+
+  StrideUserDataCategoryInfo.fromJson(Map<String, dynamic> j)
+      : category = StrideUserDataCategory.fromJson(j['category'] as String),
+        name = j['name'] as String,
+        storageLocation = j['storage_location'] as String,
+        isFirestore = j['is_firestore'] as bool,
+        isCloudStorage = j['is_cloud_storage'] as bool,
+        isLocal = j['is_local'] as bool,
+        pathPrefix = j['path_prefix'] as String;
+}
+
+/// The result of an account deletion operation.
+class StrideDeletionResult {
+  final List<StrideUserDataCategory> deleted;
+  final List<Map<String, dynamic>> failed;
+  final bool authAccountDeleted;
+  final bool isComplete;
+
+  StrideDeletionResult.fromJson(Map<String, dynamic> j)
+      : deleted = (j['deleted'] as List<dynamic>? ?? [])
+            .map((e) => StrideUserDataCategory.fromJson(e as String))
+            .toList(),
+        failed = (j['failed'] as List<dynamic>? ?? [])
+            .map((e) => e as Map<String, dynamic>.from(e as Map))
+            .toList(),
+        authAccountDeleted = j['auth_account_deleted'] as bool,
+        isComplete = j['is_complete'] as bool;
+}

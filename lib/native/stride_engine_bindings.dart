@@ -234,6 +234,71 @@ typedef _StrideTileCacheKeyDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideTileProviderSlugNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideTileProviderSlugDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// §6 — Authentication / account lifecycle
+
+typedef _StrideAuthProviderLabelNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideAuthProviderLabelDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideClassifySessionStateNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideClassifySessionStateDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideNeedsTokenRefreshNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideNeedsTokenRefreshDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideRequiresReloginNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideRequiresReloginDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideRequiresReauthenticationNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideRequiresReauthenticationDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideReauthThresholdMsNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReauthThresholdMsDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideReauthReasonNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideReauthReasonDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideDecideVerificationActionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideDecideVerificationActionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCanResendVerificationNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCanResendVerificationDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideValidatePasswordNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideValidatePasswordDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StridePasswordStrengthScoreNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePasswordStrengthScoreDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StridePasswordStrengthLabelNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StridePasswordStrengthLabelDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideValidateEmailNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideValidateEmailDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideAccountStatusMessageNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideAccountStatusMessageDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCanSignInNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCanSignInDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideAnalyzeLoginAttemptNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideAnalyzeLoginAttemptDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideEnumerateUserDataCategoriesNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideEnumerateUserDataCategoriesDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBuildDeletionPlanNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBuildDeletionPlanDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideBuildDeletionResultNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideBuildDeletionResultDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideShouldAutoSignoutNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideShouldAutoSignoutDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideCanUpgradeAnonymousNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideCanUpgradeAnonymousDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -383,6 +448,49 @@ class StrideEngineBindings {
         _StrideTileCacheKeyDart>('stride_tile_cache_key');
     _tileProviderSlug = _lib.lookupFunction<_StrideTileProviderSlugNative,
         _StrideTileProviderSlugDart>('stride_tile_provider_slug');
+    // §6 — Authentication / account lifecycle
+    _authProviderLabel = _lib.lookupFunction<_StrideAuthProviderLabelNative,
+        _StrideAuthProviderLabelDart>('stride_auth_provider_label');
+    _classifySessionState = _lib.lookupFunction<_StrideClassifySessionStateNative,
+        _StrideClassifySessionStateDart>('stride_classify_session_state');
+    _needsTokenRefresh = _lib.lookupFunction<_StrideNeedsTokenRefreshNative,
+        _StrideNeedsTokenRefreshDart>('stride_needs_token_refresh');
+    _requiresRelogin = _lib.lookupFunction<_StrideRequiresReloginNative,
+        _StrideRequiresReloginDart>('stride_requires_relogin');
+    _requiresReauthentication = _lib.lookupFunction<_StrideRequiresReauthenticationNative,
+        _StrideRequiresReauthenticationDart>('stride_requires_reauthentication');
+    _reauthThresholdMs = _lib.lookupFunction<_StrideReauthThresholdMsNative,
+        _StrideReauthThresholdMsDart>('stride_reauth_threshold_ms');
+    _reauthReason = _lib.lookupFunction<_StrideReauthReasonNative,
+        _StrideReauthReasonDart>('stride_reauth_reason');
+    _decideVerificationAction = _lib.lookupFunction<_StrideDecideVerificationActionNative,
+        _StrideDecideVerificationActionDart>('stride_decide_verification_action');
+    _canResendVerification = _lib.lookupFunction<_StrideCanResendVerificationNative,
+        _StrideCanResendVerificationDart>('stride_can_resend_verification');
+    _validatePassword = _lib.lookupFunction<_StrideValidatePasswordNative,
+        _StrideValidatePasswordDart>('stride_validate_password');
+    _passwordStrengthScore = _lib.lookupFunction<_StridePasswordStrengthScoreNative,
+        _StridePasswordStrengthScoreDart>('stride_password_strength_score');
+    _passwordStrengthLabel = _lib.lookupFunction<_StridePasswordStrengthLabelNative,
+        _StridePasswordStrengthLabelDart>('stride_password_strength_label');
+    _validateEmail = _lib.lookupFunction<_StrideValidateEmailNative,
+        _StrideValidateEmailDart>('stride_validate_email');
+    _accountStatusMessage = _lib.lookupFunction<_StrideAccountStatusMessageNative,
+        _StrideAccountStatusMessageDart>('stride_account_status_message');
+    _canSignIn = _lib.lookupFunction<_StrideCanSignInNative,
+        _StrideCanSignInDart>('stride_can_sign_in');
+    _analyzeLoginAttempt = _lib.lookupFunction<_StrideAnalyzeLoginAttemptNative,
+        _StrideAnalyzeLoginAttemptDart>('stride_analyze_login_attempt');
+    _enumerateUserDataCategories = _lib.lookupFunction<_StrideEnumerateUserDataCategoriesNative,
+        _StrideEnumerateUserDataCategoriesDart>('stride_enumerate_user_data_categories');
+    _buildDeletionPlan = _lib.lookupFunction<_StrideBuildDeletionPlanNative,
+        _StrideBuildDeletionPlanDart>('stride_build_deletion_plan');
+    _buildDeletionResult = _lib.lookupFunction<_StrideBuildDeletionResultNative,
+        _StrideBuildDeletionResultDart>('stride_build_deletion_result');
+    _shouldAutoSignout = _lib.lookupFunction<_StrideShouldAutoSignoutNative,
+        _StrideShouldAutoSignoutDart>('stride_should_auto_signout');
+    _canUpgradeAnonymous = _lib.lookupFunction<_StrideCanUpgradeAnonymousNative,
+        _StrideCanUpgradeAnonymousDart>('stride_can_upgrade_anonymous');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -463,6 +571,28 @@ class StrideEngineBindings {
   late final _StrideValidateSavedRouteDart _validateSavedRoute;
   late final _StrideTileCacheKeyDart _tileCacheKey;
   late final _StrideTileProviderSlugDart _tileProviderSlug;
+  // §6 — Authentication / account lifecycle
+  late final _StrideAuthProviderLabelDart _authProviderLabel;
+  late final _StrideClassifySessionStateDart _classifySessionState;
+  late final _StrideNeedsTokenRefreshDart _needsTokenRefresh;
+  late final _StrideRequiresReloginDart _requiresRelogin;
+  late final _StrideRequiresReauthenticationDart _requiresReauthentication;
+  late final _StrideReauthThresholdMsDart _reauthThresholdMs;
+  late final _StrideReauthReasonDart _reauthReason;
+  late final _StrideDecideVerificationActionDart _decideVerificationAction;
+  late final _StrideCanResendVerificationDart _canResendVerification;
+  late final _StrideValidatePasswordDart _validatePassword;
+  late final _StridePasswordStrengthScoreDart _passwordStrengthScore;
+  late final _StridePasswordStrengthLabelDart _passwordStrengthLabel;
+  late final _StrideValidateEmailDart _validateEmail;
+  late final _StrideAccountStatusMessageDart _accountStatusMessage;
+  late final _StrideCanSignInDart _canSignIn;
+  late final _StrideAnalyzeLoginAttemptDart _analyzeLoginAttempt;
+  late final _StrideEnumerateUserDataCategoriesDart _enumerateUserDataCategories;
+  late final _StrideBuildDeletionPlanDart _buildDeletionPlan;
+  late final _StrideBuildDeletionResultDart _buildDeletionResult;
+  late final _StrideShouldAutoSignoutDart _shouldAutoSignout;
+  late final _StrideCanUpgradeAnonymousDart _canUpgradeAnonymous;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -1148,6 +1278,218 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_tileProviderSlug(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // §6 — Authentication / account lifecycle
+
+  /// Returns a human-readable label for an auth provider.
+  Map<String, dynamic> authProviderLabel(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_authProviderLabel(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Classifies the session state from token timestamps.
+  Map<String, dynamic> classifySessionState(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_classifySessionState(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether the session needs a token refresh.
+  Map<String, dynamic> needsTokenRefresh(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_needsTokenRefresh(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether the user must re-sign-in.
+  Map<String, dynamic> requiresRelogin(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_requiresRelogin(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether a sensitive action requires reauthentication.
+  Map<String, dynamic> requiresReauthentication(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_requiresReauthentication(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the reauth threshold in milliseconds.
+  Map<String, dynamic> reauthThresholdMs(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_reauthThresholdMs(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the reason reauthentication is needed.
+  Map<String, dynamic> reauthReason(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_reauthReason(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Decides what action to take for email verification.
+  Map<String, dynamic> decideVerificationAction(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_decideVerificationAction(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether a verification email can be resent.
+  Map<String, dynamic> canResendVerification(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_canResendVerification(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Validates a password against the password policy.
+  Map<String, dynamic> validatePassword(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_validatePassword(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns the password strength score (0–4).
+  Map<String, dynamic> passwordStrengthScore(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_passwordStrengthScore(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns a label for a password strength score.
+  Map<String, dynamic> passwordStrengthLabel(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_passwordStrengthLabel(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Validates an email address.
+  Map<String, dynamic> validateEmail(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_validateEmail(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Returns a message for an account status.
+  Map<String, dynamic> accountStatusMessage(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_accountStatusMessage(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether the user can sign in given an account status.
+  Map<String, dynamic> canSignIn(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_canSignIn(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Analyzes a login attempt for suspicious activity.
+  Map<String, dynamic> analyzeLoginAttempt(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_analyzeLoginAttempt(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Enumerates all user-data categories for deletion.
+  Map<String, dynamic> enumerateUserDataCategories(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_enumerateUserDataCategories(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Builds a deletion plan for a scope.
+  Map<String, dynamic> buildDeletionPlan(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_buildDeletionPlan(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Builds a deletion result from deleted/failed categories.
+  Map<String, dynamic> buildDeletionResult(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_buildDeletionResult(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether the app should auto sign-out.
+  Map<String, dynamic> shouldAutoSignout(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_shouldAutoSignout(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// Whether an anonymous account can be upgraded.
+  Map<String, dynamic> canUpgradeAnonymous(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_canUpgradeAnonymous(ptr));
     } finally {
       malloc.free(ptr);
     }

@@ -36,6 +36,12 @@ use serde::Serialize;
 use serde_json::json;
 
 use crate::engine::achievements::{self, AchievementHistory};
+use crate::engine::account::{
+    self, AccountStatus, AuthProvider, DeletionResult, DeletionScope,
+    LoginContext, LoginHistory, PasswordValidationResult,
+    SessionState, SensitiveAction, SuspiciousLoginResult,
+    UserDataCategory,
+};
 use crate::engine::battery::{self, BatteryContext, WorkoutActivityLevel};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::permissions::{self, PermissionContext, PermissionState};
@@ -2016,5 +2022,556 @@ pub extern "C" fn stride_tile_provider_slug(request_json: *const c_char) -> *mut
 
         let slug = maps::tile_provider_slug(req.provider);
         ok_json(&json!({ "slug": slug }))
+    })
+}
+
+// ===========================================================================
+// §6 — Authentication / account lifecycle
+// ===========================================================================
+
+pub extern "C" fn stride_auth_provider_label(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            provider: AuthProvider,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let label = account::auth_provider_label(req.provider);
+        ok_json(&json!({ "label": label }))
+    })
+}
+
+pub extern "C" fn stride_classify_session_state(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            token_issued_at_ms: i64,
+            token_expires_at_ms: i64,
+            now_ms: i64,
+            is_revoked: bool,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let state =
+            account::classify_session_state(
+                req.token_issued_at_ms,
+                req.token_expires_at_ms,
+                req.now_ms,
+                req.is_revoked,
+            );
+        ok_json(&json!({ "session_state": state }))
+    })
+}
+
+pub extern "C" fn stride_needs_token_refresh(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            session_state: SessionState,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let needs = account::needs_token_refresh(req.session_state);
+        ok_json(&json!({ "needs_refresh": needs }))
+    })
+}
+
+pub extern "C" fn stride_requires_relogin(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            session_state: SessionState,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let needs = account::requires_relogin(req.session_state);
+        ok_json(&json!({ "needs_relogin": needs }))
+    })
+}
+
+pub extern "C" fn stride_requires_reauthentication(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            action: SensitiveAction,
+            last_auth_at_ms: i64,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let requires = account::requires_reauthentication(
+            req.action,
+            req.last_auth_at_ms,
+            req.now_ms,
+        );
+        ok_json(&json!({ "requires_reauth": requires }))
+    })
+}
+
+pub extern "C" fn stride_reauth_threshold_ms(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            action: SensitiveAction,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let threshold = account::reauth_threshold_ms(req.action);
+        ok_json(&json!({ "threshold_ms": threshold }))
+    })
+}
+
+pub extern "C" fn stride_reauth_reason(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            action: SensitiveAction,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let reason = account::reauth_reason(req.action);
+        ok_json(&json!({ "reason": reason }))
+    })
+}
+
+pub extern "C" fn stride_decide_verification_action(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            provider: AuthProvider,
+            is_verified: bool,
+            verification_sent_at_ms: i64,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let action = account::decide_verification_action(
+            req.provider,
+            req.is_verified,
+            req.verification_sent_at_ms,
+            req.now_ms,
+        );
+        ok_json(&json!({ "verification_action": action }))
+    })
+}
+
+pub extern "C" fn stride_can_resend_verification(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            verification_sent_at_ms: i64,
+            now_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let can = account::can_resend_verification(
+            req.verification_sent_at_ms,
+            req.now_ms,
+        );
+        ok_json(&json!({ "can_resend": can }))
+    })
+}
+
+pub extern "C" fn stride_validate_password(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            password: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result: PasswordValidationResult =
+            account::validate_password(&req.password);
+        ok_json(&result)
+    })
+}
+
+pub extern "C" fn stride_password_strength_score(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            password: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let score = account::password_strength_score(&req.password);
+        ok_json(&json!({ "score": score }))
+    })
+}
+
+pub extern "C" fn stride_password_strength_label(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            score: u8,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let label = account::password_strength_label(req.score);
+        ok_json(&json!({ "label": label }))
+    })
+}
+
+pub extern "C" fn stride_validate_email(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            email: String,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        match account::validate_email(&req.email) {
+            Ok(()) => ok_json(&json!({ "is_valid": true, "error": null })),
+            Err(msg) => ok_json(&json!({ "is_valid": false, "error": msg })),
+        }
+    })
+}
+
+pub extern "C" fn stride_account_status_message(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            status: AccountStatus,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let message = account::account_status_message(req.status);
+        ok_json(&json!({ "message": message }))
+    })
+}
+
+pub extern "C" fn stride_can_sign_in(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            status: AccountStatus,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let can = account::can_sign_in(req.status);
+        ok_json(&json!({ "can_sign_in": can }))
+    })
+}
+
+pub extern "C" fn stride_analyze_login_attempt(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            context: LoginContext,
+            history: LoginHistory,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result: SuspiciousLoginResult =
+            account::analyze_login_attempt(&req.context, &req.history);
+        ok_json(&result)
+    })
+}
+
+pub extern "C" fn stride_enumerate_user_data_categories(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let categories = account::enumerate_user_data_categories();
+        ok_json(&json!({ "categories": categories }))
+    })
+}
+
+pub extern "C" fn stride_build_deletion_plan(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            scope: DeletionScope,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let plan = account::build_deletion_plan(req.scope);
+        ok_json(&json!({ "categories": plan }))
+    })
+}
+
+pub extern "C" fn stride_build_deletion_result(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct FailedItem {
+            category: UserDataCategory,
+            error: String,
+        }
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            deleted: Vec<UserDataCategory>,
+            failed: Vec<FailedItem>,
+            auth_account_deleted: bool,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let failed: Vec<(UserDataCategory, String)> = req
+            .failed
+            .into_iter()
+            .map(|f| (f.category, f.error))
+            .collect();
+
+        let result: DeletionResult = account::build_deletion_result(
+            req.deleted,
+            failed,
+            req.auth_account_deleted,
+        );
+        ok_json(&result)
+    })
+}
+
+pub extern "C" fn stride_should_auto_signout(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            session_state: SessionState,
+            account_status: AccountStatus,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let should = account::should_auto_signout(
+            req.session_state,
+            req.account_status,
+        );
+        ok_json(&json!({ "should_signout": should }))
+    })
+}
+
+pub extern "C" fn stride_can_upgrade_anonymous(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_provider: AuthProvider,
+            target_provider: AuthProvider,
+        }
+
+        let req: Req = match serde_json::from_str(raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let can = account::can_upgrade_anonymous(
+            req.current_provider,
+            req.target_provider,
+        );
+        ok_json(&json!({ "can_upgrade": can }))
     })
 }

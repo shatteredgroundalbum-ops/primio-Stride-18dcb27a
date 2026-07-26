@@ -5,6 +5,7 @@
 //! `WorkoutSessionController` the FFI boundary exposes to Dart.
 
 pub mod achievements;
+pub mod account;
 pub mod autopause;
 pub mod battery;
 pub mod calories;

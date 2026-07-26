@@ -1012,4 +1012,240 @@ class StrideEngineClient {
     final env = _bindings.tileProviderSlug({'provider': provider.toJson()});
     return unwrapEnvelope(env)['slug'] as String;
   }
+
+  // -----------------------------------------------------------------------
+  // §6 — Authentication / account lifecycle
+  // -----------------------------------------------------------------------
+
+  /// Returns a human-readable label for an auth provider.
+  static String authProviderLabel({required StrideAuthProvider provider}) {
+    final env = _bindings.authProviderLabel({'provider': provider.toJson()});
+    return unwrapEnvelope(env)['label'] as String;
+  }
+
+  /// Classifies the session state from token timestamps.
+  ///
+  /// [tokenIssuedAtMs] is when the token was issued (0 = no session).
+  /// [tokenExpiresAtMs] is when the token expires.
+  /// [nowMs] is the current time in epoch milliseconds.
+  /// [isRevoked] is whether the session has been revoked.
+  static StrideSessionState classifySessionState({
+    required int tokenIssuedAtMs,
+    required int tokenExpiresAtMs,
+    required int nowMs,
+    required bool isRevoked,
+  }) {
+    final env = _bindings.classifySessionState({
+      'token_issued_at_ms': tokenIssuedAtMs,
+      'token_expires_at_ms': tokenExpiresAtMs,
+      'now_ms': nowMs,
+      'is_revoked': isRevoked,
+    });
+    return StrideSessionState.fromJson(
+        unwrapEnvelope(env)['session_state'] as String);
+  }
+
+  /// Whether the session needs a token refresh before making an
+  /// authenticated API call.
+  static bool needsTokenRefresh({required StrideSessionState sessionState}) {
+    final env = _bindings.needsTokenRefresh({'session_state': sessionState.toJson()});
+    return unwrapEnvelope(env)['needs_refresh'] as bool;
+  }
+
+  /// Whether the user must re-sign-in (session is irrevocably lost).
+  static bool requiresRelogin({required StrideSessionState sessionState}) {
+    final env = _bindings.requiresRelogin({'session_state': sessionState.toJson()});
+    return unwrapEnvelope(env)['needs_relogin'] as bool;
+  }
+
+  /// Whether a sensitive action requires recent reauthentication.
+  ///
+  /// [lastAuthAtMs] is when the user last authenticated (0 = never).
+  /// [nowMs] is the current time.
+  static bool requiresReauthentication({
+    required StrideSensitiveAction action,
+    required int lastAuthAtMs,
+    required int nowMs,
+  }) {
+    final env = _bindings.requiresReauthentication({
+      'action': action.toJson(),
+      'last_auth_at_ms': lastAuthAtMs,
+      'now_ms': nowMs,
+    });
+    return unwrapEnvelope(env)['requires_reauth'] as bool;
+  }
+
+  /// Returns the reauthentication threshold in milliseconds for a
+  /// sensitive action.
+  static int reauthThresholdMs({required StrideSensitiveAction action}) {
+    final env = _bindings.reauthThresholdMs({'action': action.toJson()});
+    return unwrapEnvelope(env)['threshold_ms'] as int;
+  }
+
+  /// Returns the human-readable reason for why reauthentication is needed.
+  static String reauthReason({required StrideSensitiveAction action}) {
+    final env = _bindings.reauthReason({'action': action.toJson()});
+    return unwrapEnvelope(env)['reason'] as String;
+  }
+
+  /// Decides what action to take regarding email verification.
+  ///
+  /// [provider] is the auth provider (Google/Apple are auto-verified).
+  /// [isVerified] is the current verification state.
+  /// [verificationSentAtMs] is when the verification email was last sent
+  /// (0 if never sent).
+  /// [nowMs] is the current time.
+  static StrideVerificationAction decideVerificationAction({
+    required StrideAuthProvider provider,
+    required bool isVerified,
+    required int verificationSentAtMs,
+    required int nowMs,
+  }) {
+    final env = _bindings.decideVerificationAction({
+      'provider': provider.toJson(),
+      'is_verified': isVerified,
+      'verification_sent_at_ms': verificationSentAtMs,
+      'now_ms': nowMs,
+    });
+    return StrideVerificationAction.fromJson(
+        unwrapEnvelope(env)['verification_action'] as String);
+  }
+
+  /// Whether a verification email can be resent (cooldown check).
+  static bool canResendVerification({
+    required int verificationSentAtMs,
+    required int nowMs,
+  }) {
+    final env = _bindings.canResendVerification({
+      'verification_sent_at_ms': verificationSentAtMs,
+      'now_ms': nowMs,
+    });
+    return unwrapEnvelope(env)['can_resend'] as bool;
+  }
+
+  /// Validates a password against the app's password policy.
+  ///
+  /// Returns a [StridePasswordValidationResult] with `isValid` and
+  /// `issues` fields.
+  static StridePasswordValidationResult validatePassword(
+      {required String password}) {
+    final env = _bindings.validatePassword({'password': password});
+    return StridePasswordValidationResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the password strength score (0–4).
+  static int passwordStrengthScore({required String password}) {
+    final env = _bindings.passwordStrengthScore({'password': password});
+    return unwrapEnvelope(env)['score'] as int;
+  }
+
+  /// Returns a label for a password strength score.
+  static String passwordStrengthLabel({required int score}) {
+    final env = _bindings.passwordStrengthLabel({'score': score});
+    return unwrapEnvelope(env)['label'] as String;
+  }
+
+  /// Validates an email address.
+  ///
+  /// Returns `null` if valid, or an error message if not.
+  static String? validateEmail({required String email}) {
+    final env = _bindings.validateEmail({'email': email});
+    final data = unwrapEnvelope(env) as Map<String, dynamic>;
+    if (data['is_valid'] == true) return null;
+    return data['error'] as String?;
+  }
+
+  /// Returns a human-readable message for an account status.
+  static String accountStatusMessage({required StrideAccountStatus status}) {
+    final env = _bindings.accountStatusMessage({'status': status.toJson()});
+    return unwrapEnvelope(env)['message'] as String;
+  }
+
+  /// Whether the user can sign in given an account status.
+  static bool canSignIn({required StrideAccountStatus status}) {
+    final env = _bindings.canSignIn({'status': status.toJson()});
+    return unwrapEnvelope(env)['can_sign_in'] as bool;
+  }
+
+  /// Analyzes a login attempt for suspicious activity.
+  static StrideSuspiciousLoginResult analyzeLoginAttempt({
+    required StrideLoginContext context,
+    required StrideLoginHistory history,
+  }) {
+    final env = _bindings.analyzeLoginAttempt({
+      'context': context.toJson(),
+      'history': history.toJson(),
+    });
+    return StrideSuspiciousLoginResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Enumerates all user-data categories for account deletion.
+  ///
+  /// Returns a list of [StrideUserDataCategoryInfo] with storage
+  /// locations for each category.
+  static List<StrideUserDataCategoryInfo> enumerateUserDataCategories() {
+    final env = _bindings.enumerateUserDataCategories({});
+    final data = unwrapEnvelope(env) as Map<String, dynamic>;
+    final categories = data['categories'] as List<dynamic>;
+    return categories
+        .map((e) => StrideUserDataCategoryInfo.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Builds a deletion plan for a scope.
+  ///
+  /// Returns the ordered list of [StrideUserDataCategory] to delete.
+  static List<StrideUserDataCategory> buildDeletionPlan(
+      {required StrideDeletionScope scope}) {
+    final env = _bindings.buildDeletionPlan({'scope': scope.toJson()});
+    final data = unwrapEnvelope(env) as Map<String, dynamic>;
+    final categories = data['categories'] as List<dynamic>;
+    return categories
+        .map((e) => StrideUserDataCategory.fromJson(e as String))
+        .toList();
+  }
+
+  /// Builds a deletion result from deleted/failed categories.
+  static StrideDeletionResult buildDeletionResult({
+    required List<StrideUserDataCategory> deleted,
+    required List<({StrideUserDataCategory category, String error})> failed,
+    required bool authAccountDeleted,
+  }) {
+    final env = _bindings.buildDeletionResult({
+      'deleted': deleted.map((c) => c.toJson()).toList(),
+      'failed': failed
+          .map((f) => {'category': f.category.toJson(), 'error': f.error})
+          .toList(),
+      'auth_account_deleted': authAccountDeleted,
+    });
+    return StrideDeletionResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Whether the app should sign the user out automatically.
+  static bool shouldAutoSignout({
+    required StrideSessionState sessionState,
+    required StrideAccountStatus accountStatus,
+  }) {
+    final env = _bindings.shouldAutoSignout({
+      'session_state': sessionState.toJson(),
+      'account_status': accountStatus.toJson(),
+    });
+    return unwrapEnvelope(env)['should_signout'] as bool;
+  }
+
+  /// Whether an anonymous (guest) account can be upgraded to a permanent
+  /// account.
+  static bool canUpgradeAnonymous({
+    required StrideAuthProvider currentProvider,
+    required StrideAuthProvider targetProvider,
+  }) {
+    final env = _bindings.canUpgradeAnonymous({
+      'current_provider': currentProvider.toJson(),
+      'target_provider': targetProvider.toJson(),
+    });
+    return unwrapEnvelope(env)['can_upgrade'] as bool;
+  }
 }
