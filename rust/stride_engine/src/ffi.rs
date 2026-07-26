@@ -57,6 +57,11 @@ use crate::engine::notifications::{
     NotificationStatus, NotificationType, QuietHoursConfig, TimezoneContext,
     VoiceCoachingConfig,
 };
+use crate::engine::error_states::{
+    self, EngineHealthLabel, EngineHealthStatus, ErrorCategory, ErrorContext,
+    ErrorRegistry, ErrorRegistryEntry, ErrorSeverity, ErrorState,
+    ErrorStateTransition, RecoveryAction, RecoveryStrategy, RetryPolicy,
+};
 use crate::engine::calories::{self, CalorieEstimate, CalorieEstimateResult, CalorieInputs};
 use crate::engine::controller::{SessionConfig, WorkoutSessionController};
 use crate::engine::coaching_plan::{
@@ -4743,5 +4748,181 @@ pub extern "C" fn stride_notification_next_reminder(
             req.timezone,
         );
         ok_json(&utc_ms)
+    })
+}
+
+// ---------------------------------------------------------------------------
+// §14 Error / Recovery States
+// ---------------------------------------------------------------------------
+
+/// Decides the recovery action for a given error context and retry policy.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "error": { "category": "gps", "severity": "high", "code": "gps_no_fix",
+///              "message": "...", "subsystem": "gps",
+///              "timestamp_ms": 0, "retry_count": 2,
+///              "metadata": [["key","value"]] },
+///   "policy": { "max_attempts": 5, "base_delay_ms": 1000,
+///               "max_delay_ms": 600000, "backoff_multiplier": 2.0,
+///               "jitter_fraction": 0.25 }
+/// }
+/// ```
+/// Returns `RecoveryAction` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_error_decide_recovery(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            error: ErrorContext,
+            policy: RetryPolicy,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let action = error_states::decide_recovery(&req.error, &req.policy);
+        ok_json(&action)
+    })
+}
+
+/// Computes the retry delay in milliseconds for a given attempt number
+/// and retry policy using exponential backoff + jitter.
+///
+/// `request_json` shape:
+/// ```json
+/// { "attempt": 2, "policy": { ... RetryPolicy ... } }
+/// ```
+/// Returns the delay in milliseconds as a JSON integer.
+#[no_mangle]
+pub extern "C" fn stride_error_retry_delay(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            attempt: u32,
+            policy: RetryPolicy,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let delay_ms = error_states::compute_retry_delay(req.attempt, &req.policy);
+        ok_json(&delay_ms)
+    })
+}
+
+/// Validates and performs an error state transition.
+///
+/// `request_json` shape:
+/// ```json
+/// { "from": "detected", "to": "recovering" }
+/// ```
+/// Returns `ErrorStateTransition` as JSON with `is_valid` and `message`.
+#[no_mangle]
+pub extern "C" fn stride_error_transition(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            from: ErrorState,
+            to: ErrorState,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let transition = error_states::transition_error_state(req.from, req.to);
+        ok_json(&transition)
+    })
+}
+
+/// Builds an overall engine health status from an error registry.
+///
+/// `request_json` shape:
+/// ```json
+/// { "registry": { "entries": [...], "max_entries": 100 } }
+/// ```
+/// Returns `EngineHealthStatus` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_error_health_status(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            registry: ErrorRegistry,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let status = error_states::build_health_status(&req.registry);
+        ok_json(&status)
+    })
+}
+
+/// Returns whether errors of a given category are retryable.
+///
+/// `request_json` shape:
+/// ```json
+/// { "category": "gps" }
+/// ```
+/// Returns a JSON boolean.
+#[no_mangle]
+pub extern "C" fn stride_error_is_recoverable(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            category: ErrorCategory,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let retryable = error_states::is_retryable(req.category);
+        ok_json(&retryable)
     })
 }

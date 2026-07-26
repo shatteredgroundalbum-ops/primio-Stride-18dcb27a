@@ -544,6 +544,21 @@ typedef _StrideNotificationStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideNotificationNextReminderNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideNotificationNextReminderDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+typedef _StrideErrorDecideRecoveryNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideErrorDecideRecoveryDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideErrorRetryDelayNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideErrorRetryDelayDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideErrorTransitionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideErrorTransitionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideErrorHealthStatusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideErrorHealthStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideErrorIsRecoverableNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideErrorIsRecoverableDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -883,6 +898,18 @@ class StrideEngineBindings {
         _StrideNotificationStatusDart>('stride_notification_status');
     _NotificationNextReminder = _lib.lookupFunction<_StrideNotificationNextReminderNative,
         _StrideNotificationNextReminderDart>('stride_notification_next_reminder');
+
+    // ── §14 — Error/Recovery States lookups ─────────────────────────
+    _ErrorDecideRecovery = _lib.lookupFunction<_StrideErrorDecideRecoveryNative,
+        _StrideErrorDecideRecoveryDart>('stride_error_decide_recovery');
+    _ErrorRetryDelay = _lib.lookupFunction<_StrideErrorRetryDelayNative,
+        _StrideErrorRetryDelayDart>('stride_error_retry_delay');
+    _ErrorTransition = _lib.lookupFunction<_StrideErrorTransitionNative,
+        _StrideErrorTransitionDart>('stride_error_transition');
+    _ErrorHealthStatus = _lib.lookupFunction<_StrideErrorHealthStatusNative,
+        _StrideErrorHealthStatusDart>('stride_error_health_status');
+    _ErrorIsRecoverable = _lib.lookupFunction<_StrideErrorIsRecoverableNative,
+        _StrideErrorIsRecoverableDart>('stride_error_is_recoverable');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1059,6 +1086,13 @@ class StrideEngineBindings {
   late final _StrideNotificationCoachingDart _NotificationCoaching;
   late final _StrideNotificationStatusDart _NotificationStatus;
   late final _StrideNotificationNextReminderDart _NotificationNextReminder;
+
+  // ── §14 — Error/Recovery States late final fields ───────────────
+  late final _StrideErrorDecideRecoveryDart _ErrorDecideRecovery;
+  late final _StrideErrorRetryDelayDart _ErrorRetryDelay;
+  late final _StrideErrorTransitionDart _ErrorTransition;
+  late final _StrideErrorHealthStatusDart _ErrorHealthStatus;
+  late final _StrideErrorIsRecoverableDart _ErrorIsRecoverable;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2712,6 +2746,64 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_NotificationNextReminder(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// errorDecideRecovery — §14 — decide what to do in response to an
+  /// error given the error context and retry policy. Returns a
+  /// RecoveryAction JSON object.
+  Map<String, dynamic> errorDecideRecovery(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ErrorDecideRecovery(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// errorRetryDelay — §14 — compute the retry delay in milliseconds
+  /// for a given attempt number and retry policy using exponential
+  /// backoff with jitter.
+  Map<String, dynamic> errorRetryDelay(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ErrorRetryDelay(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// errorTransition — §14 — validate and perform an error state
+  /// transition. Returns an ErrorStateTransition JSON object with
+  /// is_valid and message.
+  Map<String, dynamic> errorTransition(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ErrorTransition(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// errorHealthStatus — §14 — build an overall engine health status
+  /// from an error registry. Returns an EngineHealthStatus JSON object.
+  Map<String, dynamic> errorHealthStatus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ErrorHealthStatus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// errorIsRecoverable — §14 — return whether errors of a given
+  /// category are retryable.
+  Map<String, dynamic> errorIsRecoverable(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_ErrorIsRecoverable(ptr));
     } finally {
       malloc.free(ptr);
     }

@@ -21,6 +21,7 @@ pub mod gps_quality;
 pub mod maps;
 pub mod music;
 pub mod heart_rate;
+pub mod error_states;
 pub mod notifications;
 pub mod movement;
 pub mod pace;

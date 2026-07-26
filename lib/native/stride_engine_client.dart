@@ -2212,4 +2212,69 @@ class StrideEngineClient {
     });
     return unwrapEnvelope(env) as int;
   }
+
+  // ── §14 — Error / Recovery States ───────────────────────────────
+
+  /// Decides what to do in response to an error given the error
+  /// context and retry policy. This is the main entry point for the
+  /// error recovery decision logic.
+  static StrideRecoveryAction errorDecideRecovery({
+    required StrideErrorContext error,
+    required StrideRetryPolicy policy,
+  }) {
+    final env = _bindings.errorDecideRecovery({
+      'error': error.toJson(),
+      'policy': policy.toJson(),
+    });
+    return StrideRecoveryAction.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Computes the retry delay in milliseconds for a given attempt
+  /// number and retry policy using exponential backoff with jitter.
+  static int errorRetryDelay({
+    required int attempt,
+    required StrideRetryPolicy policy,
+  }) {
+    final env = _bindings.errorRetryDelay({
+      'attempt': attempt,
+      'policy': policy.toJson(),
+    });
+    return unwrapEnvelope(env) as int;
+  }
+
+  /// Validates and performs an error state transition. Returns an
+  /// [StrideErrorStateTransition] with `isValid` and `message`.
+  static StrideErrorStateTransition errorTransition({
+    required StrideErrorState from,
+    required StrideErrorState to,
+  }) {
+    final env = _bindings.errorTransition({
+      'from': from.toJson(),
+      'to': to.toJson(),
+    });
+    return StrideErrorStateTransition.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds an overall engine health status from an error registry.
+  static StrideEngineHealthStatus errorHealthStatus({
+    required StrideErrorRegistry registry,
+  }) {
+    final env = _bindings.errorHealthStatus({
+      'registry': registry.toJson(),
+    });
+    return StrideEngineHealthStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns whether errors of a given category are retryable.
+  static bool errorIsRecoverable({
+    required StrideErrorCategory category,
+  }) {
+    final env = _bindings.errorIsRecoverable({
+      'category': category.toJson(),
+    });
+    return unwrapEnvelope(env) as bool;
+  }
 }

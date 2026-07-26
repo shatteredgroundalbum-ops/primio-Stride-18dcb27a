@@ -5107,3 +5107,427 @@ class StrideNotificationStatus {
             StrideCoachingDeliveryMode.fromJson(j['coaching_mode'] as String),
         timezoneLabel = j['timezone_label'] as String;
 }
+
+// ---------------------------------------------------------------------------
+// §14 — Error / Recovery States
+// ---------------------------------------------------------------------------
+
+/// The subsystem or layer that an error originated from.
+enum StrideErrorCategory {
+  gps,
+  sensors,
+  sync,
+  network,
+  storage,
+  bluetooth,
+  permissions,
+  engine,
+  ffi,
+  music,
+  coaching,
+  notifications,
+  background,
+  unknown;
+
+  static StrideErrorCategory fromJson(String s) => switch (s) {
+    'gps' => StrideErrorCategory.gps,
+    'sensors' => StrideErrorCategory.sensors,
+    'sync' => StrideErrorCategory.sync,
+    'network' => StrideErrorCategory.network,
+    'storage' => StrideErrorCategory.storage,
+    'bluetooth' => StrideErrorCategory.bluetooth,
+    'permissions' => StrideErrorCategory.permissions,
+    'engine' => StrideErrorCategory.engine,
+    'ffi' => StrideErrorCategory.ffi,
+    'music' => StrideErrorCategory.music,
+    'coaching' => StrideErrorCategory.coaching,
+    'notifications' => StrideErrorCategory.notifications,
+    'background' => StrideErrorCategory.background,
+    'unknown' => StrideErrorCategory.unknown,
+    _ => StrideErrorCategory.unknown,
+  };
+
+  String toJson() => switch (this) {
+    StrideErrorCategory.gps => 'gps',
+    StrideErrorCategory.sensors => 'sensors',
+    StrideErrorCategory.sync => 'sync',
+    StrideErrorCategory.network => 'network',
+    StrideErrorCategory.storage => 'storage',
+    StrideErrorCategory.bluetooth => 'bluetooth',
+    StrideErrorCategory.permissions => 'permissions',
+    StrideErrorCategory.engine => 'engine',
+    StrideErrorCategory.ffi => 'ffi',
+    StrideErrorCategory.music => 'music',
+    StrideErrorCategory.coaching => 'coaching',
+    StrideErrorCategory.notifications => 'notifications',
+    StrideErrorCategory.background => 'background',
+    StrideErrorCategory.unknown => 'unknown',
+  };
+}
+
+/// How serious an error is.
+enum StrideErrorSeverity {
+  info,
+  low,
+  medium,
+  high,
+  critical;
+
+  static StrideErrorSeverity fromJson(String s) => switch (s) {
+    'info' => StrideErrorSeverity.info,
+    'low' => StrideErrorSeverity.low,
+    'medium' => StrideErrorSeverity.medium,
+    'high' => StrideErrorSeverity.high,
+    'critical' => StrideErrorSeverity.critical,
+    _ => StrideErrorSeverity.medium,
+  };
+
+  String toJson() => switch (this) {
+    StrideErrorSeverity.info => 'info',
+    StrideErrorSeverity.low => 'low',
+    StrideErrorSeverity.medium => 'medium',
+    StrideErrorSeverity.high => 'high',
+    StrideErrorSeverity.critical => 'critical',
+  };
+}
+
+/// The lifecycle state of an error.
+enum StrideErrorState {
+  detected,
+  reported,
+  recovering,
+  resolved,
+  abandoned,
+  escalated;
+
+  static StrideErrorState fromJson(String s) => switch (s) {
+    'detected' => StrideErrorState.detected,
+    'reported' => StrideErrorState.reported,
+    'recovering' => StrideErrorState.recovering,
+    'resolved' => StrideErrorState.resolved,
+    'abandoned' => StrideErrorState.abandoned,
+    'escalated' => StrideErrorState.escalated,
+    _ => StrideErrorState.detected,
+  };
+
+  String toJson() => switch (this) {
+    StrideErrorState.detected => 'detected',
+    StrideErrorState.reported => 'reported',
+    StrideErrorState.recovering => 'recovering',
+    StrideErrorState.resolved => 'resolved',
+    StrideErrorState.abandoned => 'abandoned',
+    StrideErrorState.escalated => 'escalated',
+  };
+}
+
+/// What to do in response to an error.
+enum StrideRecoveryStrategy {
+  retry,
+  fallback,
+  ignore,
+  abort,
+  escalate,
+  manual;
+
+  static StrideRecoveryStrategy fromJson(String s) => switch (s) {
+    'retry' => StrideRecoveryStrategy.retry,
+    'fallback' => StrideRecoveryStrategy.fallback,
+    'ignore' => StrideRecoveryStrategy.ignore,
+    'abort' => StrideRecoveryStrategy.abort,
+    'escalate' => StrideRecoveryStrategy.escalate,
+    'manual' => StrideRecoveryStrategy.manual,
+    _ => StrideRecoveryStrategy.ignore,
+  };
+
+  String toJson() => switch (this) {
+    StrideRecoveryStrategy.retry => 'retry',
+    StrideRecoveryStrategy.fallback => 'fallback',
+    StrideRecoveryStrategy.ignore => 'ignore',
+    StrideRecoveryStrategy.abort => 'abort',
+    StrideRecoveryStrategy.escalate => 'escalate',
+    StrideRecoveryStrategy.manual => 'manual',
+  };
+}
+
+/// Overall health label for the engine.
+enum StrideEngineHealthLabel {
+  healthy,
+  operational,
+  degraded,
+  warning,
+  critical;
+
+  static StrideEngineHealthLabel fromJson(String s) => switch (s) {
+    'healthy' => StrideEngineHealthLabel.healthy,
+    'operational' => StrideEngineHealthLabel.operational,
+    'degraded' => StrideEngineHealthLabel.degraded,
+    'warning' => StrideEngineHealthLabel.warning,
+    'critical' => StrideEngineHealthLabel.critical,
+    _ => StrideEngineHealthLabel.healthy,
+  };
+
+  String toJson() => switch (this) {
+    StrideEngineHealthLabel.healthy => 'healthy',
+    StrideEngineHealthLabel.operational => 'operational',
+    StrideEngineHealthLabel.degraded => 'degraded',
+    StrideEngineHealthLabel.warning => 'warning',
+    StrideEngineHealthLabel.critical => 'critical',
+  };
+}
+
+/// Configuration for retry behavior with exponential backoff + jitter.
+class StrideRetryPolicy {
+  final int maxAttempts;
+  final int baseDelayMs;
+  final int maxDelayMs;
+  final double backoffMultiplier;
+  final double jitterFraction;
+
+  StrideRetryPolicy({
+    this.maxAttempts = 5,
+    this.baseDelayMs = 1000,
+    this.maxDelayMs = 600000,
+    this.backoffMultiplier = 2.0,
+    this.jitterFraction = 0.25,
+  });
+
+  /// Default policy.
+  factory StrideRetryPolicy.defaultPolicy() => StrideRetryPolicy();
+
+  /// No-retry policy (max_attempts = 0).
+  factory StrideRetryPolicy.noRetry() => StrideRetryPolicy(
+        maxAttempts: 0,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+        backoffMultiplier: 1.0,
+        jitterFraction: 0.0,
+      );
+
+  /// Aggressive retry policy (more attempts, shorter delays).
+  factory StrideRetryPolicy.aggressive() => StrideRetryPolicy(
+        maxAttempts: 10,
+        baseDelayMs: 500,
+        maxDelayMs: 60000,
+        backoffMultiplier: 1.5,
+        jitterFraction: 0.3,
+      );
+
+  /// Gentle retry policy (fewer attempts, longer delays).
+  factory StrideRetryPolicy.gentle() => StrideRetryPolicy(
+        maxAttempts: 3,
+        baseDelayMs: 5000,
+        maxDelayMs: 1800000,
+        backoffMultiplier: 2.5,
+        jitterFraction: 0.2,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'max_attempts': maxAttempts,
+        'base_delay_ms': baseDelayMs,
+        'max_delay_ms': maxDelayMs,
+        'backoff_multiplier': backoffMultiplier,
+        'jitter_fraction': jitterFraction,
+      };
+}
+
+/// Full context for a single error occurrence.
+class StrideErrorContext {
+  final StrideErrorCategory category;
+  final StrideErrorSeverity severity;
+  final String code;
+  final String message;
+  final String subsystem;
+  final int timestampMs;
+  final int retryCount;
+  final List<List<String>> metadata;
+
+  StrideErrorContext({
+    required this.category,
+    required this.severity,
+    required this.code,
+    required this.message,
+    required this.subsystem,
+    this.timestampMs = 0,
+    this.retryCount = 0,
+    this.metadata = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+        'category': category.toJson(),
+        'severity': severity.toJson(),
+        'code': code,
+        'message': message,
+        'subsystem': subsystem,
+        'timestamp_ms': timestampMs,
+        'retry_count': retryCount,
+        'metadata': metadata,
+      };
+
+  StrideErrorContext.fromJson(Map<String, dynamic> j)
+      : category = StrideErrorCategory.fromJson(j['category'] as String),
+        severity = StrideErrorSeverity.fromJson(j['severity'] as String),
+        code = j['code'] as String,
+        message = j['message'] as String,
+        subsystem = j['subsystem'] as String,
+        timestampMs = j['timestamp_ms'] as int,
+        retryCount = j['retry_count'] as int,
+        metadata = (j['metadata'] as List)
+            .map((e) => (e as List).map((v) => v as String).toList())
+            .toList();
+}
+
+/// The action to take in response to an error (result of decide_recovery).
+class StrideRecoveryAction {
+  final StrideRecoveryStrategy strategy;
+  final int delayMs;
+  final String? userMessage;
+  final bool shouldReport;
+  final bool shouldPersist;
+  final StrideErrorState nextState;
+  final String reason;
+
+  StrideRecoveryAction({
+    required this.strategy,
+    required this.delayMs,
+    this.userMessage,
+    required this.shouldReport,
+    required this.shouldPersist,
+    required this.nextState,
+    required this.reason,
+  });
+
+  StrideRecoveryAction.fromJson(Map<String, dynamic> j)
+      : strategy = StrideRecoveryStrategy.fromJson(j['strategy'] as String),
+        delayMs = j['delay_ms'] as int,
+        userMessage = j['user_message'] as String?,
+        shouldReport = j['should_report'] as bool,
+        shouldPersist = j['should_persist'] as bool,
+        nextState = StrideErrorState.fromJson(j['next_state'] as String),
+        reason = j['reason'] as String;
+}
+
+/// A validated state transition for an error.
+class StrideErrorStateTransition {
+  final StrideErrorState from;
+  final StrideErrorState to;
+  final bool isValid;
+  final String message;
+
+  StrideErrorStateTransition({
+    required this.from,
+    required this.to,
+    required this.isValid,
+    required this.message,
+  });
+
+  StrideErrorStateTransition.fromJson(Map<String, dynamic> j)
+      : from = StrideErrorState.fromJson(j['from'] as String),
+        to = StrideErrorState.fromJson(j['to'] as String),
+        isValid = j['is_valid'] as bool,
+        message = j['message'] as String;
+}
+
+/// An entry in the error registry.
+class StrideErrorRegistryEntry {
+  final StrideErrorContext error;
+  final StrideErrorState state;
+  final StrideRecoveryAction? recoveryAction;
+
+  StrideErrorRegistryEntry({
+    required this.error,
+    required this.state,
+    this.recoveryAction,
+  });
+
+  StrideErrorRegistryEntry.fromJson(Map<String, dynamic> j)
+      : error = StrideErrorContext.fromJson(j['error'] as Map<String, dynamic>),
+        state = StrideErrorState.fromJson(j['state'] as String),
+        recoveryAction = j['recovery_action'] != null
+            ? StrideRecoveryAction.fromJson(
+                j['recovery_action'] as Map<String, dynamic>)
+            : null;
+}
+
+/// An in-memory registry of recent errors for diagnostics.
+class StrideErrorRegistry {
+  final List<StrideErrorRegistryEntry> entries;
+  final int maxEntries;
+
+  StrideErrorRegistry({
+    this.entries = const [],
+    this.maxEntries = 100,
+  });
+
+  StrideErrorRegistry.fromJson(Map<String, dynamic> j)
+      : entries = (j['entries'] as List)
+            .map((e) => StrideErrorRegistryEntry.fromJson(
+                e as Map<String, dynamic>))
+            .toList(),
+        maxEntries = j['max_entries'] as int;
+
+  Map<String, dynamic> toJson() => {
+        'entries': entries.map((e) {
+          final m = <String, dynamic>{
+            'error': e.error.toJson(),
+            'state': e.state.toJson(),
+          };
+          if (e.recoveryAction != null) {
+            m['recovery_action'] = {
+              'strategy': e.recoveryAction!.strategy.toJson(),
+              'delay_ms': e.recoveryAction!.delayMs,
+              'user_message': e.recoveryAction!.userMessage,
+              'should_report': e.recoveryAction!.shouldReport,
+              'should_persist': e.recoveryAction!.shouldPersist,
+              'next_state': e.recoveryAction!.nextState.toJson(),
+              'reason': e.recoveryAction!.reason,
+            };
+          }
+          return m;
+        }).toList(),
+        'max_entries': maxEntries,
+      };
+}
+
+/// The overall health status of the engine for the UI / diagnostics.
+class StrideEngineHealthStatus {
+  final StrideEngineHealthLabel status;
+  final int totalErrors;
+  final int activeErrors;
+  final int resolvedErrors;
+  final int abandonedErrors;
+  final int criticalErrors;
+  final bool isDegraded;
+  final String summary;
+  final List<List<dynamic>> categoryCounts;
+
+  StrideEngineHealthStatus({
+    required this.status,
+    required this.totalErrors,
+    required this.activeErrors,
+    required this.resolvedErrors,
+    required this.abandonedErrors,
+    required this.criticalErrors,
+    required this.isDegraded,
+    required this.summary,
+    required this.categoryCounts,
+  });
+
+  StrideEngineHealthStatus.fromJson(Map<String, dynamic> j)
+      : status = StrideEngineHealthLabel.fromJson(j['status'] as String),
+        totalErrors = j['total_errors'] as int,
+        activeErrors = j['active_errors'] as int,
+        resolvedErrors = j['resolved_errors'] as int,
+        abandonedErrors = j['abandoned_errors'] as int,
+        criticalErrors = j['critical_errors'] as int,
+        isDegraded = j['is_degraded'] as bool,
+        summary = j['summary'] as String,
+        categoryCounts = (j['category_counts'] as List)
+            .map((e) {
+              final arr = e as List;
+              return <dynamic>[
+                StrideErrorCategory.fromJson(arr[0] as String),
+                arr[1] as int,
+              ];
+            })
+            .toList();
+}
