@@ -575,6 +575,22 @@ typedef _StrideTestingGetConfigDart = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideTestingListSuitesNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideTestingListSuitesDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// §16 — Monitoring
+typedef _StrideMonitoringCheckAlertsNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMonitoringCheckAlertsDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMonitoringBuildDashboardNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMonitoringBuildDashboardDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMonitoringLogEntryNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMonitoringLogEntryDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMonitoringCrashReportNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMonitoringCrashReportDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMonitoringUptimeNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMonitoringUptimeDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -938,6 +954,18 @@ class StrideEngineBindings {
         _StrideTestingGetConfigDart>('stride_testing_get_config');
     _TestingListSuites = _lib.lookupFunction<_StrideTestingListSuitesNative,
         _StrideTestingListSuitesDart>('stride_testing_list_suites');
+
+    // §16 — Monitoring
+    _MonitoringCheckAlerts = _lib.lookupFunction<_StrideMonitoringCheckAlertsNative,
+        _StrideMonitoringCheckAlertsDart>('stride_monitoring_check_alerts');
+    _MonitoringBuildDashboard = _lib.lookupFunction<_StrideMonitoringBuildDashboardNative,
+        _StrideMonitoringBuildDashboardDart>('stride_monitoring_build_dashboard');
+    _MonitoringLogEntry = _lib.lookupFunction<_StrideMonitoringLogEntryNative,
+        _StrideMonitoringLogEntryDart>('stride_monitoring_log_entry');
+    _MonitoringCrashReport = _lib.lookupFunction<_StrideMonitoringCrashReportNative,
+        _StrideMonitoringCrashReportDart>('stride_monitoring_crash_report');
+    _MonitoringUptime = _lib.lookupFunction<_StrideMonitoringUptimeNative,
+        _StrideMonitoringUptimeDart>('stride_monitoring_uptime');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -1128,6 +1156,13 @@ class StrideEngineBindings {
   late final _StrideTestingBuildReportDart _TestingBuildReport;
   late final _StrideTestingGetConfigDart _TestingGetConfig;
   late final _StrideTestingListSuitesDart _TestingListSuites;
+
+  // §16 — Monitoring
+  late final _StrideMonitoringCheckAlertsDart _MonitoringCheckAlerts;
+  late final _StrideMonitoringBuildDashboardDart _MonitoringBuildDashboard;
+  late final _StrideMonitoringLogEntryDart _MonitoringLogEntry;
+  late final _StrideMonitoringCrashReportDart _MonitoringCrashReport;
+  late final _StrideMonitoringUptimeDart _MonitoringUptime;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2900,6 +2935,59 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_TestingListSuites(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// monitoringCheckAlerts — §16 — check all alert thresholds against
+  /// the provided metric values and return all triggered alerts.
+  Map<String, dynamic> monitoringCheckAlerts(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MonitoringCheckAlerts(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// monitoringBuildDashboard — §16 — build a release-health dashboard
+  /// from the provided metric values and alerts.
+  Map<String, dynamic> monitoringBuildDashboard(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MonitoringBuildDashboard(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// monitoringLogEntry — §16 — create a structured log entry.
+  Map<String, dynamic> monitoringLogEntry(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MonitoringLogEntry(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// monitoringCrashReport — §16 — create a crash report.
+  Map<String, dynamic> monitoringCrashReport(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MonitoringCrashReport(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// monitoringUptime — §16 — return the standard uptime monitor with
+  /// all monitored services.
+  Map<String, dynamic> monitoringUptime(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MonitoringUptime(ptr));
     } finally {
       malloc.free(ptr);
     }

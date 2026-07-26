@@ -2338,4 +2338,148 @@ class StrideEngineClient {
     final env = _bindings.testingListSuites({});
     return (unwrapEnvelope(env) as List).cast<String>();
   }
+
+  // ─── §16 Monitoring ───────────────────────────────────────────────
+
+  /// Checks all alert thresholds against the provided metric values and
+  /// returns every alert that was triggered.
+  static List<StrideAlert> monitoringCheckAlerts({
+    required int timestampMs,
+    StrideAlertThresholds? thresholds,
+    double cloudFunctionErrorRate = 0.0,
+    int cloudFunctionLatencyMs = 0,
+    int firestoreReadsPerDay = 0,
+    int firestoreWritesPerDay = 0,
+    int firestoreDeletesPerDay = 0,
+    int storageUsageBytes = 0,
+    int storageBandwidthBytes = 0,
+    int billingBudgetCents = 0,
+    int aiCostPerDayCents = 0,
+    double aiErrorRate = 0.0,
+    double syncFailureRate = 0.0,
+    double uptime = 1.0,
+    double crashRatePer1000 = 0.0,
+  }) {
+    final env = _bindings.monitoringCheckAlerts({
+      'thresholds': (thresholds ?? const StrideAlertThresholds()).toJson(),
+      'timestamp_ms': timestampMs,
+      'cloud_function_error_rate': cloudFunctionErrorRate,
+      'cloud_function_latency_ms': cloudFunctionLatencyMs,
+      'firestore_reads_per_day': firestoreReadsPerDay,
+      'firestore_writes_per_day': firestoreWritesPerDay,
+      'firestore_deletes_per_day': firestoreDeletesPerDay,
+      'storage_usage_bytes': storageUsageBytes,
+      'storage_bandwidth_bytes': storageBandwidthBytes,
+      'billing_budget_cents': billingBudgetCents,
+      'ai_cost_per_day_cents': aiCostPerDayCents,
+      'ai_error_rate': aiErrorRate,
+      'sync_failure_rate': syncFailureRate,
+      'uptime': uptime,
+      'crash_rate_per_1000': crashRatePer1000,
+    });
+    final data = unwrapEnvelope(env) as List;
+    return data
+        .map((e) => StrideAlert.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Builds a release-health dashboard from the provided metric values
+  /// and optional alert list.
+  static StrideReleaseHealthDashboard monitoringBuildDashboard({
+    required String appVersion,
+    required int generatedAtMs,
+    double crashFreeRate = 0.0,
+    int activeUsers24h = 0,
+    int workouts24h = 0,
+    double syncFailureRate = 0.0,
+    double aiErrorRate = 0.0,
+    double overallUptime = 0.0,
+    int aiCost24hCents = 0,
+    int firestoreReads24h = 0,
+    int storageUsageBytes = 0,
+    List<StrideAlert> alerts = const [],
+  }) {
+    final env = _bindings.monitoringBuildDashboard({
+      'app_version': appVersion,
+      'generated_at_ms': generatedAtMs,
+      'crash_free_rate': crashFreeRate,
+      'active_users_24h': activeUsers24h,
+      'workouts_24h': workouts24h,
+      'sync_failure_rate': syncFailureRate,
+      'ai_error_rate': aiErrorRate,
+      'overall_uptime': overallUptime,
+      'ai_cost_24h_cents': aiCost24hCents,
+      'firestore_reads_24h': firestoreReads24h,
+      'storage_usage_bytes': storageUsageBytes,
+      'alerts': alerts.map((a) => a.toJson()).toList(),
+    });
+    return StrideReleaseHealthDashboard.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Creates a structured log entry with the given level, category,
+  /// message, and optional context/session/user.
+  static StrideLogEntry monitoringLogEntry({
+    required int timestampMs,
+    required StrideLogLevel level,
+    required StrideMonitoringCategory category,
+    required String message,
+    List<StrideKeyValuePair> context = const [],
+    String? sessionId,
+    String? userId,
+  }) {
+    final env = _bindings.monitoringLogEntry({
+      'timestamp_ms': timestampMs,
+      'level': level.toJson(),
+      'category': category.toJson(),
+      'message': message,
+      'context': context.map((e) => e.toJson()).toList(),
+      'session_id': sessionId,
+      'user_id': userId,
+    });
+    return StrideLogEntry.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Creates a crash report with the given severity, exception type,
+  /// message, and optional stack trace, breadcrumbs, device info, and
+  /// session context.
+  static StrideCrashReport monitoringCrashReport({
+    required int timestampMs,
+    required StrideCrashSeverity severity,
+    required String exceptionType,
+    required String message,
+    String? stackTrace,
+    List<StrideLogEntry> breadcrumbs = const [],
+    String appVersion = '',
+    String deviceModel = '',
+    String osVersion = '',
+    bool duringWorkout = false,
+    String? sessionId,
+  }) {
+    final env = _bindings.monitoringCrashReport({
+      'timestamp_ms': timestampMs,
+      'severity': severity.toJson(),
+      'exception_type': exceptionType,
+      'message': message,
+      'stack_trace': stackTrace,
+      'breadcrumbs': breadcrumbs.map((e) => e.toJson()).toList(),
+      'app_version': appVersion,
+      'device_model': deviceModel,
+      'os_version': osVersion,
+      'during_workout': duringWorkout,
+      'session_id': sessionId,
+    });
+    return StrideCrashReport.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Returns the standard uptime monitor with all six monitored
+  /// services (auth, firestore, cloud_storage, cloud_functions,
+  /// ai_backend, push_notifications), all in Unknown status.
+  static StrideUptimeMonitor monitoringUptime() {
+    final env = _bindings.monitoringUptime({});
+    return StrideUptimeMonitor.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }

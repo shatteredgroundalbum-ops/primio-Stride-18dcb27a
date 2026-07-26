@@ -24,6 +24,7 @@ pub mod heart_rate;
 pub mod error_states;
 pub mod notifications;
 pub mod testing;
+pub mod monitoring;
 pub mod movement;
 pub mod pace;
 pub mod permissions;

@@ -6327,3 +6327,1016 @@ class StrideTestRegistry {
         'scenario_results': scenarioResults.map((r) => r.toJson()).toList(),
       };
 }
+
+enum StrideLogLevel {
+  debug,
+  info,
+  warning,
+  error,
+  critical;
+
+  static StrideLogLevel fromJson(String s) {
+    switch (s) {
+      case 'debug':
+        return StrideLogLevel.debug;
+      case 'info':
+        return StrideLogLevel.info;
+      case 'warning':
+        return StrideLogLevel.warning;
+      case 'error':
+        return StrideLogLevel.error;
+      case 'critical':
+        return StrideLogLevel.critical;
+      default:
+        return StrideLogLevel.debug;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideLogLevel.debug:
+        return 'debug';
+      case StrideLogLevel.info:
+        return 'info';
+      case StrideLogLevel.warning:
+        return 'warning';
+      case StrideLogLevel.error:
+        return 'error';
+      case StrideLogLevel.critical:
+        return 'critical';
+    }
+  }
+}
+
+
+enum StrideMonitoringCategory {
+  workoutEngine,
+  gps,
+  sync,
+  ai,
+  auth,
+  database,
+  storage,
+  cloudFunction,
+  firestore,
+  wearable,
+  music,
+  background,
+  notification,
+  errorRecovery,
+  crash,
+  performance,
+  billing;
+
+  static StrideMonitoringCategory fromJson(String s) {
+    switch (s) {
+      case 'workout_engine':
+        return StrideMonitoringCategory.workoutEngine;
+      case 'gps':
+        return StrideMonitoringCategory.gps;
+      case 'sync':
+        return StrideMonitoringCategory.sync;
+      case 'ai':
+        return StrideMonitoringCategory.ai;
+      case 'auth':
+        return StrideMonitoringCategory.auth;
+      case 'database':
+        return StrideMonitoringCategory.database;
+      case 'storage':
+        return StrideMonitoringCategory.storage;
+      case 'cloud_function':
+        return StrideMonitoringCategory.cloudFunction;
+      case 'firestore':
+        return StrideMonitoringCategory.firestore;
+      case 'wearable':
+        return StrideMonitoringCategory.wearable;
+      case 'music':
+        return StrideMonitoringCategory.music;
+      case 'background':
+        return StrideMonitoringCategory.background;
+      case 'notification':
+        return StrideMonitoringCategory.notification;
+      case 'error_recovery':
+        return StrideMonitoringCategory.errorRecovery;
+      case 'crash':
+        return StrideMonitoringCategory.crash;
+      case 'performance':
+        return StrideMonitoringCategory.performance;
+      case 'billing':
+        return StrideMonitoringCategory.billing;
+      default:
+        return StrideMonitoringCategory.workoutEngine;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideMonitoringCategory.workoutEngine:
+        return 'workout_engine';
+      case StrideMonitoringCategory.gps:
+        return 'gps';
+      case StrideMonitoringCategory.sync:
+        return 'sync';
+      case StrideMonitoringCategory.ai:
+        return 'ai';
+      case StrideMonitoringCategory.auth:
+        return 'auth';
+      case StrideMonitoringCategory.database:
+        return 'database';
+      case StrideMonitoringCategory.storage:
+        return 'storage';
+      case StrideMonitoringCategory.cloudFunction:
+        return 'cloud_function';
+      case StrideMonitoringCategory.firestore:
+        return 'firestore';
+      case StrideMonitoringCategory.wearable:
+        return 'wearable';
+      case StrideMonitoringCategory.music:
+        return 'music';
+      case StrideMonitoringCategory.background:
+        return 'background';
+      case StrideMonitoringCategory.notification:
+        return 'notification';
+      case StrideMonitoringCategory.errorRecovery:
+        return 'error_recovery';
+      case StrideMonitoringCategory.crash:
+        return 'crash';
+      case StrideMonitoringCategory.performance:
+        return 'performance';
+      case StrideMonitoringCategory.billing:
+        return 'billing';
+    }
+  }
+}
+
+
+enum StrideCrashSeverity {
+  nonFatal,
+  fatal;
+
+  static StrideCrashSeverity fromJson(String s) {
+    switch (s) {
+      case 'non_fatal':
+        return StrideCrashSeverity.nonFatal;
+      case 'fatal':
+        return StrideCrashSeverity.fatal;
+      default:
+        return StrideCrashSeverity.nonFatal;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideCrashSeverity.nonFatal:
+        return 'non_fatal';
+      case StrideCrashSeverity.fatal:
+        return 'fatal';
+    }
+  }
+}
+
+
+enum StrideAiOperationType {
+  generatePlan,
+  adjustPlan,
+  summarizeWorkout,
+  coachingMessage,
+  interpretFeedback,
+  recommendProgression,
+  generateEncouragement,
+  moderateRequest;
+
+  static StrideAiOperationType fromJson(String s) {
+    switch (s) {
+      case 'generate_plan':
+        return StrideAiOperationType.generatePlan;
+      case 'adjust_plan':
+        return StrideAiOperationType.adjustPlan;
+      case 'summarize_workout':
+        return StrideAiOperationType.summarizeWorkout;
+      case 'coaching_message':
+        return StrideAiOperationType.coachingMessage;
+      case 'interpret_feedback':
+        return StrideAiOperationType.interpretFeedback;
+      case 'recommend_progression':
+        return StrideAiOperationType.recommendProgression;
+      case 'generate_encouragement':
+        return StrideAiOperationType.generateEncouragement;
+      case 'moderate_request':
+        return StrideAiOperationType.moderateRequest;
+      default:
+        return StrideAiOperationType.generatePlan;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAiOperationType.generatePlan:
+        return 'generate_plan';
+      case StrideAiOperationType.adjustPlan:
+        return 'adjust_plan';
+      case StrideAiOperationType.summarizeWorkout:
+        return 'summarize_workout';
+      case StrideAiOperationType.coachingMessage:
+        return 'coaching_message';
+      case StrideAiOperationType.interpretFeedback:
+        return 'interpret_feedback';
+      case StrideAiOperationType.recommendProgression:
+        return 'recommend_progression';
+      case StrideAiOperationType.generateEncouragement:
+        return 'generate_encouragement';
+      case StrideAiOperationType.moderateRequest:
+        return 'moderate_request';
+    }
+  }
+}
+
+
+enum StrideAlertType {
+  cloudFunctionErrorRate,
+  cloudFunctionLatency,
+  firestoreReadQuota,
+  firestoreWriteQuota,
+  firestoreDeleteQuota,
+  storageUsage,
+  storageBandwidth,
+  billingBudget,
+  aiCost,
+  aiErrorRate,
+  syncFailureRate,
+  uptimeDrop,
+  crashRate;
+
+  static StrideAlertType fromJson(String s) {
+    switch (s) {
+      case 'cloud_function_error_rate':
+        return StrideAlertType.cloudFunctionErrorRate;
+      case 'cloud_function_latency':
+        return StrideAlertType.cloudFunctionLatency;
+      case 'firestore_read_quota':
+        return StrideAlertType.firestoreReadQuota;
+      case 'firestore_write_quota':
+        return StrideAlertType.firestoreWriteQuota;
+      case 'firestore_delete_quota':
+        return StrideAlertType.firestoreDeleteQuota;
+      case 'storage_usage':
+        return StrideAlertType.storageUsage;
+      case 'storage_bandwidth':
+        return StrideAlertType.storageBandwidth;
+      case 'billing_budget':
+        return StrideAlertType.billingBudget;
+      case 'ai_cost':
+        return StrideAlertType.aiCost;
+      case 'ai_error_rate':
+        return StrideAlertType.aiErrorRate;
+      case 'sync_failure_rate':
+        return StrideAlertType.syncFailureRate;
+      case 'uptime_drop':
+        return StrideAlertType.uptimeDrop;
+      case 'crash_rate':
+        return StrideAlertType.crashRate;
+      default:
+        return StrideAlertType.cloudFunctionErrorRate;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAlertType.cloudFunctionErrorRate:
+        return 'cloud_function_error_rate';
+      case StrideAlertType.cloudFunctionLatency:
+        return 'cloud_function_latency';
+      case StrideAlertType.firestoreReadQuota:
+        return 'firestore_read_quota';
+      case StrideAlertType.firestoreWriteQuota:
+        return 'firestore_write_quota';
+      case StrideAlertType.firestoreDeleteQuota:
+        return 'firestore_delete_quota';
+      case StrideAlertType.storageUsage:
+        return 'storage_usage';
+      case StrideAlertType.storageBandwidth:
+        return 'storage_bandwidth';
+      case StrideAlertType.billingBudget:
+        return 'billing_budget';
+      case StrideAlertType.aiCost:
+        return 'ai_cost';
+      case StrideAlertType.aiErrorRate:
+        return 'ai_error_rate';
+      case StrideAlertType.syncFailureRate:
+        return 'sync_failure_rate';
+      case StrideAlertType.uptimeDrop:
+        return 'uptime_drop';
+      case StrideAlertType.crashRate:
+        return 'crash_rate';
+    }
+  }
+}
+
+
+enum StrideAlertSeverity {
+  info,
+  warning,
+  high,
+  critical;
+
+  static StrideAlertSeverity fromJson(String s) {
+    switch (s) {
+      case 'info':
+        return StrideAlertSeverity.info;
+      case 'warning':
+        return StrideAlertSeverity.warning;
+      case 'high':
+        return StrideAlertSeverity.high;
+      case 'critical':
+        return StrideAlertSeverity.critical;
+      default:
+        return StrideAlertSeverity.info;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideAlertSeverity.info:
+        return 'info';
+      case StrideAlertSeverity.warning:
+        return 'warning';
+      case StrideAlertSeverity.high:
+        return 'high';
+      case StrideAlertSeverity.critical:
+        return 'critical';
+    }
+  }
+}
+
+
+enum StrideServiceStatus {
+  up,
+  degraded,
+  down,
+  unknown;
+
+  static StrideServiceStatus fromJson(String s) {
+    switch (s) {
+      case 'up':
+        return StrideServiceStatus.up;
+      case 'degraded':
+        return StrideServiceStatus.degraded;
+      case 'down':
+        return StrideServiceStatus.down;
+      case 'unknown':
+        return StrideServiceStatus.unknown;
+      default:
+        return StrideServiceStatus.up;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideServiceStatus.up:
+        return 'up';
+      case StrideServiceStatus.degraded:
+        return 'degraded';
+      case StrideServiceStatus.down:
+        return 'down';
+      case StrideServiceStatus.unknown:
+        return 'unknown';
+    }
+  }
+}
+
+
+enum StrideReleaseHealthStatus {
+  healthy,
+  stable,
+  degraded,
+  critical;
+
+  static StrideReleaseHealthStatus fromJson(String s) {
+    switch (s) {
+      case 'healthy':
+        return StrideReleaseHealthStatus.healthy;
+      case 'stable':
+        return StrideReleaseHealthStatus.stable;
+      case 'degraded':
+        return StrideReleaseHealthStatus.degraded;
+      case 'critical':
+        return StrideReleaseHealthStatus.critical;
+      default:
+        return StrideReleaseHealthStatus.healthy;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case StrideReleaseHealthStatus.healthy:
+        return 'healthy';
+      case StrideReleaseHealthStatus.stable:
+        return 'stable';
+      case StrideReleaseHealthStatus.degraded:
+        return 'degraded';
+      case StrideReleaseHealthStatus.critical:
+        return 'critical';
+    }
+  }
+}
+
+
+class StrideKeyValuePair {
+  final String key;
+  final String value;
+
+  StrideKeyValuePair({required this.key, required this.value});
+
+  StrideKeyValuePair.fromJson(Map<String, dynamic> j)
+      : key = j['key']?.toString() ?? '',
+        value = j['value']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {'key': key, 'value': value};
+}
+
+
+class StrideMetricPair {
+  final String name;
+  final int value;
+
+  StrideMetricPair({required this.name, required this.value});
+
+  StrideMetricPair.fromJson(Map<String, dynamic> j)
+      : name = j['name']?.toString() ?? '',
+        value = (j['value'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {'name': name, 'value': value};
+}
+
+
+class StrideLogEntry {
+  final int timestampMs;
+  final StrideLogLevel level;
+  final StrideMonitoringCategory category;
+  final String message;
+  final List<StrideKeyValuePair> context;
+  final String? sessionId;
+  final String? userId;
+
+  StrideLogEntry({
+    required this.timestampMs,
+    required this.level,
+    required this.category,
+    required this.message,
+    this.context = const [],
+    this.sessionId,
+    this.userId,
+  });
+
+  StrideLogEntry.fromJson(Map<String, dynamic> j)
+      : timestampMs = (j['timestamp_ms'] as num?)?.toInt() ?? 0,
+        level = StrideLogLevel.fromJson(j['level']?.toString() ?? 'debug'),
+        category = StrideMonitoringCategory.fromJson(j['category']?.toString() ?? 'workout_engine'),
+        message = j['message']?.toString() ?? '',
+        context = (j['context'] as List?)
+            ?.map((e) => StrideKeyValuePair.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        sessionId = j['session_id']?.toString(),
+        userId = j['user_id']?.toString();
+
+  Map<String, dynamic> toJson() => {
+        'timestamp_ms': timestampMs,
+        'level': level.toJson(),
+        'category': category.toJson(),
+        'message': message,
+        'context': context.map((e) => e.toJson()).toList(),
+        'session_id': sessionId,
+        'user_id': userId,
+      };
+}
+
+
+class StrideCrashReport {
+  final int timestampMs;
+  final StrideCrashSeverity severity;
+  final String exceptionType;
+  final String message;
+  final String? stackTrace;
+  final List<StrideLogEntry> breadcrumbs;
+  final String appVersion;
+  final String deviceModel;
+  final String osVersion;
+  final bool duringWorkout;
+  final String? sessionId;
+
+  StrideCrashReport({
+    required this.timestampMs,
+    required this.severity,
+    required this.exceptionType,
+    required this.message,
+    this.stackTrace,
+    this.breadcrumbs = const [],
+    this.appVersion = '',
+    this.deviceModel = '',
+    this.osVersion = '',
+    this.duringWorkout = false,
+    this.sessionId,
+  });
+
+  StrideCrashReport.fromJson(Map<String, dynamic> j)
+      : timestampMs = (j['timestamp_ms'] as num?)?.toInt() ?? 0,
+        severity = StrideCrashSeverity.fromJson(j['severity']?.toString() ?? 'non_fatal'),
+        exceptionType = j['exception_type']?.toString() ?? '',
+        message = j['message']?.toString() ?? '',
+        stackTrace = j['stack_trace']?.toString(),
+        breadcrumbs = (j['breadcrumbs'] as List?)
+            ?.map((e) => StrideLogEntry.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        appVersion = j['app_version']?.toString() ?? '',
+        deviceModel = j['device_model']?.toString() ?? '',
+        osVersion = j['os_version']?.toString() ?? '',
+        duringWorkout = j['during_workout'] as bool? ?? false,
+        sessionId = j['session_id']?.toString();
+
+  Map<String, dynamic> toJson() => {
+        'timestamp_ms': timestampMs,
+        'severity': severity.toJson(),
+        'exception_type': exceptionType,
+        'message': message,
+        'stack_trace': stackTrace,
+        'breadcrumbs': breadcrumbs.map((e) => e.toJson()).toList(),
+        'app_version': appVersion,
+        'device_model': deviceModel,
+        'os_version': osVersion,
+        'during_workout': duringWorkout,
+        'session_id': sessionId,
+      };
+}
+
+
+class StridePerformanceTrace {
+  final String name;
+  final int durationMs;
+  final int startedAtMs;
+  final bool success;
+  final String? errorMessage;
+  final List<StrideMetricPair> metrics;
+
+  StridePerformanceTrace({
+    required this.name,
+    required this.durationMs,
+    required this.startedAtMs,
+    required this.success,
+    this.errorMessage,
+    this.metrics = const [],
+  });
+
+  StridePerformanceTrace.fromJson(Map<String, dynamic> j)
+      : name = j['name']?.toString() ?? '',
+        durationMs = (j['duration_ms'] as num?)?.toInt() ?? 0,
+        startedAtMs = (j['started_at_ms'] as num?)?.toInt() ?? 0,
+        success = j['success'] as bool? ?? false,
+        errorMessage = j['error_message']?.toString(),
+        metrics = (j['metrics'] as List?)
+            ?.map((e) => StrideMetricPair.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [];
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'duration_ms': durationMs,
+        'started_at_ms': startedAtMs,
+        'success': success,
+        'error_message': errorMessage,
+        'metrics': metrics.map((e) => e.toJson()).toList(),
+      };
+}
+
+
+class StrideSyncFailureMetrics {
+  final int windowMinutes;
+  final int totalAttempts;
+  final int successful;
+  final int failed;
+  final int retries;
+  final int conflicts;
+  final int duplicatesPrevented;
+  final int tombstones;
+
+  StrideSyncFailureMetrics({
+    required this.windowMinutes,
+    this.totalAttempts = 0,
+    this.successful = 0,
+    this.failed = 0,
+    this.retries = 0,
+    this.conflicts = 0,
+    this.duplicatesPrevented = 0,
+    this.tombstones = 0,
+  });
+
+  StrideSyncFailureMetrics.fromJson(Map<String, dynamic> j)
+      : windowMinutes = (j['window_minutes'] as num?)?.toInt() ?? 0,
+        totalAttempts = (j['total_attempts'] as num?)?.toInt() ?? 0,
+        successful = (j['successful'] as num?)?.toInt() ?? 0,
+        failed = (j['failed'] as num?)?.toInt() ?? 0,
+        retries = (j['retries'] as num?)?.toInt() ?? 0,
+        conflicts = (j['conflicts'] as num?)?.toInt() ?? 0,
+        duplicatesPrevented = (j['duplicates_prevented'] as num?)?.toInt() ?? 0,
+        tombstones = (j['tombstones'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'window_minutes': windowMinutes,
+        'total_attempts': totalAttempts,
+        'successful': successful,
+        'failed': failed,
+        'retries': retries,
+        'conflicts': conflicts,
+        'duplicates_prevented': duplicatesPrevented,
+        'tombstones': tombstones,
+      };
+}
+
+
+class StrideAiOperationCount {
+  final StrideAiOperationType operationType;
+  final int count;
+
+  StrideAiOperationCount({
+    required this.operationType,
+    required this.count,
+  });
+
+  StrideAiOperationCount.fromJson(Map<String, dynamic> j)
+      : operationType = StrideAiOperationType.fromJson(j['operation_type']?.toString() ?? 'generate_plan'),
+        count = (j['count'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'operation_type': operationType.toJson(),
+        'count': count,
+      };
+}
+
+
+class StrideAiCostMetrics {
+  final int windowMinutes;
+  final int totalCalls;
+  final int successful;
+  final int failed;
+  final int cacheHits;
+  final int totalCostCents;
+  final int totalInputTokens;
+  final int totalOutputTokens;
+  final int fallbacks;
+  final List<StrideAiOperationCount> operationCounts;
+
+  StrideAiCostMetrics({
+    required this.windowMinutes,
+    this.totalCalls = 0,
+    this.successful = 0,
+    this.failed = 0,
+    this.cacheHits = 0,
+    this.totalCostCents = 0,
+    this.totalInputTokens = 0,
+    this.totalOutputTokens = 0,
+    this.fallbacks = 0,
+    this.operationCounts = const [],
+  });
+
+  StrideAiCostMetrics.fromJson(Map<String, dynamic> j)
+      : windowMinutes = (j['window_minutes'] as num?)?.toInt() ?? 0,
+        totalCalls = (j['total_calls'] as num?)?.toInt() ?? 0,
+        successful = (j['successful'] as num?)?.toInt() ?? 0,
+        failed = (j['failed'] as num?)?.toInt() ?? 0,
+        cacheHits = (j['cache_hits'] as num?)?.toInt() ?? 0,
+        totalCostCents = (j['total_cost_cents'] as num?)?.toInt() ?? 0,
+        totalInputTokens = (j['total_input_tokens'] as num?)?.toInt() ?? 0,
+        totalOutputTokens = (j['total_output_tokens'] as num?)?.toInt() ?? 0,
+        fallbacks = (j['fallbacks'] as num?)?.toInt() ?? 0,
+        operationCounts = (j['operation_counts'] as List?)
+            ?.map((e) => StrideAiOperationCount.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [];
+
+  Map<String, dynamic> toJson() => {
+        'window_minutes': windowMinutes,
+        'total_calls': totalCalls,
+        'successful': successful,
+        'failed': failed,
+        'cache_hits': cacheHits,
+        'total_cost_cents': totalCostCents,
+        'total_input_tokens': totalInputTokens,
+        'total_output_tokens': totalOutputTokens,
+        'fallbacks': fallbacks,
+        'operation_counts': operationCounts.map((e) => e.toJson()).toList(),
+      };
+}
+
+
+class StrideAlert {
+  final int timestampMs;
+  final StrideAlertType alertType;
+  final StrideAlertSeverity severity;
+  final String title;
+  final String description;
+  final double currentValue;
+  final double threshold;
+  final String unit;
+
+  StrideAlert({
+    required this.timestampMs,
+    required this.alertType,
+    required this.severity,
+    required this.title,
+    required this.description,
+    required this.currentValue,
+    required this.threshold,
+    required this.unit,
+  });
+
+  StrideAlert.fromJson(Map<String, dynamic> j)
+      : timestampMs = (j['timestamp_ms'] as num?)?.toInt() ?? 0,
+        alertType = StrideAlertType.fromJson(j['alert_type']?.toString() ?? 'cloud_function_error_rate'),
+        severity = StrideAlertSeverity.fromJson(j['severity']?.toString() ?? 'info'),
+        title = j['title']?.toString() ?? '',
+        description = j['description']?.toString() ?? '',
+        currentValue = (j['current_value'] as num?)?.toDouble() ?? 0.0,
+        threshold = (j['threshold'] as num?)?.toDouble() ?? 0.0,
+        unit = j['unit']?.toString() ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'timestamp_ms': timestampMs,
+        'alert_type': alertType.toJson(),
+        'severity': severity.toJson(),
+        'title': title,
+        'description': description,
+        'current_value': currentValue,
+        'threshold': threshold,
+        'unit': unit,
+      };
+}
+
+
+class StrideAlertThresholds {
+  final double cloudFunctionErrorRate;
+  final int cloudFunctionLatencyMs;
+  final int firestoreReadsPerDay;
+  final int firestoreWritesPerDay;
+  final int firestoreDeletesPerDay;
+  final int storageUsageBytes;
+  final int storageBandwidthBytes;
+  final int billingBudgetCents;
+  final int aiCostPerDayCents;
+  final double aiErrorRate;
+  final double syncFailureRate;
+  final double uptime;
+  final double crashRatePer1000;
+
+  StrideAlertThresholds({
+    this.cloudFunctionErrorRate = 0.05,
+    this.cloudFunctionLatencyMs = 5000,
+    this.firestoreReadsPerDay = 50000,
+    this.firestoreWritesPerDay = 10000,
+    this.firestoreDeletesPerDay = 5000,
+    this.storageUsageBytes = 10737418240,
+    this.storageBandwidthBytes = 10737418240,
+    this.billingBudgetCents = 5000,
+    this.aiCostPerDayCents = 100,
+    this.aiErrorRate = 0.1,
+    this.syncFailureRate = 0.05,
+    this.uptime = 0.99,
+    this.crashRatePer1000 = 2.0,
+  });
+
+  StrideAlertThresholds.fromJson(Map<String, dynamic> j)
+      : cloudFunctionErrorRate = (j['cloud_function_error_rate'] as num?)?.toDouble() ?? 0.05,
+        cloudFunctionLatencyMs = (j['cloud_function_latency_ms'] as num?)?.toInt() ?? 5000,
+        firestoreReadsPerDay = (j['firestore_reads_per_day'] as num?)?.toInt() ?? 50000,
+        firestoreWritesPerDay = (j['firestore_writes_per_day'] as num?)?.toInt() ?? 10000,
+        firestoreDeletesPerDay = (j['firestore_deletes_per_day'] as num?)?.toInt() ?? 5000,
+        storageUsageBytes = (j['storage_usage_bytes'] as num?)?.toInt() ?? 10737418240,
+        storageBandwidthBytes = (j['storage_bandwidth_bytes'] as num?)?.toInt() ?? 10737418240,
+        billingBudgetCents = (j['billing_budget_cents'] as num?)?.toInt() ?? 5000,
+        aiCostPerDayCents = (j['ai_cost_per_day_cents'] as num?)?.toInt() ?? 100,
+        aiErrorRate = (j['ai_error_rate'] as num?)?.toDouble() ?? 0.1,
+        syncFailureRate = (j['sync_failure_rate'] as num?)?.toDouble() ?? 0.05,
+        uptime = (j['uptime'] as num?)?.toDouble() ?? 0.99,
+        crashRatePer1000 = (j['crash_rate_per_1000'] as num?)?.toDouble() ?? 2.0;
+
+  Map<String, dynamic> toJson() => {
+        'cloud_function_error_rate': cloudFunctionErrorRate,
+        'cloud_function_latency_ms': cloudFunctionLatencyMs,
+        'firestore_reads_per_day': firestoreReadsPerDay,
+        'firestore_writes_per_day': firestoreWritesPerDay,
+        'firestore_deletes_per_day': firestoreDeletesPerDay,
+        'storage_usage_bytes': storageUsageBytes,
+        'storage_bandwidth_bytes': storageBandwidthBytes,
+        'billing_budget_cents': billingBudgetCents,
+        'ai_cost_per_day_cents': aiCostPerDayCents,
+        'ai_error_rate': aiErrorRate,
+        'sync_failure_rate': syncFailureRate,
+        'uptime': uptime,
+        'crash_rate_per_1000': crashRatePer1000,
+      };
+}
+
+
+class StrideMonitoredService {
+  final String name;
+  final StrideServiceStatus status;
+  final double uptime24h;
+  final int avgResponseMs;
+  final int lastCheckedMs;
+
+  StrideMonitoredService({
+    required this.name,
+    this.status = StrideServiceStatus.unknown,
+    this.uptime24h = 0.0,
+    this.avgResponseMs = 0,
+    this.lastCheckedMs = 0,
+  });
+
+  StrideMonitoredService.fromJson(Map<String, dynamic> j)
+      : name = j['name']?.toString() ?? '',
+        status = StrideServiceStatus.fromJson(j['status']?.toString() ?? 'unknown'),
+        uptime24h = (j['uptime_24h'] as num?)?.toDouble() ?? 0.0,
+        avgResponseMs = (j['avg_response_ms'] as num?)?.toInt() ?? 0,
+        lastCheckedMs = (j['last_checked_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'status': status.toJson(),
+        'uptime_24h': uptime24h,
+        'avg_response_ms': avgResponseMs,
+        'last_checked_ms': lastCheckedMs,
+      };
+}
+
+
+class StrideUptimeMonitor {
+  final List<StrideMonitoredService> services;
+  final double overallUptime;
+  final int servicesUp;
+  final int servicesDown;
+  final int servicesDegraded;
+
+  StrideUptimeMonitor({
+    this.services = const [],
+    this.overallUptime = 0.0,
+    this.servicesUp = 0,
+    this.servicesDown = 0,
+    this.servicesDegraded = 0,
+  });
+
+  StrideUptimeMonitor.fromJson(Map<String, dynamic> j)
+      : services = (j['services'] as List?)
+            ?.map((e) => StrideMonitoredService.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        overallUptime = (j['overall_uptime'] as num?)?.toDouble() ?? 0.0,
+        servicesUp = (j['services_up'] as num?)?.toInt() ?? 0,
+        servicesDown = (j['services_down'] as num?)?.toInt() ?? 0,
+        servicesDegraded = (j['services_degraded'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'services': services.map((e) => e.toJson()).toList(),
+        'overall_uptime': overallUptime,
+        'services_up': servicesUp,
+        'services_down': servicesDown,
+        'services_degraded': servicesDegraded,
+      };
+}
+
+
+class StrideReleaseHealthDashboard {
+  final String appVersion;
+  final StrideReleaseHealthStatus status;
+  final int activeAlerts;
+  final int criticalAlerts;
+  final double crashFreeRate;
+  final int activeUsers24h;
+  final int workouts24h;
+  final double syncFailureRate;
+  final double aiErrorRate;
+  final double overallUptime;
+  final int aiCost24hCents;
+  final int firestoreReads24h;
+  final int storageUsageBytes;
+  final List<StrideAlert> alerts;
+  final int generatedAtMs;
+
+  StrideReleaseHealthDashboard({
+    required this.appVersion,
+    this.status = StrideReleaseHealthStatus.healthy,
+    this.activeAlerts = 0,
+    this.criticalAlerts = 0,
+    this.crashFreeRate = 0.0,
+    this.activeUsers24h = 0,
+    this.workouts24h = 0,
+    this.syncFailureRate = 0.0,
+    this.aiErrorRate = 0.0,
+    this.overallUptime = 0.0,
+    this.aiCost24hCents = 0,
+    this.firestoreReads24h = 0,
+    this.storageUsageBytes = 0,
+    this.alerts = const [],
+    this.generatedAtMs = 0,
+  });
+
+  StrideReleaseHealthDashboard.fromJson(Map<String, dynamic> j)
+      : appVersion = j['app_version']?.toString() ?? '',
+        status = StrideReleaseHealthStatus.fromJson(j['status']?.toString() ?? 'healthy'),
+        activeAlerts = (j['active_alerts'] as num?)?.toInt() ?? 0,
+        criticalAlerts = (j['critical_alerts'] as num?)?.toInt() ?? 0,
+        crashFreeRate = (j['crash_free_rate'] as num?)?.toDouble() ?? 0.0,
+        activeUsers24h = (j['active_users_24h'] as num?)?.toInt() ?? 0,
+        workouts24h = (j['workouts_24h'] as num?)?.toInt() ?? 0,
+        syncFailureRate = (j['sync_failure_rate'] as num?)?.toDouble() ?? 0.0,
+        aiErrorRate = (j['ai_error_rate'] as num?)?.toDouble() ?? 0.0,
+        overallUptime = (j['overall_uptime'] as num?)?.toDouble() ?? 0.0,
+        aiCost24hCents = (j['ai_cost_24h_cents'] as num?)?.toInt() ?? 0,
+        firestoreReads24h = (j['firestore_reads_24h'] as num?)?.toInt() ?? 0,
+        storageUsageBytes = (j['storage_usage_bytes'] as num?)?.toInt() ?? 0,
+        alerts = (j['alerts'] as List?)
+            ?.map((e) => StrideAlert.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        generatedAtMs = (j['generated_at_ms'] as num?)?.toInt() ?? 0;
+
+  Map<String, dynamic> toJson() => {
+        'app_version': appVersion,
+        'status': status.toJson(),
+        'active_alerts': activeAlerts,
+        'critical_alerts': criticalAlerts,
+        'crash_free_rate': crashFreeRate,
+        'active_users_24h': activeUsers24h,
+        'workouts_24h': workouts24h,
+        'sync_failure_rate': syncFailureRate,
+        'ai_error_rate': aiErrorRate,
+        'overall_uptime': overallUptime,
+        'ai_cost_24h_cents': aiCost24hCents,
+        'firestore_reads_24h': firestoreReads24h,
+        'storage_usage_bytes': storageUsageBytes,
+        'alerts': alerts.map((e) => e.toJson()).toList(),
+        'generated_at_ms': generatedAtMs,
+      };
+}
+
+
+class StrideMonitoringConfig {
+  final bool crashlyticsEnabled;
+  final bool performanceMonitoringEnabled;
+  final bool structuredLoggingEnabled;
+  final StrideLogLevel minLogLevel;
+  final StrideAlertThresholds thresholds;
+  final bool alertPagingEnabled;
+  final double traceSamplingRate;
+
+  StrideMonitoringConfig({
+    this.crashlyticsEnabled = true,
+    this.performanceMonitoringEnabled = true,
+    this.structuredLoggingEnabled = true,
+    this.minLogLevel = StrideLogLevel.info,
+    this.thresholds = const StrideAlertThresholds(),
+    this.alertPagingEnabled = true,
+    this.traceSamplingRate = 0.1,
+  });
+
+  StrideMonitoringConfig.fromJson(Map<String, dynamic> j)
+      : crashlyticsEnabled = j['crashlytics_enabled'] as bool? ?? true,
+        performanceMonitoringEnabled = j['performance_monitoring_enabled'] as bool? ?? true,
+        structuredLoggingEnabled = j['structured_logging_enabled'] as bool? ?? true,
+        minLogLevel = StrideLogLevel.fromJson(j['min_log_level']?.toString() ?? 'info'),
+        thresholds = StrideAlertThresholds.fromJson(j['thresholds'] as Map<String, dynamic>? ?? {}),
+        alertPagingEnabled = j['alert_paging_enabled'] as bool? ?? true,
+        traceSamplingRate = (j['trace_sampling_rate'] as num?)?.toDouble() ?? 0.1;
+
+  Map<String, dynamic> toJson() => {
+        'crashlytics_enabled': crashlyticsEnabled,
+        'performance_monitoring_enabled': performanceMonitoringEnabled,
+        'structured_logging_enabled': structuredLoggingEnabled,
+        'min_log_level': minLogLevel.toJson(),
+        'thresholds': thresholds.toJson(),
+        'alert_paging_enabled': alertPagingEnabled,
+        'trace_sampling_rate': traceSamplingRate,
+      };
+}
+
+
+class StrideLogBuffer {
+  final List<StrideLogEntry> entries;
+  final int maxEntries;
+
+  StrideLogBuffer({
+    this.entries = const [],
+    this.maxEntries = 500,
+  });
+
+  StrideLogBuffer.fromJson(Map<String, dynamic> j)
+      : entries = (j['entries'] as List?)
+            ?.map((e) => StrideLogEntry.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+            [],
+        maxEntries = (j['max_entries'] as num?)?.toInt() ?? 500;
+
+  Map<String, dynamic> toJson() => {
+        'entries': entries.map((e) => e.toJson()).toList(),
+        'max_entries': maxEntries,
+      };
+}

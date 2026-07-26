@@ -106,6 +106,14 @@ use crate::engine::testing::{
     DeviceProfile, GpsQuality, LocationType,
     RealDeviceScenario, ScenarioResult, TestRegistry,
 };
+use crate::engine::monitoring::{
+    self, AiCostMetrics, AiOperationCount, AiOperationType, Alert, AlertSeverity,
+    AlertThresholds, AlertType, CrashReport, CrashSeverity, LogBuffer, LogEntry,
+    LogLevel, MetricPair, MonitoringCategory, MonitoringConfig,
+    MonitoredService, PerformanceTrace, ReleaseHealthDashboard,
+    ReleaseHealthStatus, ServiceStatus, SyncFailureMetrics, UptimeMonitor,
+    KeyValuePair,
+};
 use crate::models::{
     ActivityType, LocationSource, SensorSource, WorkoutCheckpoint, WorkoutGoal, WorkoutPoint,
     WorkoutSummary,
@@ -5088,5 +5096,384 @@ pub extern "C" fn stride_testing_list_suites(
         let registry = testing::build_full_registry();
         let names = registry.suite_names();
         ok_json(&names)
+    })
+}
+
+// ─── §16 Monitoring ────────────────────────────────────────────────────
+
+/// Checks all alert thresholds against the provided metric values and
+/// returns every alert that was triggered.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "thresholds": { … AlertThresholds … },
+///   "timestamp_ms": 1700000000000,
+///   "cloud_function_error_rate": 0.08,
+///   "cloud_function_latency_ms": 6000,
+///   "firestore_reads_per_day": 55000,
+///   "firestore_writes_per_day": 12000,
+///   "firestore_deletes_per_day": 3000,
+///   "storage_usage_bytes": 9000000000,
+///   "storage_bandwidth_bytes": 5000000000,
+///   "billing_budget_cents": 5000,
+///   "ai_cost_per_day_cents": 200,
+///   "ai_error_rate": 0.15,
+///   "sync_failure_rate": 0.10,
+///   "uptime": 0.98,
+///   "crash_rate_per_1000": 5.0
+/// }
+/// ```
+/// Returns a `Vec<Alert>` as JSON — all alerts that exceeded their
+/// thresholds.
+#[no_mangle]
+pub extern "C" fn stride_monitoring_check_alerts(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            thresholds: AlertThresholds,
+            timestamp_ms: i64,
+            cloud_function_error_rate: f64,
+            cloud_function_latency_ms: u64,
+            firestore_reads_per_day: u64,
+            firestore_writes_per_day: u64,
+            firestore_deletes_per_day: u64,
+            storage_usage_bytes: u64,
+            storage_bandwidth_bytes: u64,
+            billing_budget_cents: u64,
+            ai_cost_per_day_cents: u64,
+            ai_error_rate: f64,
+            sync_failure_rate: f64,
+            uptime: f64,
+            crash_rate_per_1000: f64,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self {
+                    thresholds: AlertThresholds::default(),
+                    timestamp_ms: 0,
+                    cloud_function_error_rate: 0.0,
+                    cloud_function_latency_ms: 0,
+                    firestore_reads_per_day: 0,
+                    firestore_writes_per_day: 0,
+                    firestore_deletes_per_day: 0,
+                    storage_usage_bytes: 0,
+                    storage_bandwidth_bytes: 0,
+                    billing_budget_cents: 0,
+                    ai_cost_per_day_cents: 0,
+                    ai_error_rate: 0.0,
+                    sync_failure_rate: 0.0,
+                    uptime: 1.0,
+                    crash_rate_per_1000: 0.0,
+                }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let t = &req.thresholds;
+        let ts = req.timestamp_ms;
+        let mut alerts: Vec<Alert> = Vec::new();
+
+        if let Some(a) = t.check_cloud_function_error_rate(ts, req.cloud_function_error_rate) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_cloud_function_latency(ts, req.cloud_function_latency_ms) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_firestore_reads(ts, req.firestore_reads_per_day) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_firestore_writes(ts, req.firestore_writes_per_day) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_storage_usage(ts, req.storage_usage_bytes) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_ai_cost(ts, req.ai_cost_per_day_cents) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_ai_error_rate(ts, req.ai_error_rate) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_sync_failure_rate(ts, req.sync_failure_rate) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_uptime(ts, req.uptime) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_billing_budget(ts, req.billing_budget_cents) {
+            alerts.push(a);
+        }
+        if let Some(a) = t.check_crash_rate(ts, req.crash_rate_per_1000) {
+            alerts.push(a);
+        }
+
+        ok_json(&alerts)
+    })
+}
+
+/// Builds a release-health dashboard from the provided metric values.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "app_version": "1.2.0",
+///   "generated_at_ms": 1700000000000,
+///   "crash_free_rate": 0.98,
+///   "active_users_24h": 1500,
+///   "workouts_24h": 300,
+///   "sync_failure_rate": 0.05,
+///   "ai_error_rate": 0.03,
+///   "overall_uptime": 0.99,
+///   "ai_cost_24h_cents": 200,
+///   "firestore_reads_24h": 5000,
+///   "storage_usage_bytes": 1000000000,
+///   "alerts": [ … Alert … ]
+/// }
+/// ```
+/// Returns a `ReleaseHealthDashboard` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_monitoring_build_dashboard(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        #[serde(default)]
+        struct Req {
+            app_version: String,
+            generated_at_ms: i64,
+            crash_free_rate: f64,
+            active_users_24h: u32,
+            workouts_24h: u32,
+            sync_failure_rate: f64,
+            ai_error_rate: f64,
+            overall_uptime: f64,
+            ai_cost_24h_cents: u64,
+            firestore_reads_24h: u64,
+            storage_usage_bytes: u64,
+            alerts: Vec<Alert>,
+        }
+
+        impl Default for Req {
+            fn default() -> Self {
+                Self {
+                    app_version: String::new(),
+                    generated_at_ms: 0,
+                    crash_free_rate: 1.0,
+                    active_users_24h: 0,
+                    workouts_24h: 0,
+                    sync_failure_rate: 0.0,
+                    ai_error_rate: 0.0,
+                    overall_uptime: 1.0,
+                    ai_cost_24h_cents: 0,
+                    firestore_reads_24h: 0,
+                    storage_usage_bytes: 0,
+                    alerts: Vec::new(),
+                }
+            }
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut dash = ReleaseHealthDashboard::new(req.app_version, req.generated_at_ms);
+        dash.crash_free_rate = req.crash_free_rate;
+        dash.active_users_24h = req.active_users_24h;
+        dash.workouts_24h = req.workouts_24h;
+        dash.sync_failure_rate = req.sync_failure_rate;
+        dash.ai_error_rate = req.ai_error_rate;
+        dash.overall_uptime = req.overall_uptime;
+        dash.ai_cost_24h_cents = req.ai_cost_24h_cents;
+        dash.firestore_reads_24h = req.firestore_reads_24h;
+        dash.storage_usage_bytes = req.storage_usage_bytes;
+        for a in req.alerts {
+            dash.add_alert(a);
+        }
+        dash.recompute_status();
+        ok_json(&dash)
+    })
+}
+
+/// Creates a structured log entry.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "timestamp_ms": 1700000000000,
+///   "level": "info",
+///   "category": "workout_engine",
+///   "message": "Workout started",
+///   "context": [{"key": "session_id", "value": "abc123"}],
+///   "session_id": "abc123",
+///   "user_id": "user456"
+/// }
+/// ```
+/// Returns a `LogEntry` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_monitoring_log_entry(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            timestamp_ms: i64,
+            level: LogLevel,
+            category: MonitoringCategory,
+            message: String,
+            #[serde(default)]
+            context: Vec<KeyValuePair>,
+            #[serde(default)]
+            session_id: Option<String>,
+            #[serde(default)]
+            user_id: Option<String>,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut entry = LogEntry::new(req.timestamp_ms, req.level, req.category, req.message);
+        for pair in req.context {
+            entry = entry.with_context(pair.key, pair.value);
+        }
+        if let Some(sid) = req.session_id {
+            entry = entry.with_session(sid);
+        }
+        if let Some(uid) = req.user_id {
+            entry = entry.with_user(uid);
+        }
+        ok_json(&entry)
+    })
+}
+
+/// Creates a crash report.
+///
+/// `request_json` shape:
+/// ```json
+/// {
+///   "timestamp_ms": 1700000000000,
+///   "severity": "non_fatal",
+///   "exception_type": "NullPointerException",
+///   "message": "Failed to update UI",
+///   "stack_trace": "at com.example...",
+///   "breadcrumbs": [ … LogEntry … ],
+///   "app_version": "1.2.0",
+///   "device_model": "Pixel 7",
+///   "os_version": "Android 14",
+///   "during_workout": true,
+///   "session_id": "abc123"
+/// }
+/// ```
+/// Returns a `CrashReport` as JSON.
+#[no_mangle]
+pub extern "C" fn stride_monitoring_crash_report(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            timestamp_ms: i64,
+            severity: CrashSeverity,
+            exception_type: String,
+            message: String,
+            #[serde(default)]
+            stack_trace: Option<String>,
+            #[serde(default)]
+            breadcrumbs: Vec<LogEntry>,
+            #[serde(default)]
+            app_version: String,
+            #[serde(default)]
+            device_model: String,
+            #[serde(default)]
+            os_version: String,
+            #[serde(default)]
+            during_workout: bool,
+            #[serde(default)]
+            session_id: Option<String>,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let mut report = CrashReport::new(
+            req.timestamp_ms,
+            req.severity,
+            req.exception_type,
+            req.message,
+        );
+        if let Some(trace) = req.stack_trace {
+            report = report.with_stack_trace(trace);
+        }
+        for crumb in req.breadcrumbs {
+            report.add_breadcrumb(crumb);
+        }
+        if !req.app_version.is_empty() {
+            report = report.with_app_version(req.app_version);
+        }
+        if !req.device_model.is_empty() {
+            report = report.with_device_model(req.device_model);
+        }
+        if !req.os_version.is_empty() {
+            report = report.with_os_version(req.os_version);
+        }
+        report = report.with_during_workout(req.during_workout);
+        if let Some(sid) = req.session_id {
+            report = report.with_session(sid);
+        }
+        ok_json(&report)
+    })
+}
+
+/// Returns the standard uptime monitor with all monitored services.
+///
+/// `request_json` shape: `{ }` (empty JSON object)
+/// Returns a `UptimeMonitor` as JSON — initialized with the six standard
+/// services (auth, firestore, cloud_storage, cloud_functions, ai_backend,
+/// push_notifications), all in `Unknown` status.
+#[no_mangle]
+pub extern "C" fn stride_monitoring_uptime(
+    _request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let services = monitoring::build_monitored_services();
+        let mut monitor = UptimeMonitor::new();
+        for svc in services {
+            monitor.add_service(svc);
+        }
+        monitor.recompute();
+        ok_json(&monitor)
     })
 }
