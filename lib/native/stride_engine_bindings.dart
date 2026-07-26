@@ -472,6 +472,32 @@ typedef _StrideWearableDeduplicateSourceDart = Pointer<Utf8> Function(Pointer<Ut
 typedef _StrideWearableConsentResultNative = Pointer<Utf8> Function(Pointer<Utf8>);
 typedef _StrideWearableConsentResultDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+// ─── §11 — Music system ───────────────────────────────────────────
+
+typedef _StrideMusicTransitionNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicTransitionDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicAudioFocusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicAudioFocusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicCoachingInteropNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicCoachingInteropDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicNetworkLossNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicNetworkLossDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicFilterBlockedNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicFilterBlockedDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicShouldRecommendNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicShouldRecommendDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicBuildStatusNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicBuildStatusDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
+typedef _StrideMusicRemoteControlNative = Pointer<Utf8> Function(Pointer<Utf8>);
+typedef _StrideMusicRemoteControlDart = Pointer<Utf8> Function(Pointer<Utf8>);
+
 typedef _StrideFreeStringNative = Void Function(Pointer<Utf8>);
 typedef _StrideFreeStringDart = void Function(Pointer<Utf8>);
 
@@ -762,6 +788,23 @@ class StrideEngineBindings {
         _StrideWearableDeduplicateSourceDart>('stride_wearable_deduplicate_source');
     _WearableConsentResult = _lib.lookupFunction<_StrideWearableConsentResultNative,
         _StrideWearableConsentResultDart>('stride_wearable_consent_result');
+    // ─── §11 — Music system lookups ───────────────────────────────
+    _MusicTransition = _lib.lookupFunction<_StrideMusicTransitionNative,
+        _StrideMusicTransitionDart>('stride_music_transition');
+    _MusicAudioFocus = _lib.lookupFunction<_StrideMusicAudioFocusNative,
+        _StrideMusicAudioFocusDart>('stride_music_audio_focus');
+    _MusicCoachingInterop = _lib.lookupFunction<_StrideMusicCoachingInteropNative,
+        _StrideMusicCoachingInteropDart>('stride_music_coaching_interop');
+    _MusicNetworkLoss = _lib.lookupFunction<_StrideMusicNetworkLossNative,
+        _StrideMusicNetworkLossDart>('stride_music_network_loss');
+    _MusicFilterBlocked = _lib.lookupFunction<_StrideMusicFilterBlockedNative,
+        _StrideMusicFilterBlockedDart>('stride_music_filter_blocked');
+    _MusicShouldRecommend = _lib.lookupFunction<_StrideMusicShouldRecommendNative,
+        _StrideMusicShouldRecommendDart>('stride_music_should_recommend');
+    _MusicBuildStatus = _lib.lookupFunction<_StrideMusicBuildStatusNative,
+        _StrideMusicBuildStatusDart>('stride_music_build_status');
+    _MusicRemoteControl = _lib.lookupFunction<_StrideMusicRemoteControlNative,
+        _StrideMusicRemoteControlDart>('stride_music_remote_control');
     _freeString = _lib.lookupFunction<_StrideFreeStringNative,
         _StrideFreeStringDart>('stride_free_string');
   }
@@ -913,6 +956,15 @@ class StrideEngineBindings {
   late final _StrideWearableSyncStatusDart _WearableSyncStatus;
   late final _StrideWearableDeduplicateSourceDart _WearableDeduplicateSource;
   late final _StrideWearableConsentResultDart _WearableConsentResult;
+  // ─── §11 — Music system fields ────────────────────────────────
+  late final _StrideMusicTransitionDart _MusicTransition;
+  late final _StrideMusicAudioFocusDart _MusicAudioFocus;
+  late final _StrideMusicCoachingInteropDart _MusicCoachingInterop;
+  late final _StrideMusicNetworkLossDart _MusicNetworkLoss;
+  late final _StrideMusicFilterBlockedDart _MusicFilterBlocked;
+  late final _StrideMusicShouldRecommendDart _MusicShouldRecommend;
+  late final _StrideMusicBuildStatusDart _MusicBuildStatus;
+  late final _StrideMusicRemoteControlDart _MusicRemoteControl;
   late final _StrideFreeStringDart _freeString;
 
   /// Reads, decodes, and frees a native JSON string pointer.
@@ -2320,6 +2372,88 @@ class StrideEngineBindings {
     final ptr = _toNative(jsonEncode(request));
     try {
       return _consume(_WearableConsentResult(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  // ─── §11 — Music system wrappers ──────────────────────────────
+
+  /// musicTransition — §11 music — transition the playback state machine.
+  Map<String, dynamic> musicTransition(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicTransition(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicAudioFocus — §11 music — handle an audio focus event.
+  Map<String, dynamic> musicAudioFocus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicAudioFocus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicCoachingInterop — §11 music — coordinate music with coaching.
+  Map<String, dynamic> musicCoachingInterop(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicCoachingInterop(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicNetworkLoss — §11 music — decide what to do on network loss.
+  Map<String, dynamic> musicNetworkLoss(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicNetworkLoss(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicFilterBlocked — §11 music — filter blocked content from a playlist.
+  Map<String, dynamic> musicFilterBlocked(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicFilterBlocked(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicShouldRecommend — §11 music — decide whether to recommend a track.
+  Map<String, dynamic> musicShouldRecommend(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicShouldRecommend(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicBuildStatus — §11 music — build a full music status snapshot.
+  Map<String, dynamic> musicBuildStatus(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicBuildStatus(ptr));
+    } finally {
+      malloc.free(ptr);
+    }
+  }
+
+  /// musicRemoteControl — §11 music — handle a remote control command.
+  Map<String, dynamic> musicRemoteControl(Map<String, dynamic> request) {
+    final ptr = _toNative(jsonEncode(request));
+    try {
+      return _consume(_MusicRemoteControl(ptr));
     } finally {
       malloc.free(ptr);
     }

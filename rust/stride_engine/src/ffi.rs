@@ -70,6 +70,12 @@ use crate::engine::sync::{
 };
 use crate::engine::units::{self, ConversionKind, DistanceUnit};
 use crate::engine::validation::{self, ValidationInput};
+use crate::engine::music::{
+    self, AudioFocusEvent, AudioFocusState, CoachingInteropState, CoachingRequest,
+    MusicMode, MusicSource, MusicStatus, NetworkLossDecision, NetworkState,
+    PlaybackAction, PlaybackCommand, PlaybackState, Playlist, Track, TrackFeedback,
+    FeedbackRecord, RemoteControlSource, TransitionResult,
+};
 use crate::engine::wearable::{
     self, FallbackDecision, HealthConnectConsentState, MetricType,
     SourceAvailability, SourceRevocationRecord, WearableConnectionState,
@@ -3903,5 +3909,319 @@ pub extern "C" fn stride_wearable_consent_result(
             consent_state: new_state,
         };
         ok_json(&resp)
+    })
+}
+
+// ── §11 — Music system ────────────────────────────────────────────────────
+
+/// Processes a playback state transition. Given the current playback
+/// state and a command, returns a `TransitionResult` with the new state
+/// (or unchanged state if the transition is invalid) and a message.
+#[no_mangle]
+pub extern "C" fn stride_music_transition(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_state: PlaybackState,
+            command: PlaybackCommand,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result: TransitionResult =
+            music::transition(req.current_state, req.command);
+        ok_json(&result)
+    })
+}
+
+/// Handles an audio focus event. Given the current audio focus state and
+/// the event type, returns the new focus state, recommended playback
+/// action, and metadata.
+#[no_mangle]
+pub extern "C" fn stride_music_audio_focus(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_focus: AudioFocusState,
+            event: AudioFocusEvent,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let (new_focus, action) =
+            music::handle_audio_focus_event(req.current_focus, req.event);
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            new_focus: AudioFocusState,
+            action: PlaybackAction,
+            can_play: bool,
+            volume_multiplier: f64,
+            focus_label: String,
+        }
+        let resp = Resp {
+            can_play: new_focus.can_play(),
+            volume_multiplier: new_focus.volume_multiplier(),
+            focus_label: new_focus.label().to_string(),
+            new_focus,
+            action,
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Coordinates music with a coaching prompt. Given the current coaching-
+/// interop state, the request type, and whether music is playing, returns
+/// a `CoachingInteropResult` with the music action to take.
+#[no_mangle]
+pub extern "C" fn stride_music_coaching_interop(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current_state: CoachingInteropState,
+            request: CoachingRequest,
+            music_is_playing: bool,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result = music::handle_coaching_request(
+            req.current_state,
+            req.request,
+            req.music_is_playing,
+        );
+        ok_json(&result)
+    })
+}
+
+/// Decides what to do when the network is lost during music streaming.
+/// Given the network state, current source, local-media availability, and
+/// buffer health, returns a `NetworkLossDecision`.
+#[no_mangle]
+pub extern "C" fn stride_music_network_loss(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            network: NetworkState,
+            current_source: MusicSource,
+            has_local_media: bool,
+            buffer_health_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let decision: NetworkLossDecision = music::handle_network_loss(
+            req.network,
+            req.current_source,
+            req.has_local_media,
+            req.buffer_health_ms,
+        );
+        ok_json(&decision)
+    })
+}
+
+/// Filters a playlist, removing tracks by blocked artists or genres.
+/// Returns the filtered playlist and a count of removed tracks.
+#[no_mangle]
+pub extern "C" fn stride_music_filter_blocked(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            playlist: Playlist,
+            blocked_artists: Vec<String>,
+            blocked_genres: Vec<String>,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let (filtered, removed) = music::filter_blocked_content(
+            &req.playlist,
+            &req.blocked_artists,
+            &req.blocked_genres,
+        );
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            filtered_playlist: Playlist,
+            removed_count: usize,
+        }
+        let resp = Resp {
+            filtered_playlist: filtered,
+            removed_count: removed,
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Decides whether a track should be recommended again based on the
+/// user's feedback history. Returns a boolean indicating whether the
+/// track should be recommended.
+#[no_mangle]
+pub extern "C" fn stride_music_should_recommend(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            feedback_history: Vec<FeedbackRecord>,
+            track_id: String,
+            now_ms: i64,
+            skip_cooldown_ms: i64,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let should = music::should_recommend_track(
+            &req.feedback_history,
+            &req.track_id,
+            req.now_ms,
+            req.skip_cooldown_ms,
+        );
+
+        #[derive(serde::Serialize)]
+        struct Resp {
+            should_recommend: bool,
+        }
+        let resp = Resp {
+            should_recommend: should,
+        };
+        ok_json(&resp)
+    })
+}
+
+/// Builds a full music status snapshot from the current state. Given
+/// the playback state, audio focus, coaching-interop state, music
+/// source, mode, network state, current track index, and an optional
+/// playlist, returns a `MusicStatus` suitable for the UI.
+#[no_mangle]
+pub extern "C" fn stride_music_build_status(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            playback: PlaybackState,
+            focus: AudioFocusState,
+            coaching: CoachingInteropState,
+            source: MusicSource,
+            mode: MusicMode,
+            network: NetworkState,
+            current_track_index: Option<usize>,
+            playlist: Option<Playlist>,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let status: MusicStatus = music::build_status(
+            req.playback,
+            req.focus,
+            req.coaching,
+            req.source,
+            req.mode,
+            req.network,
+            req.current_track_index,
+            req.playlist.as_ref(),
+        );
+        ok_json(&status)
+    })
+}
+
+/// Processes a remote control command (from a lock screen, Bluetooth
+/// headset, Wear OS, or notification). Returns the resulting
+/// `TransitionResult`.
+#[no_mangle]
+pub extern "C" fn stride_music_remote_control(
+    request_json: *const c_char,
+) -> *mut c_char {
+    guarded(move || {
+        let raw = match unsafe { read_str(request_json) } {
+            Ok(s) => s,
+            Err(e) => return err_json(e),
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Req {
+            current: PlaybackState,
+            command: PlaybackCommand,
+            source: RemoteControlSource,
+        }
+
+        let req: Req = match serde_json::from_str(&raw) {
+            Ok(r) => r,
+            Err(e) => return err_json(format!("invalid_request: {e}")),
+        };
+
+        let result: TransitionResult = music::handle_remote_control(
+            req.current,
+            req.command,
+            req.source,
+        );
+        ok_json(&result)
     })
 }

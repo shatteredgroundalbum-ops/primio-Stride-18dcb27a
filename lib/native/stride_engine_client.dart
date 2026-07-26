@@ -1821,4 +1821,141 @@ class StrideEngineClient {
     return StrideConsentResult.fromJson(
         unwrapEnvelope(env) as Map<String, dynamic>);
   }
+
+  // ─── §11 — Music system ───────────────────────────────────────
+
+  /// Transitions the playback state machine given a command.
+  static StrideTransitionResult musicTransition({
+    required StridePlaybackState currentState,
+    required StridePlaybackCommand command,
+  }) {
+    final env = _bindings.musicTransition({
+      'current_state': currentState.toJson(),
+      'command': command.toJson(),
+    });
+    return StrideTransitionResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Handles an audio focus event, returning the new focus state and
+  /// recommended playback action.
+  static StrideAudioFocusResult musicAudioFocus({
+    required StrideAudioFocusState currentFocus,
+    required StrideAudioFocusEvent event,
+  }) {
+    final env = _bindings.musicAudioFocus({
+      'current_focus': currentFocus.toJson(),
+      'event': event.toJson(),
+    });
+    return StrideAudioFocusResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Coordinates music with a coaching prompt, deciding whether to
+  /// pause or resume music.
+  static StrideCoachingInteropResult musicCoachingInterop({
+    required StrideCoachingInteropState currentState,
+    required StrideCoachingRequest request,
+    required bool musicIsPlaying,
+  }) {
+    final env = _bindings.musicCoachingInterop({
+      'current_state': currentState.toJson(),
+      'request': request.toJson(),
+      'music_is_playing': musicIsPlaying,
+    });
+    return StrideCoachingInteropResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Decides what to do when the network is lost during music
+  /// streaming.
+  static StrideNetworkLossDecision musicNetworkLoss({
+    required StrideNetworkState network,
+    required StrideMusicSource currentSource,
+    required bool hasLocalMedia,
+    required int bufferHealthMs,
+  }) {
+    final env = _bindings.musicNetworkLoss({
+      'network': network.toJson(),
+      'current_source': currentSource.toJson(),
+      'has_local_media': hasLocalMedia,
+      'buffer_health_ms': bufferHealthMs,
+    });
+    return StrideNetworkLossDecision.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Filters blocked content from a playlist.
+  static StrideFilterBlockedResult musicFilterBlocked({
+    required StridePlaylist playlist,
+    required List<String> blockedArtists,
+    required List<String> blockedGenres,
+  }) {
+    final env = _bindings.musicFilterBlocked({
+      'playlist': playlist.toJson(),
+      'blocked_artists': blockedArtists,
+      'blocked_genres': blockedGenres,
+    });
+    return StrideFilterBlockedResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Decides whether a track should be recommended again based on the
+  /// user's feedback history.
+  static StrideShouldRecommendResult musicShouldRecommend({
+    required List<StrideFeedbackRecord> feedbackHistory,
+    required String trackId,
+    required int nowMs,
+    required int skipCooldownMs,
+  }) {
+    final env = _bindings.musicShouldRecommend({
+      'feedback_history': feedbackHistory.map((r) => r.toJson()).toList(),
+      'track_id': trackId,
+      'now_ms': nowMs,
+      'skip_cooldown_ms': skipCooldownMs,
+    });
+    return StrideShouldRecommendResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Builds a full music status snapshot for the UI.
+  static StrideMusicStatus musicBuildStatus({
+    required StridePlaybackState playback,
+    required StrideAudioFocusState focus,
+    required StrideCoachingInteropState coaching,
+    required StrideMusicSource source,
+    required StrideMusicMode mode,
+    required StrideNetworkState network,
+    int? currentTrackIndex,
+    StridePlaylist? playlist,
+  }) {
+    final env = _bindings.musicBuildStatus({
+      'playback': playback.toJson(),
+      'focus': focus.toJson(),
+      'coaching': coaching.toJson(),
+      'source': source.toJson(),
+      'mode': mode.toJson(),
+      'network': network.toJson(),
+      'current_track_index': currentTrackIndex,
+      'playlist': playlist?.toJson(),
+    });
+    return StrideMusicStatus.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
+
+  /// Processes a remote control command (from a lock screen, Bluetooth
+  /// headset, Wear OS, or notification).
+  static StrideTransitionResult musicRemoteControl({
+    required StridePlaybackState current,
+    required StridePlaybackCommand command,
+    required StrideRemoteControlSource source,
+  }) {
+    final env = _bindings.musicRemoteControl({
+      'current': current.toJson(),
+      'command': command.toJson(),
+      'source': source.toJson(),
+    });
+    return StrideTransitionResult.fromJson(
+        unwrapEnvelope(env) as Map<String, dynamic>);
+  }
 }

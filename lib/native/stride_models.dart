@@ -3638,3 +3638,513 @@ class StrideWearableStatus {
             .toList(),
         lastSyncMs = j['last_sync_ms'] as int?;
 }
+
+// ─── §11 — Music system models ─────────────────────────────────────
+
+/// The playback state of the music player (8-state state machine).
+enum StridePlaybackState {
+  idle,
+  ready,
+  playing,
+  paused,
+  buffering,
+  ended,
+  stopped,
+  error;
+
+  static StridePlaybackState fromJson(String s) => switch (s) {
+    'idle' => StridePlaybackState.idle,
+    'ready' => StridePlaybackState.ready,
+    'playing' => StridePlaybackState.playing,
+    'paused' => StridePlaybackState.paused,
+    'buffering' => StridePlaybackState.buffering,
+    'ended' => StridePlaybackState.ended,
+    'stopped' => StridePlaybackState.stopped,
+    'error' => StridePlaybackState.error,
+    _ => StridePlaybackState.idle,
+  };
+
+  String toJson() => switch (this) {
+    StridePlaybackState.idle => 'idle',
+    StridePlaybackState.ready => 'ready',
+    StridePlaybackState.playing => 'playing',
+    StridePlaybackState.paused => 'paused',
+    StridePlaybackState.buffering => 'buffering',
+    StridePlaybackState.ended => 'ended',
+    StridePlaybackState.stopped => 'stopped',
+    StridePlaybackState.error => 'error',
+  };
+}
+
+/// A command to the playback state machine.
+enum StridePlaybackCommand {
+  play,
+  pause,
+  resume,
+  skip,
+  previous,
+  stop,
+  seek;
+
+  static StridePlaybackCommand fromJson(String s) => switch (s) {
+    'play' => StridePlaybackCommand.play,
+    'pause' => StridePlaybackCommand.pause,
+    'resume' => StridePlaybackCommand.resume,
+    'skip' => StridePlaybackCommand.skip,
+    'previous' => StridePlaybackCommand.previous,
+    'stop' => StridePlaybackCommand.stop,
+    'seek' => StridePlaybackCommand.seek,
+    _ => StridePlaybackCommand.play,
+  };
+
+  String toJson() => switch (this) {
+    StridePlaybackCommand.play => 'play',
+    StridePlaybackCommand.pause => 'pause',
+    StridePlaybackCommand.resume => 'resume',
+    StridePlaybackCommand.skip => 'skip',
+    StridePlaybackCommand.previous => 'previous',
+    StridePlaybackCommand.stop => 'stop',
+    StridePlaybackCommand.seek => 'seek',
+  };
+}
+
+/// The result of a playback state transition.
+class StrideTransitionResult {
+  final StridePlaybackState previousState;
+  final StridePlaybackState newState;
+  final bool accepted;
+  final String message;
+
+  StrideTransitionResult.fromJson(Map<String, dynamic> j)
+      : previousState = StridePlaybackState.fromJson(j['previous_state'] as String),
+        newState = StridePlaybackState.fromJson(j['new_state'] as String),
+        accepted = j['accepted'] as bool,
+        message = j['message'] as String;
+}
+
+/// The audio focus state (Android AudioManager focus states).
+enum StrideAudioFocusState {
+  noFocus,
+  focused,
+  ducking,
+  transientPause,
+  lost;
+
+  bool get canPlay => switch (this) {
+    StrideAudioFocusState.focused => true,
+    StrideAudioFocusState.ducking => true,
+    _ => false,
+  };
+
+  double get volumeMultiplier => switch (this) {
+    StrideAudioFocusState.focused => 1.0,
+    StrideAudioFocusState.ducking => 0.3,
+    _ => 0.0,
+  };
+
+  String get label => switch (this) {
+    StrideAudioFocusState.noFocus => 'No audio focus',
+    StrideAudioFocusState.focused => 'Audio focused',
+    StrideAudioFocusState.ducking => 'Ducking (low volume)',
+    StrideAudioFocusState.transientPause => 'Transient pause',
+    StrideAudioFocusState.lost => 'Audio focus lost',
+  };
+
+  static StrideAudioFocusState fromJson(String s) => switch (s) {
+    'no_focus' => StrideAudioFocusState.noFocus,
+    'focused' => StrideAudioFocusState.focused,
+    'ducking' => StrideAudioFocusState.ducking,
+    'transient_pause' => StrideAudioFocusState.transientPause,
+    'lost' => StrideAudioFocusState.lost,
+    _ => StrideAudioFocusState.noFocus,
+  };
+
+  String toJson() => switch (this) {
+    StrideAudioFocusState.noFocus => 'no_focus',
+    StrideAudioFocusState.focused => 'focused',
+    StrideAudioFocusState.ducking => 'ducking',
+    StrideAudioFocusState.transientPause => 'transient_pause',
+    StrideAudioFocusState.lost => 'lost',
+  };
+}
+
+/// An audio focus event from the Android AudioManager.
+enum StrideAudioFocusEvent {
+  gain,
+  duck,
+  transientPause,
+  loss;
+
+  static StrideAudioFocusEvent fromJson(String s) => switch (s) {
+    'gain' => StrideAudioFocusEvent.gain,
+    'duck' => StrideAudioFocusEvent.duck,
+    'transient_pause' => StrideAudioFocusEvent.transientPause,
+    'loss' => StrideAudioFocusEvent.loss,
+    _ => StrideAudioFocusEvent.gain,
+  };
+
+  String toJson() => switch (this) {
+    StrideAudioFocusEvent.gain => 'gain',
+    StrideAudioFocusEvent.duck => 'duck',
+    StrideAudioFocusEvent.transientPause => 'transient_pause',
+    StrideAudioFocusEvent.loss => 'loss',
+  };
+}
+
+/// A playback action recommended by the audio-focus handler.
+enum StridePlaybackAction {
+  continuePlaying,
+  resume,
+  pause,
+  duck,
+  stop;
+
+  static StridePlaybackAction fromJson(String s) => switch (s) {
+    'continue' => StridePlaybackAction.continuePlaying,
+    'resume' => StridePlaybackAction.resume,
+    'pause' => StridePlaybackAction.pause,
+    'duck' => StridePlaybackAction.duck,
+    'stop' => StridePlaybackAction.stop,
+    _ => StridePlaybackAction.continuePlaying,
+  };
+
+  String toJson() => switch (this) {
+    StridePlaybackAction.continuePlaying => 'continue',
+    StridePlaybackAction.resume => 'resume',
+    StridePlaybackAction.pause => 'pause',
+    StridePlaybackAction.duck => 'duck',
+    StridePlaybackAction.stop => 'stop',
+  };
+}
+
+/// The result of an audio-focus event.
+class StrideAudioFocusResult {
+  final StrideAudioFocusState newFocus;
+  final StridePlaybackAction action;
+  final bool canPlay;
+  final double volumeMultiplier;
+  final String focusLabel;
+
+  StrideAudioFocusResult.fromJson(Map<String, dynamic> j)
+      : newFocus = StrideAudioFocusState.fromJson(j['new_focus'] as String),
+        action = StridePlaybackAction.fromJson(j['action'] as String),
+        canPlay = j['can_play'] as bool,
+        volumeMultiplier = (j['volume_multiplier'] as num).toDouble(),
+        focusLabel = j['focus_label'] as String;
+}
+
+/// The coaching-interop state (coordinating music with coaching prompts).
+enum StrideCoachingInteropState {
+  inactive,
+  coachingActive,
+  coachingFinished;
+
+  static StrideCoachingInteropState fromJson(String s) => switch (s) {
+    'inactive' => StrideCoachingInteropState.inactive,
+    'coaching_active' => StrideCoachingInteropState.coachingActive,
+    'coaching_finished' => StrideCoachingInteropState.coachingFinished,
+    _ => StrideCoachingInteropState.inactive,
+  };
+
+  String toJson() => switch (this) {
+    StrideCoachingInteropState.inactive => 'inactive',
+    StrideCoachingInteropState.coachingActive => 'coaching_active',
+    StrideCoachingInteropState.coachingFinished => 'coaching_finished',
+  };
+}
+
+/// A coaching-interop request.
+enum StrideCoachingRequest {
+  promptStarting,
+  promptFinished,
+  promptCancelled;
+
+  static StrideCoachingRequest fromJson(String s) => switch (s) {
+    'prompt_starting' => StrideCoachingRequest.promptStarting,
+    'prompt_finished' => StrideCoachingRequest.promptFinished,
+    'prompt_cancelled' => StrideCoachingRequest.promptCancelled,
+    _ => StrideCoachingRequest.promptStarting,
+  };
+
+  String toJson() => switch (this) {
+    StrideCoachingRequest.promptStarting => 'prompt_starting',
+    StrideCoachingRequest.promptFinished => 'prompt_finished',
+    StrideCoachingRequest.promptCancelled => 'prompt_cancelled',
+  };
+}
+
+/// The result of a coaching-interop coordination request.
+class StrideCoachingInteropResult {
+  final StrideCoachingInteropState state;
+  final StridePlaybackAction musicAction;
+  final bool wasPlayingBefore;
+  final String message;
+
+  StrideCoachingInteropResult.fromJson(Map<String, dynamic> j)
+      : state = StrideCoachingInteropState.fromJson(j['state'] as String),
+        musicAction = StridePlaybackAction.fromJson(j['music_action'] as String),
+        wasPlayingBefore = j['was_playing_before'] as bool,
+        message = j['message'] as String;
+}
+
+/// The music source (where tracks come from).
+enum StrideMusicSource {
+  localDevice,
+  internetRadio,
+  aiCurated;
+
+  bool get requiresNetwork => switch (this) {
+    StrideMusicSource.localDevice => false,
+    _ => true,
+  };
+
+  String get label => switch (this) {
+    StrideMusicSource.localDevice => 'Local device',
+    StrideMusicSource.internetRadio => 'Internet radio',
+    StrideMusicSource.aiCurated => 'AI-curated',
+  };
+
+  static StrideMusicSource fromJson(String s) => switch (s) {
+    'local_device' => StrideMusicSource.localDevice,
+    'internet_radio' => StrideMusicSource.internetRadio,
+    'ai_curated' => StrideMusicSource.aiCurated,
+    _ => StrideMusicSource.localDevice,
+  };
+
+  String toJson() => switch (this) {
+    StrideMusicSource.localDevice => 'local_device',
+    StrideMusicSource.internetRadio => 'internet_radio',
+    StrideMusicSource.aiCurated => 'ai_curated',
+  };
+}
+
+/// The music mode (manual or AI-curated).
+enum StrideMusicMode {
+  manual,
+  ai;
+
+  static StrideMusicMode fromJson(String s) => switch (s) {
+    'manual' => StrideMusicMode.manual,
+    'ai' => StrideMusicMode.ai,
+    _ => StrideMusicMode.manual,
+  };
+
+  String toJson() => switch (this) {
+    StrideMusicMode.manual => 'manual',
+    StrideMusicMode.ai => 'ai',
+  };
+}
+
+/// The network state for music streaming.
+enum StrideNetworkState {
+  connected,
+  weak,
+  lost;
+
+  static StrideNetworkState fromJson(String s) => switch (s) {
+    'connected' => StrideNetworkState.connected,
+    'weak' => StrideNetworkState.weak,
+    'lost' => StrideNetworkState.lost,
+    _ => StrideNetworkState.connected,
+  };
+
+  String toJson() => switch (this) {
+    StrideNetworkState.connected => 'connected',
+    StrideNetworkState.weak => 'weak',
+    StrideNetworkState.lost => 'lost',
+  };
+}
+
+/// The decision when the network is lost during streaming.
+class StrideNetworkLossDecision {
+  final bool shouldSwitchToLocal;
+  final bool shouldBuffer;
+  final bool shouldStop;
+  final String message;
+  final StrideMusicSource fallbackSource;
+
+  StrideNetworkLossDecision.fromJson(Map<String, dynamic> j)
+      : shouldSwitchToLocal = j['should_switch_to_local'] as bool,
+        shouldBuffer = j['should_buffer'] as bool,
+        shouldStop = j['should_stop'] as bool,
+        message = j['message'] as String,
+        fallbackSource =
+            StrideMusicSource.fromJson(j['fallback_source'] as String);
+}
+
+/// A single track in a playlist.
+class StrideTrack {
+  final String id;
+  final String title;
+  final String artist;
+  final String genre;
+  final int durationMs;
+  final StrideMusicSource source;
+
+  StrideTrack.fromJson(Map<String, dynamic> j)
+      : id = j['id'] as String,
+        title = j['title'] as String,
+        artist = j['artist'] as String,
+        genre = j['genre'] as String,
+        durationMs = j['duration_ms'] as int,
+        source = StrideMusicSource.fromJson(j['source'] as String);
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'artist': artist,
+    'genre': genre,
+    'duration_ms': durationMs,
+    'source': source.toJson(),
+  };
+}
+
+/// A playlist with its tracks and metadata.
+class StridePlaylist {
+  final String id;
+  final String name;
+  final List<StrideTrack> tracks;
+  final StrideMusicSource source;
+  final StrideMusicMode mode;
+
+  StridePlaylist.fromJson(Map<String, dynamic> j)
+      : id = j['id'] as String,
+        name = j['name'] as String,
+        tracks = (j['tracks'] as List? ?? [])
+            .map((e) => StrideTrack.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        source = StrideMusicSource.fromJson(j['source'] as String),
+        mode = StrideMusicMode.fromJson(j['mode'] as String);
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'tracks': tracks.map((t) => t.toJson()).toList(),
+    'source': source.toJson(),
+    'mode': mode.toJson(),
+  };
+}
+
+/// The result of filtering blocked content from a playlist.
+class StrideFilterBlockedResult {
+  final StridePlaylist filteredPlaylist;
+  final int removedCount;
+
+  StrideFilterBlockedResult.fromJson(Map<String, dynamic> j)
+      : filteredPlaylist =
+            StridePlaylist.fromJson(j['filtered_playlist'] as Map<String, dynamic>),
+        removedCount = j['removed_count'] as int;
+}
+
+/// The type of feedback a user gave for a track.
+enum StrideTrackFeedback {
+  liked,
+  disliked,
+  skipped,
+  completed;
+
+  bool get isPositive => switch (this) {
+    StrideTrackFeedback.liked || StrideTrackFeedback.completed => true,
+    _ => false,
+  };
+
+  static StrideTrackFeedback fromJson(String s) => switch (s) {
+    'liked' => StrideTrackFeedback.liked,
+    'disliked' => StrideTrackFeedback.disliked,
+    'skipped' => StrideTrackFeedback.skipped,
+    'completed' => StrideTrackFeedback.completed,
+    _ => StrideTrackFeedback.completed,
+  };
+
+  String toJson() => switch (this) {
+    StrideTrackFeedback.liked => 'liked',
+    StrideTrackFeedback.disliked => 'disliked',
+    StrideTrackFeedback.skipped => 'skipped',
+    StrideTrackFeedback.completed => 'completed',
+  };
+}
+
+/// A record of a user's feedback on a track.
+class StrideFeedbackRecord {
+  final String trackId;
+  final String trackArtist;
+  final String trackGenre;
+  final StrideTrackFeedback feedback;
+  final int recordedAtMs;
+
+  StrideFeedbackRecord.fromJson(Map<String, dynamic> j)
+      : trackId = j['track_id'] as String,
+        trackArtist = j['track_artist'] as String,
+        trackGenre = j['track_genre'] as String,
+        feedback = StrideTrackFeedback.fromJson(j['feedback'] as String),
+        recordedAtMs = j['recorded_at_ms'] as int;
+
+  Map<String, dynamic> toJson() => {
+    'track_id': trackId,
+    'track_artist': trackArtist,
+    'track_genre': trackGenre,
+    'feedback': feedback.toJson(),
+    'recorded_at_ms': recordedAtMs,
+  };
+}
+
+/// The result of a should-recommend check.
+class StrideShouldRecommendResult {
+  final bool shouldRecommend;
+
+  StrideShouldRecommendResult.fromJson(Map<String, dynamic> j)
+      : shouldRecommend = j['should_recommend'] as bool;
+}
+
+/// The source of a remote control command.
+enum StrideRemoteControlSource {
+  inApp,
+  lockScreen,
+  bluetoothHeadset,
+  wearOs,
+  notification;
+
+  static StrideRemoteControlSource fromJson(String s) => switch (s) {
+    'in_app' => StrideRemoteControlSource.inApp,
+    'lock_screen' => StrideRemoteControlSource.lockScreen,
+    'bluetooth_headset' => StrideRemoteControlSource.bluetoothHeadset,
+    'wear_os' => StrideRemoteControlSource.wearOs,
+    'notification' => StrideRemoteControlSource.notification,
+    _ => StrideRemoteControlSource.inApp,
+  };
+
+  String toJson() => switch (this) {
+    StrideRemoteControlSource.inApp => 'in_app',
+    StrideRemoteControlSource.lockScreen => 'lock_screen',
+    StrideRemoteControlSource.bluetoothHeadset => 'bluetooth_headset',
+    StrideRemoteControlSource.wearOs => 'wear_os',
+    StrideRemoteControlSource.notification => 'notification',
+  };
+}
+
+/// A full music status snapshot for the UI.
+class StrideMusicStatus {
+  final StridePlaybackState playbackState;
+  final StrideAudioFocusState audioFocus;
+  final StrideCoachingInteropState coachingInterop;
+  final StrideMusicSource musicSource;
+  final StrideMusicMode musicMode;
+  final StrideNetworkState network;
+  final double volumeMultiplier;
+  final int? currentTrackIndex;
+  final int playlistTrackCount;
+  final int playlistTotalDurationMs;
+
+  StrideMusicStatus.fromJson(Map<String, dynamic> j)
+      : playbackState = StridePlaybackState.fromJson(j['playback_state'] as String),
+        audioFocus = StrideAudioFocusState.fromJson(j['audio_focus'] as String),
+        coachingInterop =
+            StrideCoachingInteropState.fromJson(j['coaching_interop'] as String),
+        musicSource = StrideMusicSource.fromJson(j['music_source'] as String),
+        musicMode = StrideMusicMode.fromJson(j['music_mode'] as String),
+        network = StrideNetworkState.fromJson(j['network'] as String),
+        volumeMultiplier = (j['volume_multiplier'] as num).toDouble(),
+        currentTrackIndex = j['current_track_index'] as int?,
+        playlistTrackCount = j['playlist_track_count'] as int,
+        playlistTotalDurationMs = j['playlist_total_duration_ms'] as int;
+}
