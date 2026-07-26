@@ -13,6 +13,7 @@ import 'services/auth_service.dart';
 import 'services/gps_service.dart';
 import 'services/health_service.dart';
 import 'services/preferences_service.dart';
+import 'services/recovery_service.dart';
 import 'services/stride_notification_service.dart';
 import 'services/sync_service.dart';
 import 'services/workout_recorder.dart';
@@ -56,6 +57,19 @@ void main() async {
     prefs: prefs,
   );
   syncService.startPeriodicSync();
+
+  // ── Crash recovery (spec section 23) ─────────────────────────────
+  // Must run after workoutRecorder/syncService exist but before runApp,
+  // so any recovered "paused" workout is already attached to
+  // workoutRecorder by the time the first frame builds and screens
+  // start reading WorkoutRecorder.activeSession.
+  final recoveryService = RecoveryService(
+    localDb: localDb,
+    workoutRecorder: workoutRecorder,
+    syncService: syncService,
+  );
+  final currentUserId = authProvider.currentUser?.id ?? 'local-user';
+  await recoveryService.run(currentUserId: currentUserId);
 
   runApp(StrideApp(
     authProvider: authProvider,

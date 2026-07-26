@@ -23,7 +23,12 @@ import '../models/walking_session.dart';
 /// The live workout never depends on a network connection.
 class LocalDatabase {
   static const _dbName = 'stride_local.db';
-  static const _dbVersion = 1;
+  // v1: initial schema (active_workout, route_points, heart_rate_samples,
+  //     pause_events, pending_uploads, cached_plans, cached_sessions)
+  // v2: adds step_samples, workout_checkpoints, pending_deletions —
+  //     required for full offline-first crash recovery + step persistence
+  //     + tombstone-based deletion sync (spec items 2 & 23).
+  static const _dbVersion = 2;
 
   Database? _db;
 
@@ -42,7 +47,18 @@ class LocalDatabase {
       path,
       version: _dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  /// Versioned schema migration path. Each `if (oldVersion < N)` block is
+  /// additive-only and safe to run on a database that's already been
+  /// migrated up to some intermediate version — never drop/rewrite tables
+  /// containing user data here.
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _createV2Tables(db);
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -141,6 +157,58 @@ class LocalDatabase {
         'CREATE INDEX idx_pending_state ON pending_uploads(sync_state)');
     await db.execute(
         'CREATE INDEX idx_cached_sessions_user ON cached_sessions(user_id)');
+
+    // Fresh installs get the full current schema directly (no need to
+    // route through onUpgrade).
+    await _createV2Tables(db);
+  }
+
+  /// Tables introduced in schema version 2. Split into its own method so
+  /// both a fresh `_onCreate` and an `_onUpgrade` from v1 can call it.
+  Future<void> _createV2Tables(Database db) async {
+    // Pedometer/step-sensor deltas — written every time a step-count
+    // delta is fed into the native engine, so step history survives an
+    // app kill even before the workout finishes.
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS step_samples (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        workout_id TEXT NOT NULL,
+        step_delta INTEGER NOT NULL,
+        source TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY (workout_id) REFERENCES active_workout(id)
+      )
+    ''');
+
+    // Durable crash-recovery snapshots produced by
+    // `WorkoutSessionController::build_checkpoint` / the
+    // `stride_build_checkpoint` FFI call. Only the latest row per
+    // workout matters; older ones are pruned as new ones arrive.
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS workout_checkpoints (
+        workout_id TEXT PRIMARY KEY,
+        checkpoint_json TEXT NOT NULL,
+        checkpoint_at TEXT NOT NULL,
+        FOREIGN KEY (workout_id) REFERENCES active_workout(id)
+      )
+    ''');
+
+    // Tombstone queue for deletions that happened while offline (or
+    // whose delete-on-server call failed), so a workout deleted locally
+    // doesn't silently reappear from a stale cloud copy on next sync.
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pending_deletions (
+        workout_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        deleted_at TEXT NOT NULL,
+        synced INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_step_samples_workout ON step_samples(workout_id)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_pending_deletions_synced ON pending_deletions(synced)');
   }
 
   // ─── Active Workout ─────────────────────────────────────────────
@@ -272,6 +340,154 @@ class LocalDatabase {
         where: 'workout_id = ?',
         whereArgs: [workoutId],
         orderBy: 'timestamp ASC');
+  }
+
+  // ─── Step Samples ────────────────────────────────────────────────
+
+  /// Persists one step-count delta (mirrors `stride_add_step_delta`'s
+  /// input) so raw step history survives an app kill before the workout
+  /// finishes and gets rolled up into a final summary.
+  Future<void> insertStepSample(
+    String workoutId,
+    int stepDelta,
+    String source,
+    DateTime timestamp,
+  ) async {
+    final db = await database;
+    if (db == null) return;
+    await db.insert('step_samples', {
+      'workout_id': workoutId,
+      'step_delta': stepDelta,
+      'source': source,
+      'timestamp': timestamp.toIso8601String(),
+    });
+  }
+
+  /// Returns all step samples for a workout, ordered by time.
+  Future<List<Map<String, dynamic>>> getStepSamples(String workoutId) async {
+    final db = await database;
+    if (db == null) return [];
+    return db.query('step_samples',
+        where: 'workout_id = ?',
+        whereArgs: [workoutId],
+        orderBy: 'timestamp ASC');
+  }
+
+  /// Deletes all step samples for a workout after it has been
+  /// finalized/uploaded.
+  Future<void> deleteStepSamples(String workoutId) async {
+    final db = await database;
+    if (db == null) return;
+    await db.delete('step_samples',
+        where: 'workout_id = ?', whereArgs: [workoutId]);
+  }
+
+  // ─── Workout Checkpoints (crash recovery) ───────────────────────
+
+  /// Upserts the latest crash-recovery checkpoint for a workout. Called
+  /// on every periodic checkpoint tick from `WorkoutRecorder` — replaces
+  /// any prior checkpoint for the same `workout_id` since only the most
+  /// recent snapshot is ever useful for recovery.
+  Future<void> saveCheckpoint(
+    String workoutId,
+    Map<String, dynamic> checkpointJson,
+    DateTime checkpointAt,
+  ) async {
+    final db = await database;
+    if (db == null) return;
+    await db.insert(
+      'workout_checkpoints',
+      {
+        'workout_id': workoutId,
+        'checkpoint_json': jsonEncode(checkpointJson),
+        'checkpoint_at': checkpointAt.toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Returns the decoded checkpoint JSON for a workout, or null if none
+  /// has been saved yet.
+  Future<Map<String, dynamic>?> getCheckpoint(String workoutId) async {
+    final db = await database;
+    if (db == null) return null;
+    final rows = await db.query('workout_checkpoints',
+        where: 'workout_id = ?', whereArgs: [workoutId], limit: 1);
+    if (rows.isEmpty) return null;
+    return jsonDecode(rows.first['checkpoint_json'] as String)
+        as Map<String, dynamic>;
+  }
+
+  /// Returns the most recently written checkpoint across *any* workout
+  /// (used at app startup — there should only ever be one active
+  /// workout, but this is defensively ordered by recency regardless).
+  Future<Map<String, dynamic>?> getLatestCheckpoint() async {
+    final db = await database;
+    if (db == null) return null;
+    final rows = await db.query('workout_checkpoints',
+        orderBy: 'checkpoint_at DESC', limit: 1);
+    if (rows.isEmpty) return null;
+    return jsonDecode(rows.first['checkpoint_json'] as String)
+        as Map<String, dynamic>;
+  }
+
+  /// Removes the checkpoint for a workout once it has finished/been
+  /// discarded and no longer needs crash-recovery.
+  Future<void> deleteCheckpoint(String workoutId) async {
+    final db = await database;
+    if (db == null) return;
+    await db.delete('workout_checkpoints',
+        where: 'workout_id = ?', whereArgs: [workoutId]);
+  }
+
+  // ─── Pending Deletions (tombstone sync queue) ──────────────────
+
+  /// Records that a workout was deleted locally, so the sync layer can
+  /// propagate the deletion to the cloud (and so a stale cloud copy
+  /// doesn't resurrect it before that propagation happens).
+  Future<void> queueDeletion(String workoutId, String userId) async {
+    final db = await database;
+    if (db == null) return;
+    await db.insert(
+      'pending_deletions',
+      {
+        'workout_id': workoutId,
+        'user_id': userId,
+        'deleted_at': DateTime.now().toIso8601String(),
+        'synced': 0,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Returns all deletions not yet propagated to the cloud.
+  Future<List<Map<String, dynamic>>> getPendingDeletions() async {
+    final db = await database;
+    if (db == null) return [];
+    return db.query('pending_deletions', where: 'synced = 0');
+  }
+
+  /// Marks a deletion as successfully propagated. Kept as a synced
+  /// tombstone rather than deleted outright, so a slow/duplicate cloud
+  /// sync pass can't resurrect the workout; call [purgeSyncedDeletions]
+  /// periodically to garbage-collect old tombstones.
+  Future<void> markDeletionSynced(String workoutId) async {
+    final db = await database;
+    if (db == null) return;
+    await db.update('pending_deletions', {'synced': 1},
+        where: 'workout_id = ?', whereArgs: [workoutId]);
+  }
+
+  /// Garbage-collects tombstones that have been synced for longer than
+  /// [olderThan] (default 30 days) — by then every client has almost
+  /// certainly already observed the deletion.
+  Future<void> purgeSyncedDeletions(
+      {Duration olderThan = const Duration(days: 30)}) async {
+    final db = await database;
+    if (db == null) return;
+    final cutoff = DateTime.now().subtract(olderThan).toIso8601String();
+    await db.delete('pending_deletions',
+        where: 'synced = 1 AND deleted_at < ?', whereArgs: [cutoff]);
   }
 
   // ─── Pending Uploads ───────────────────────────────────────────
@@ -413,6 +629,8 @@ class LocalDatabase {
     await db.delete('cached_plans',
         where: 'user_id = ?', whereArgs: [userId]);
     await db.delete('pending_uploads',
+        where: 'user_id = ?', whereArgs: [userId]);
+    await db.delete('pending_deletions',
         where: 'user_id = ?', whereArgs: [userId]);
   }
 

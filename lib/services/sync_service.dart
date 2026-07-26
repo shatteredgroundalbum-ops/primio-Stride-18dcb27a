@@ -124,6 +124,12 @@ class SyncService {
         }
       }
 
+      // Propagate any locally-queued deletions (tombstones) that haven't
+      // reached the cloud yet, so a workout deleted while offline
+      // actually disappears from Firestore instead of silently
+      // resurrecting on a future sync of the mock/real cloud store.
+      await _syncPendingDeletions();
+
       if (syncedCount > 0) {
         await _prefs.setLastSyncTime(DateTime.now());
       }
@@ -132,6 +138,48 @@ class SyncService {
     }
 
     return syncedCount;
+  }
+
+  /// Deletes a workout both locally and (best-effort, immediately) in the
+  /// cloud. If the workout was never synced yet, this simply removes it
+  /// from the local upload queue — nothing to delete remotely. If it had
+  /// already synced (or the immediate cloud delete attempt below fails,
+  /// e.g. offline), a tombstone is queued in `pending_deletions` and
+  /// retried on every future sync pass via [_syncPendingDeletions].
+  Future<void> deleteWorkout(String userId, String workoutId) async {
+    await _localDb.deleteActiveWorkout(workoutId);
+    await _localDb.removeFromUploadQueue(workoutId);
+    await _localDb.deleteRoutePoints(workoutId);
+    await _localDb.deleteStepSamples(workoutId);
+    await _localDb.deleteCheckpoint(workoutId);
+
+    await _localDb.queueDeletion(workoutId, userId);
+    try {
+      await _workoutRepo.deleteWorkout(userId, workoutId);
+      await _localDb.markDeletionSynced(workoutId);
+    } catch (_) {
+      // Offline or cloud call failed — the tombstone stays pending and
+      // will be retried by `_syncPendingDeletions` on the next sync pass.
+    }
+  }
+
+  /// Retries any deletions that haven't yet been confirmed as propagated
+  /// to the cloud.
+  Future<void> _syncPendingDeletions() async {
+    final pending = await _localDb.getPendingDeletions();
+    for (final row in pending) {
+      final workoutId = row['workout_id'] as String;
+      final userId = row['user_id'] as String;
+      try {
+        await _workoutRepo.deleteWorkout(userId, workoutId);
+        await _localDb.markDeletionSynced(workoutId);
+      } catch (_) {
+        // Still offline / still failing — leave it queued for next time.
+      }
+    }
+    // Garbage-collect old, already-synced tombstones so the table
+    // doesn't grow unbounded.
+    await _localDb.purgeSyncedDeletions();
   }
 
   /// Updates the daily summary for the day of the given workout.

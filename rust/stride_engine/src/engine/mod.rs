@@ -1,0 +1,30 @@
+//! The workout engine: stateful subsystems that process the live stream of
+//! GPS/sensor data into a complete workout record. Each submodule is
+//! independently unit-tested and (mostly) side-effect free — the
+//! [`controller`] module wires them together into the single
+//! `WorkoutSessionController` the FFI boundary exposes to Dart.
+
+pub mod achievements;
+pub mod autopause;
+pub mod battery;
+pub mod calories;
+pub mod classification;
+pub mod coaching;
+pub mod controller;
+pub mod distance;
+pub mod elevation;
+pub mod gps_filter;
+pub mod gps_quality;
+pub mod heart_rate;
+pub mod movement;
+pub mod pace;
+pub mod permissions;
+pub mod personal_records;
+pub mod recovery;
+pub mod route;
+pub mod speed;
+pub mod splits;
+pub mod steps;
+pub mod timekeeping;
+pub mod units;
+pub mod validation;
