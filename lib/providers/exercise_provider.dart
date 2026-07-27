@@ -33,7 +33,7 @@ class ExerciseProvider extends ChangeNotifier {
         _service.getRecentWorkouts(),
       ]);
       _categories = results[0] as List<ExerciseCategory>;
-      _todayWorkout = results[1] as WorkoutPlan;
+      _todayWorkout = results[1] as WorkoutPlan?;
       _recentWorkouts = results[2] as List<WorkoutPlan>;
     } catch (e) {
       _error = 'Failed to load exercise data';

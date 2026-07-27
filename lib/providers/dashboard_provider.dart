@@ -4,8 +4,11 @@ import '../services/health_service.dart';
 
 class DashboardProvider extends ChangeNotifier {
   final HealthService _service;
+  final String _userId;
 
-  DashboardProvider({required HealthService service}) : _service = service;
+  DashboardProvider({required HealthService service, required String userId})
+      : _service = service,
+        _userId = userId;
 
   DailyHealth? _data;
   DailyHealth? get data => _data;
@@ -24,7 +27,7 @@ class DashboardProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _data = await _service.getDailyHealth();
+      _data = await _service.getDailyHealth(userId: _userId);
       _insights = _service.getInsights(_data!);
     } catch (e) {
       _error = 'Failed to load health data';

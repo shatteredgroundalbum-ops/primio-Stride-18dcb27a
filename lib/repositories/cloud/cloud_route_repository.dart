@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../models/walking_session.dart';
 
 /// Saved route metadata matching Firestore path:
@@ -69,6 +71,22 @@ class SavedRoute {
         createdAt: DateTime.parse(map['createdAt'] as String),
         isFavorite: map['isFavorite'] as bool? ?? false,
       );
+
+  SavedRoute copyWith({
+    required bool isFavorite,
+  }) => SavedRoute(
+        id: id,
+        userId: userId,
+        name: name,
+        distanceMeters: distanceMeters,
+        elevationGainMeters: elevationGainMeters,
+        routeFilePath: routeFilePath,
+        previewUrl: previewUrl,
+        startLocation: startLocation,
+        endLocation: endLocation,
+        createdAt: createdAt,
+        isFavorite: isFavorite,
+      );
 }
 
 /// Handles saved routes in Firestore and route files in Cloud Storage.
@@ -84,66 +102,65 @@ abstract class CloudRouteRepository {
       String userId, String workoutId, List<RoutePoint> points);
 }
 
-/// In-memory implementation. Swap with `FirestoreRouteRepository`.
-class MockCloudRouteRepository implements CloudRouteRepository {
-  final List<SavedRoute> _routes = [];
-  final Map<String, String> _routeFiles = {};
+/// Real route repository backed by SharedPreferences for local
+/// persistence. Saved routes are stored as JSON keyed by route ID.
+/// When Firebase is connected, swap for `FirestoreRouteRepository`.
+class LocalCloudRouteRepository implements CloudRouteRepository {
+  static const _keyPrefix = 'cloud_route_';
+  static const _keyRouteFiles = 'cloud_route_files_';
+
+  Future<SharedPreferences> get _prefs async =>
+      await SharedPreferences.getInstance();
 
   @override
   Future<void> saveRoute(SavedRoute route) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    _routes.removeWhere((r) => r.id == route.id);
-    _routes.add(route);
+    final prefs = await _prefs;
+    await prefs.setString(
+        '$_keyPrefix${route.id}', jsonEncode(route.toMap()));
   }
 
   @override
   Future<List<SavedRoute>> getRoutes(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    return _routes
-        .where((r) => r.userId == userId)
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final prefs = await _prefs;
+    final keys = prefs.getKeys().where((k) => k.startsWith(_keyPrefix));
+    final routes = <SavedRoute>[];
+    for (final key in keys) {
+      final json = prefs.getString(key);
+      if (json != null) {
+        final route = SavedRoute.fromMap(jsonDecode(json) as Map<String, dynamic>);
+        if (route.userId == userId) routes.add(route);
+      }
+    }
+    routes.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return routes;
   }
 
   @override
   Future<void> toggleFavorite(String userId, String routeId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    final idx = _routes
-        .indexWhere((r) => r.id == routeId && r.userId == userId);
-    if (idx == -1) return;
-    final route = _routes[idx];
-    _routes[idx] = SavedRoute(
-      id: route.id,
-      userId: route.userId,
-      name: route.name,
-      distanceMeters: route.distanceMeters,
-      elevationGainMeters: route.elevationGainMeters,
-      routeFilePath: route.routeFilePath,
-      previewUrl: route.previewUrl,
-      startLocation: route.startLocation,
-      endLocation: route.endLocation,
-      createdAt: route.createdAt,
-      isFavorite: !route.isFavorite,
-    );
+    final prefs = await _prefs;
+    final json = prefs.getString('$_keyPrefix$routeId');
+    if (json == null) return;
+    final route = SavedRoute.fromMap(jsonDecode(json) as Map<String, dynamic>);
+    if (route.userId != userId) return;
+    await prefs.setString(
+        '$_keyPrefix$routeId',
+        jsonEncode(route.copyWith(isFavorite: !route.isFavorite).toMap()));
   }
 
   @override
   Future<void> deleteRoute(String userId, String routeId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    _routes.removeWhere(
-        (r) => r.id == routeId && r.userId == userId);
-    _routeFiles.remove(routeId);
+    final prefs = await _prefs;
+    await prefs.remove('$_keyPrefix$routeId');
+    await prefs.remove('$_keyRouteFiles$routeId');
   }
 
   @override
   Future<String> uploadRouteFile(
       String userId, String workoutId, List<RoutePoint> points) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    // In production: compress points → upload to Cloud Storage → return path.
+    final prefs = await _prefs;
     final compressed = jsonEncode(points.map((p) => p.toMap()).toList());
-    final storagePath =
-        'users/$userId/routes/$workoutId.json';
-    _routeFiles[workoutId] = compressed;
+    final storagePath = 'users/$userId/routes/$workoutId.json';
+    await prefs.setString('$_keyRouteFiles$workoutId', compressed);
     return storagePath;
   }
 }

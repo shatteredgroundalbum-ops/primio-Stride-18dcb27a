@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/profile_data.dart';
+import '../models/user_model.dart';
 import '../services/profile_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
@@ -24,19 +25,20 @@ class ProfileProvider extends ChangeNotifier {
 
   int get earnedCount => _achievements.where((a) => a.earned).length;
 
-  Future<void> loadProfile() async {
+  /// Loads profile from the real authenticated user model. The user
+  /// model comes from AuthProvider and is passed in from the screen.
+  Future<void> loadProfile(UserModel? user) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
+      _profile = _service.profileFromUser(user);
       final results = await Future.wait([
-        _service.getProfile(),
         _service.getBodyStats(),
         _service.getAchievements(),
       ]);
-      _profile = results[0] as UserProfile;
-      _bodyStats = results[1] as BodyStats;
-      _achievements = results[2] as List<Achievement>;
+      _bodyStats = results[0] as BodyStats?;
+      _achievements = results[1] as List<Achievement>;
     } catch (e) {
       _error = 'Failed to load profile data';
     }

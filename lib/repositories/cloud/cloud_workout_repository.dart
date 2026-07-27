@@ -1,3 +1,4 @@
+import '../../database/local_database.dart';
 import '../../models/walking_session.dart';
 
 /// Abstract interface matching Firestore path:
@@ -22,25 +23,28 @@ abstract class CloudWorkoutRepository {
   Future<void> deleteWorkout(String userId, String workoutId);
 }
 
-/// In-memory implementation for development. Swap with
-/// `FirestoreWorkoutRepository` when Firebase is connected.
-class MockCloudWorkoutRepository implements CloudWorkoutRepository {
-  final List<WalkingSession> _store = [];
+/// Real workout repository backed by the local SQLite database
+/// (LocalDatabase). Completed sessions are cached in the
+/// `cached_sessions` table by `WorkoutRecorder.stopWorkout()` and read
+/// back here. When Firebase is connected, swap for
+/// `FirestoreWorkoutRepository` — the abstract interface is identical.
+class LocalCloudWorkoutRepository implements CloudWorkoutRepository {
+  final LocalDatabase _localDb;
+
+  LocalCloudWorkoutRepository({required LocalDatabase localDb})
+      : _localDb = localDb;
 
   @override
   Future<void> saveWorkout(WalkingSession session) async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    _store.removeWhere((s) => s.id == session.id);
-    _store.add(session);
+    await _localDb.cacheSession(session);
   }
 
   @override
   Future<WalkingSession?> getWorkout(
       String userId, String workoutId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
+    final sessions = await _localDb.getCachedSessions(userId);
     try {
-      return _store
-          .firstWhere((s) => s.id == workoutId && s.userId == userId);
+      return sessions.firstWhere((s) => s.id == workoutId);
     } catch (_) {
       return null;
     }
@@ -48,30 +52,25 @@ class MockCloudWorkoutRepository implements CloudWorkoutRepository {
 
   @override
   Future<List<WalkingSession>> getWorkouts(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    final userSessions =
-        _store.where((s) => s.userId == userId).toList()
-          ..sort((a, b) => b.startTime.compareTo(a.startTime));
-    return userSessions;
+    return _localDb.getCachedSessions(userId);
   }
 
   @override
   Future<List<WalkingSession>> getWorkoutsInRange(
       String userId, DateTime start, DateTime end) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    return _store
+    final sessions = await _localDb.getCachedSessions(userId);
+    return sessions
         .where((s) =>
-            s.userId == userId &&
-            s.startTime.isAfter(start) &&
-            s.startTime.isBefore(end))
+            s.startTime.isAfter(start.subtract(const Duration(days: 1))) &&
+            s.startTime.isBefore(end.add(const Duration(days: 1))))
         .toList()
       ..sort((a, b) => b.startTime.compareTo(a.startTime));
   }
 
   @override
   Future<void> deleteWorkout(String userId, String workoutId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    _store.removeWhere(
-        (s) => s.id == workoutId && s.userId == userId);
+    // The local database doesn't expose a per-session delete from
+    // cached_sessions yet — use queueDeletion for sync tombstone flow.
+    await _localDb.queueDeletion(workoutId, userId);
   }
 }

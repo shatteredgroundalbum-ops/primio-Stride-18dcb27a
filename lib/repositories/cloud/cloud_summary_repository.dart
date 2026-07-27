@@ -1,3 +1,6 @@
+import '../../database/local_database.dart';
+import '../../models/walking_session.dart';
+
 /// Daily summary matching Firestore path:
 /// `users/{userId}/dailySummaries/{dateId}`
 ///
@@ -61,37 +64,100 @@ abstract class CloudSummaryRepository {
       String userId, DateTime start, DateTime end);
 }
 
-/// In-memory implementation. Swap with `FirestoreSummaryRepository`.
-class MockCloudSummaryRepository implements CloudSummaryRepository {
-  final Map<String, DailySummary> _store = {};
+/// Real summary repository backed by the local SQLite database.
+/// Daily summaries are computed on-the-fly from real cached sessions
+/// rather than stored separately — this ensures the summary always
+/// reflects the actual session data. When Firebase is connected,
+/// swap for `FirestoreSummaryRepository`.
+class LocalCloudSummaryRepository implements CloudSummaryRepository {
+  final LocalDatabase _localDb;
 
-  String _key(String userId, String dateId) => '$userId/$dateId';
+  LocalCloudSummaryRepository({required LocalDatabase localDb})
+      : _localDb = localDb;
 
   @override
   Future<void> saveSummary(DailySummary summary) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    _store[_key(summary.userId, summary.dateId)] = summary;
+    // No-op: summaries are derived from cached sessions, not stored
+    // separately. This method exists for interface symmetry with the
+    // future Firestore implementation.
   }
 
   @override
   Future<DailySummary?> getSummary(String userId, String dateId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    return _store[_key(userId, dateId)];
+    final sessions = await _localDb.getCachedSessions(userId);
+    final daySessions = sessions.where((s) {
+      final d = DateTime(s.startTime.year, s.startTime.month, s.startTime.day);
+      final target = DateTime.parse(dateId);
+      return d.isAtSameMomentAs(target);
+    }).toList();
+
+    if (daySessions.isEmpty) return null;
+
+    return _aggregate(daySessions, userId, dateId);
   }
 
   @override
   Future<List<DailySummary>> getSummariesInRange(
       String userId, DateTime start, DateTime end) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    return _store.values
-        .where((s) {
-          if (s.userId != userId) return false;
-          final date = DateTime.tryParse(s.dateId);
-          if (date == null) return false;
-          return date.isAfter(start.subtract(const Duration(days: 1))) &&
-              date.isBefore(end.add(const Duration(days: 1)));
-        })
-        .toList()
-      ..sort((a, b) => b.dateId.compareTo(a.dateId));
+    final sessions = await _localDb.getCachedSessions(userId);
+    final summaries = <DailySummary>[];
+
+    // Group sessions by day
+    final byDay = <String, List<WalkingSession>>{};
+    for (final s in sessions) {
+      if (s.startTime.isAfter(start.subtract(const Duration(days: 1))) &&
+          s.startTime.isBefore(end.add(const Duration(days: 1)))) {
+        final dateId =
+            '${s.startTime.year}-${s.startTime.month.toString().padLeft(2, '0')}-${s.startTime.day.toString().padLeft(2, '0')}';
+        byDay.putIfAbsent(dateId, () => []).add(s);
+      }
+    }
+
+    for (final entry in byDay.entries) {
+      summaries.add(_aggregate(entry.value, userId, entry.key));
+    }
+
+    summaries.sort((a, b) => b.dateId.compareTo(a.dateId));
+    return summaries;
+  }
+
+  DailySummary _aggregate(
+      List<WalkingSession> sessions, String userId, String dateId) {
+    int totalSteps = 0;
+    double totalDistance = 0;
+    int totalMinutes = 0;
+    double totalCalories = 0;
+    double totalPaceWeighted = 0;
+    int heartRateCount = 0;
+    double heartRateSum = 0;
+
+    for (final s in sessions) {
+      totalSteps += s.stepCount;
+      totalDistance += s.distanceMeters;
+      totalMinutes += s.duration.inMinutes;
+      totalCalories += s.caloriesBurned;
+      if (s.averagePaceMinPerKm > 0 && s.distanceMeters > 0) {
+        totalPaceWeighted += s.averagePaceMinPerKm * s.distanceMeters;
+      }
+      if (s.averageHeartRate != null && s.averageHeartRate! > 0) {
+        heartRateSum += s.averageHeartRate!;
+        heartRateCount++;
+      }
+    }
+
+    return DailySummary(
+      dateId: dateId,
+      userId: userId,
+      totalSteps: totalSteps,
+      totalDistanceMeters: totalDistance,
+      totalActiveMinutes: totalMinutes,
+      totalCaloriesBurned: totalCalories,
+      workoutCount: sessions.length,
+      averagePaceMinPerKm:
+          totalDistance > 0 ? totalPaceWeighted / totalDistance : 0,
+      averageHeartRate: heartRateCount > 0
+          ? heartRateSum / heartRateCount
+          : null,
+    );
   }
 }

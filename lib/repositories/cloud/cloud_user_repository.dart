@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../models/profile_data.dart';
 import '../../models/user_model.dart';
 
@@ -17,112 +21,96 @@ abstract class CloudUserRepository {
   Future<void> awardAchievement(String userId, Achievement achievement);
 }
 
-/// In-memory implementation. Swap with `FirestoreUserRepository`
-/// when Firebase is connected.
-class MockCloudUserRepository implements CloudUserRepository {
-  final Map<String, UserModel> _users = {};
-  final Map<String, List<Achievement>> _achievements = {};
+/// Real user repository backed by SharedPreferences for local
+/// persistence. Each user is stored as a JSON document keyed by
+/// user ID. When Firebase is connected, swap for
+/// `FirestoreUserRepository` — the abstract interface is identical.
+class LocalCloudUserRepository implements CloudUserRepository {
+  static const _keyPrefix = 'cloud_user_';
+  static const _keyAchievementsPrefix = 'cloud_user_achievements_';
+
+  Future<SharedPreferences> get _prefs async =>
+      await SharedPreferences.getInstance();
 
   @override
   Future<UserModel?> getUser(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    return _users[userId];
+    final prefs = await _prefs;
+    final json = prefs.getString('$_keyPrefix$userId');
+    if (json == null) return null;
+    return UserModel.fromMap(jsonDecode(json) as Map<String, dynamic>);
   }
 
   @override
   Future<void> createUser(UserModel user) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    _users[user.id] = user;
-    _achievements[user.id] = _defaultAchievements();
+    final prefs = await _prefs;
+    await prefs.setString('$_keyPrefix${user.id}', jsonEncode(user.toMap()));
+    // Initialize empty achievement list for the new user
+    final achKey = '$_keyAchievementsPrefix${user.id}';
+    if (prefs.getString(achKey) == null) {
+      await prefs.setString(achKey, jsonEncode([]));
+    }
   }
 
   @override
   Future<void> updateUser(UserModel user) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    _users[user.id] = user;
+    final prefs = await _prefs;
+    await prefs.setString('$_keyPrefix${user.id}', jsonEncode(user.toMap()));
   }
 
   @override
   Future<void> updateGoals(String userId, UserGoals goals) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    final user = _users[userId];
+    final user = await getUser(userId);
     if (user != null) {
-      _users[userId] = user.copyWith(goals: goals);
+      await updateUser(user.copyWith(goals: goals));
     }
   }
 
   @override
   Future<void> updateSettings(String userId, AppSettings settings) async {
-    await Future.delayed(const Duration(milliseconds: 50));
+    // Settings are managed by PreferencesService — no-op here.
   }
 
   @override
   Future<void> deleteUser(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    _users.remove(userId);
-    _achievements.remove(userId);
+    final prefs = await _prefs;
+    await prefs.remove('$_keyPrefix$userId');
+    await prefs.remove('$_keyAchievementsPrefix$userId');
   }
 
   @override
   Future<List<Achievement>> getAchievements(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    return _achievements[userId] ?? _defaultAchievements();
+    final prefs = await _prefs;
+    final json = prefs.getString('$_keyAchievementsPrefix$userId');
+    if (json == null) return [];
+    final list = jsonDecode(json) as List<dynamic>;
+    return list
+        .map((a) => Achievement(
+              title: a['title'] as String,
+              description: a['description'] as String,
+              iconName: a['iconName'] as String,
+              earned: a['earned'] as bool? ?? false,
+              earnedDate: a['earnedDate'] != null
+                  ? DateTime.parse(a['earnedDate'] as String)
+                  : null,
+            ))
+        .toList();
   }
 
   @override
   Future<void> awardAchievement(
       String userId, Achievement achievement) async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    final list = _achievements[userId] ?? [];
-    list.add(achievement);
-    _achievements[userId] = list;
-  }
-
-  UserModel createDefaultUser({
-    required String id,
-    required String email,
-    required String displayName,
-  }) {
-    final user = UserModel(
-      id: id,
-      email: email,
-      displayName: displayName,
-      age: 30,
-      weightKg: 70,
-      heightCm: 170,
-      activityLevel: 'moderate',
-      createdAt: DateTime.now(),
-      goals: const UserGoals(
-        dailySteps: 10000,
-        dailyCalorieBurn: 500,
-        weeklyWorkouts: 4,
-        targetWeightKg: 68,
-        primaryGoal: 'fitness',
-      ),
+    final current = await getAchievements(userId);
+    current.add(achievement);
+    final prefs = await _prefs;
+    await prefs.setString(
+      '$_keyAchievementsPrefix$userId',
+      jsonEncode(current.map((a) => {
+            'title': a.title;
+            'description': a.description;
+            'iconName': a.iconName;
+            'earned': a.earned;
+            'earnedDate': a.earnedDate?.toIso8601String();
+          }).toList()),
     );
-    _users[id] = user;
-    _achievements[id] = _defaultAchievements();
-    return user;
   }
-
-  List<Achievement> _defaultAchievements() => [
-        Achievement(
-          title: 'First Steps',
-          description: 'Complete your first walk',
-          iconName: 'directions_walk',
-          earned: false,
-        ),
-        Achievement(
-          title: '5K Club',
-          description: 'Walk 5 kilometers in one session',
-          iconName: 'emoji_events',
-          earned: false,
-        ),
-        Achievement(
-          title: 'Week Warrior',
-          description: 'Work out 7 days in a row',
-          iconName: 'local_fire_department',
-          earned: false,
-        ),
-      ];
 }

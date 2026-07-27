@@ -32,6 +32,11 @@ class AppShell extends StatelessWidget {
               label: 'Dashboard',
             ),
             NavigationDestination(
+              icon: const Icon(Icons.directions_walk_outlined),
+              selectedIcon: Icon(Icons.directions_walk, color: appColors.stepsAccent),
+              label: 'Walking',
+            ),
+            NavigationDestination(
               icon: const Icon(Icons.fitness_center_outlined),
               selectedIcon: Icon(Icons.fitness_center, color: appColors.exerciseAccent),
               label: 'Exercise',
